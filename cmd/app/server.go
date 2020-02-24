@@ -16,11 +16,15 @@ func main() {
 		Sessions:  make(map[string]uint, 10),
 	}
 
+	apiRestaurants := &_handlers.RestaurantHandler{
+		Restaurants: _models.BaseResStorage,
+	}
+
 	router.HandleFunc("/session", apiSession.SessionHandle)
 	router.HandleFunc("/user", apiSession.UserHandle)
-	router.HandleFunc("/profile", _handlers.DefaultHandle)
-	router.HandleFunc("/restaurants", _handlers.DefaultHandle)
-	router.HandleFunc("/restaurants/{restaurant_id:[0-9]+}", _handlers.DefaultHandle)
+	router.HandleFunc("/profile", apiSession.GetUserProfile)
+	router.HandleFunc("/restaurants", apiRestaurants.GetRestaurants)
+	router.HandleFunc("/restaurants/{restaurant_id:[0-9]+}", apiRestaurants.GetRestaurantByID)
 
 	fmt.Println("Server started")
 
