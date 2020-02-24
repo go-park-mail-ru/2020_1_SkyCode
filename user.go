@@ -20,7 +20,7 @@ type User struct {
 	ProfilePhoto string `json:"profilePhoto"`
 }
 
-const cookieSessionName = "SCDSESSIONID"
+const CookieSessionName = "SCDSESSIONID"
 
 type LoginInput struct {
 	Email    string `json:"email"`
@@ -147,7 +147,7 @@ func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request)
 		api.sessions[SID] = id
 
 		cookie := &http.Cookie{
-			Name:    cookieSessionName,
+			Name:    CookieSessionName,
 			Value:   SID,
 			Expires: time.Now().Add(10 * time.Hour),
 		}
@@ -155,7 +155,7 @@ func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request)
 	}
 
 	if r.Method == http.MethodDelete {
-		session, err := r.Cookie(cookieSessionName)
+		session, err := r.Cookie(CookieSessionName)
 		if err == http.ErrNoCookie {
 			http.Error(w, `Access denied`, 401)
 			return
@@ -199,7 +199,7 @@ func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
 		api.sessions[SID] = id
 
 		cookie := &http.Cookie{
-			Name:    cookieSessionName,
+			Name:    CookieSessionName,
 			Value:   SID,
 			Expires: time.Now().Add(10 * time.Hour),
 		}
