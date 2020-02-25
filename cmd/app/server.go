@@ -20,7 +20,7 @@ func main() {
 		Restaurants: _models.BaseResStorage,
 	}
 
-	router.HandleFunc("/session", apiSession.SessionHandle)
+	router.HandleFunc("/session", apiSession.SessionHandle).Methods("DELETE", "POST", "OPTIONS")
 	router.HandleFunc("/user", apiSession.UserHandle)
 	router.HandleFunc("/profile", apiSession.GetUserProfile)
 	router.HandleFunc("/restaurants", apiRestaurants.GetRestaurants)

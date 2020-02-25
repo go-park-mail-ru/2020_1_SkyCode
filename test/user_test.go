@@ -1,13 +1,14 @@
-package test
+package handlers
 
 import (
 	"bytes"
-	_handlers "github.com/2020_1_Skycode/internal/handlers"
-	_models "github.com/2020_1_Skycode/internal/models"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	_handlers "github.com/2020_1_Skycode/internal/handlers"
+	_models "github.com/2020_1_Skycode/internal/models"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateUserAndAuthorized(t *testing.T) {

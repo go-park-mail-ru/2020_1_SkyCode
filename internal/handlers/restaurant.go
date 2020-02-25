@@ -3,10 +3,11 @@ package handlers
 import (
 	json2 "encoding/json"
 	"fmt"
-	_models "github.com/2020_1_Skycode/internal/models"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+
+	_models "github.com/2020_1_Skycode/internal/models"
+	"github.com/gorilla/mux"
 )
 
 type RestaurantHandler struct {

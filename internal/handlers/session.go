@@ -20,6 +20,10 @@ type LoginInput struct {
 }
 
 func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE")
+	w.Header().Add("Access-Control-Allow-Headers", "Origin, Content-Type")
+
 	if r.Method == http.MethodPost {
 		decoder := json.NewDecoder(r.Body)
 		loginInput := new(LoginInput)
@@ -51,6 +55,7 @@ func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request)
 			Expires: time.Now().Add(10 * time.Hour),
 		}
 		http.SetCookie(w, cookie)
+
 	}
 
 	if r.Method == http.MethodDelete {

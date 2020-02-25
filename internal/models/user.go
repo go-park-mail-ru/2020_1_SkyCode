@@ -72,6 +72,7 @@ func (uStore *UserStore) GetUserByEmail(email string) (uint, *User, bool) {
 			return key, value, true
 		}
 	}
+
 	return 0, nil, false
 }
 
