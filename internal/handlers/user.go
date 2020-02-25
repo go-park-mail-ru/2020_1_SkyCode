@@ -18,6 +18,7 @@ func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		userInput := new(_models.User)
 		err := decoder.Decode(userInput)
+
 		if err != nil {
 			log.Printf("Error while unmarshalling JSON: %s", err)
 			http.Error(w, `Invalid JSONData`, 400)
