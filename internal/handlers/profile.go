@@ -58,11 +58,6 @@ func (api *SessionHandler) updateUser(r *http.Request, user _models.User) (_mode
 func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
-
 	if r.Method == http.MethodGet {
 		session, err := r.Cookie(_models.CookieSessionName)
 

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	_handlers "github.com/2020_1_Skycode/internal/handlers"
+	mw "github.com/2020_1_Skycode/internal/middlewares"
 	_models "github.com/2020_1_Skycode/internal/models"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -19,6 +20,10 @@ func main() {
 	apiRestaurants := &_handlers.RestaurantHandler{
 		Restaurants: _models.BaseResStorage,
 	}
+
+	mwController := &mw.MWController{}
+
+	router.Use(mwController.CORS)
 
 	router.HandleFunc("/session", apiSession.SessionHandle).Methods("DELETE", "POST", "OPTIONS")
 	router.HandleFunc("/user", apiSession.UserHandle)
