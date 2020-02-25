@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	json2 "encoding/json"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 
@@ -55,16 +56,51 @@ func (api *SessionHandler) updateUser(r *http.Request, user _models.User) (_mode
 }
 
 func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+
 	if r.Method == http.MethodGet {
 		session, err := r.Cookie(_models.CookieSessionName)
+
 		if err == http.ErrNoCookie {
-			http.Error(w, `Access denied`, 401)
+			log.Println("Unauthorized")
+			log.Println(session)
+
+			data := &ErrorResponse{
+				Error: "unauthorized",
+			}
+
+			w.WriteHeader(401)
+
+			_ = json.NewEncoder(w).Encode(data)
+
+			return
+		}
+
+		if session == nil {
+			log.Println("Server error")
+
+			w.WriteHeader(500)
 			return
 		}
 
 		userID, ok := api.Sessions[session.Value]
 		if !ok {
-			http.Error(w, `Access denied`, 401)
+			log.Println("Unauthorized")
+			log.Println(session)
+
+			data := &ErrorResponse{
+				Error: "unauthorized",
+			}
+
+			w.WriteHeader(401)
+
+			_ = json.NewEncoder(w).Encode(data)
+
 			return
 		}
 
@@ -77,79 +113,112 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 			ProfilePhoto: user.ProfilePhoto,
 		}
 
-		jsonProfile, err := json2.Marshal(profile)
-
 		if err != nil {
-			fmt.Println(err)
-			http.Error(w, `Server error`, 500)
+			log.Println("Server error")
+
+			w.WriteHeader(500)
 			return
 		}
 
-		_, err = w.Write(jsonProfile)
+		_ = json.NewEncoder(w).Encode(profile)
 
-		if err != nil {
-			fmt.Println(err)
-			http.Error(w, `Server error`, 500)
-			return
-		}
+		return
 	}
 
 	if r.Method == http.MethodPut {
-		r.ParseMultipartForm(5 * 1024 * 1025)
+		err := r.ParseMultipartForm(5 * 1024 * 1025)
+
+		if err != nil {
+			log.Println("Request Entity Too Large")
+
+			data := &ErrorResponse{
+				Error: "Request Entity Too Large",
+			}
+
+			w.WriteHeader(413)
+
+			_ = json.NewEncoder(w).Encode(data)
+
+			return
+		}
+
 		session, err := r.Cookie(_models.CookieSessionName)
-		if err == http.ErrNoCookie {
-			http.Error(w, `Access denied`, 401)
+
+		if session == nil {
+			log.Println("Server error")
+
+			w.WriteHeader(500)
 			return
 		}
 
 		userID, ok := api.Sessions[session.Value]
 		if !ok {
-			http.Error(w, `Access denied`, 401)
+			log.Println("Unauthorized")
+			log.Println(session)
+
+			data := &ErrorResponse{
+				Error: "unauthorized",
+			}
+
+			w.WriteHeader(401)
+
+			_ = json.NewEncoder(w).Encode(data)
+
 			return
 		}
 
 		user := api.UserStore.Users[userID]
+
 		tempUser, err := api.updateUser(r, *user)
 
 		if err != nil {
-			fmt.Println(err)
-			http.Error(w, `Invalid JSONData`, 400)
+			log.Println("Bad request")
+
+			data := &ErrorResponse{
+				Error: "Bad request",
+			}
+
+			w.WriteHeader(400)
+
+			_ = json.NewEncoder(w).Encode(data)
+
 			return
 		}
 
 		*user = tempUser
 
 		file, _, err := r.FormFile("profilephoto")
-		fmt.Println(err)
-		defer file.Close()
+		if file != nil {
+			defer file.Close()
+			if user.ProfilePhoto != "" {
+				err := os.Remove(user.ProfilePhoto)
 
-		if user.ProfilePhoto != "" {
-			err := os.Remove(user.ProfilePhoto)
+				if err != nil {
+					log.Println("Server error")
+
+					w.WriteHeader(500)
+					return
+				}
+			}
+
+			id := uuid.New()
+			data, _ := ioutil.ReadAll(file)
+			filePath := `images/` + id.String() + `.jpg`
+
+			if _, err := os.Stat("images/"); os.IsNotExist(err) {
+				os.Mkdir("images", 0775)
+			}
+
+			err = ioutil.WriteFile(filePath, data, 0644)
 
 			if err != nil {
 				fmt.Println(err)
 				http.Error(w, `Server error`, 500)
 				return
 			}
+
+			user.ProfilePhoto = filePath
 		}
-
-		id := uuid.New()
-		data, _ := ioutil.ReadAll(file)
-		filePath := `images/` + id.String() + `.jpg`
-
-		if _, err := os.Stat("images/"); os.IsNotExist(err) {
-			os.Mkdir("images", 0775)
-		}
-
-		err = ioutil.WriteFile(filePath, data, 0644)
-
-		if err != nil {
-			fmt.Println(err)
-			http.Error(w, `Server error`, 500)
-			return
-		}
-
-		user.ProfilePhoto = filePath
 
 		profile := Profile{
 			Email:        user.Email,
@@ -158,8 +227,10 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 			ProfilePhoto: user.ProfilePhoto,
 		}
 
-		jsonProfile, _ := json2.Marshal(profile)
+		jsonProfile, _ := json.Marshal(profile)
 
-		w.Write(jsonProfile)
+		_ = json.NewEncoder(w).Encode(jsonProfile)
+
+		return
 	}
 }

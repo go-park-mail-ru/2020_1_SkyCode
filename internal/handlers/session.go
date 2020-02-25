@@ -4,10 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	_models "github.com/2020_1_Skycode/internal/models"
+	"github.com/google/uuid"
 	"log"
 	"net/http"
 	"time"
 )
+
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
 
 type SessionHandler struct {
 	Sessions  map[string]uint
@@ -20,9 +25,9 @@ type LoginInput struct {
 }
 
 func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE")
-	w.Header().Add("Access-Control-Allow-Headers", "Origin, Content-Type")
+	//w.Header().Add("Access-Control-Allow-Origin", r.RemoteAddr)
+	//w.Header().Add("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE")
+	//w.Header().Add("Access-Control-Allow-Headers", "Origin, Content-Type")
 
 	if r.Method == http.MethodPost {
 		decoder := json.NewDecoder(r.Body)
@@ -45,7 +50,8 @@ func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
-		SID := _models.GenerateSessionCookie()
+		//SID := _models.GenerateSessionCookie()
+		SID := uuid.New().String()
 
 		api.Sessions[SID] = id
 

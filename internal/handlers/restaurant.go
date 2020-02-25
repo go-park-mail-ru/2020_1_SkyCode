@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	json2 "encoding/json"
+	json "encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -20,7 +20,7 @@ func (api *RestaurantHandler) GetRestaurants(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	data, err := json2.Marshal(api.Restaurants)
+	data, err := json.Marshal(api.Restaurants)
 
 	if err != nil {
 		fmt.Println(err)
@@ -59,7 +59,7 @@ func (api *RestaurantHandler) GetRestaurantByID(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	data, err := json2.Marshal(restaurant)
+	data, err := json.Marshal(restaurant)
 
 	if err != nil {
 		fmt.Println(err)
