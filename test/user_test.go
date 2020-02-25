@@ -34,7 +34,7 @@ func TestCreateUserAndAuthorized(t *testing.T) {
 			"testpassword",
 			"testuser",
 			"testuser",
-			"defaultphoto",
+			"",
 		},
 		2: {
 			"testemail@test.com",

@@ -3,11 +3,12 @@ package handlers
 import (
 	json2 "encoding/json"
 	"fmt"
-	_models "github.com/2020_1_Skycode/internal/models"
-	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	_models "github.com/2020_1_Skycode/internal/models"
+	"github.com/google/uuid"
 )
 
 type Profile struct {
@@ -89,6 +90,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 		if err != nil {
 			fmt.Println(err)
 			http.Error(w, `Server error`, 500)
+			return
 		}
 	}
 
@@ -118,6 +120,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 		*user = tempUser
 
 		file, _, err := r.FormFile("profilephoto")
+		fmt.Println(err)
 		defer file.Close()
 
 		if user.ProfilePhoto != "" {
@@ -133,6 +136,11 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 		id := uuid.New()
 		data, _ := ioutil.ReadAll(file)
 		filePath := `images/` + id.String() + `.jpg`
+
+		if _, err := os.Stat("images/"); os.IsNotExist(err) {
+			os.Mkdir("images", 0775)
+		}
+
 		err = ioutil.WriteFile(filePath, data, 0644)
 
 		if err != nil {

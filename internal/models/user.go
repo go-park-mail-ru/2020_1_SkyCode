@@ -29,7 +29,7 @@ func NewUserStore() *UserStore {
 				"testpassword",
 				"testuser",
 				"testuser",
-				"defaultphoto",
+				"",
 			},
 		},
 		nextID: 2,
