@@ -2,50 +2,46 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	_models "github.com/2020_1_Skycode/internal/models"
-	"log"
 	"net/http"
 	"time"
 )
 
-func DefaultHandle(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Напиши для моего пути обработчик"))
-}
-
 func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		decoder := json.NewDecoder(r.Body)
-		userInput := new(_models.User)
-		err := decoder.Decode(userInput)
+	w.Header().Set("Content-Type", "application/json")
 
-		if err != nil {
-			log.Printf("Error while unmarshalling JSON: %s", err)
-			http.Error(w, `Invalid JSONData`, 400)
-			return
-		}
+	decoder := json.NewDecoder(r.Body)
+	userInput := new(_models.User)
+	err := decoder.Decode(userInput)
 
-		fmt.Println(userInput)
-		var id uint
-		id, err = api.UserStore.AddUser(userInput)
-		if err != nil {
-			log.Printf("Error while Add user: %s", err)
-			http.Error(w, err.Error(), 400)
-			return
-		}
-
-		SID := _models.GenerateSessionCookie()
-
-		api.Sessions[SID] = id
-
-		cookie := &http.Cookie{
-			Name:    _models.CookieSessionName,
-			Value:   SID,
-			Expires: time.Now().Add(10 * time.Hour),
-		}
-		http.SetCookie(w, cookie)
-		for key, value := range api.UserStore.Users {
-			fmt.Println(key, value)
-		}
+	if err != nil {
+		HttpResponseBody(w, "Invalid JSONData", 400)
+		return
 	}
+
+	id, err := api.UserStore.AddUser(userInput)
+	if err != nil {
+		HttpResponseBody(w, err.Error(), 400)
+		return
+	}
+
+	SID := _models.GenerateSessionCookie()
+	api.Sessions[SID] = id
+
+	cookie := &http.Cookie{
+		Name:    _models.CookieSessionName,
+		Value:   SID,
+		Expires: time.Now().Add(10 * time.Hour),
+	}
+	http.SetCookie(w, cookie)
+
+	profile := Profile{
+		Email:        userInput.Email,
+		FirstName:    userInput.FirstName,
+		LastName:     userInput.LastName,
+		ProfilePhoto: userInput.ProfilePhoto,
+	}
+
+
+	_ = json.NewEncoder(w).Encode(profile)
 }

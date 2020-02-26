@@ -25,11 +25,11 @@ func main() {
 
 	router.Use(mwController.CORS)
 
-	router.HandleFunc("/session", apiSession.SessionHandle).Methods("DELETE", "POST", "OPTIONS")
-	router.HandleFunc("/user", apiSession.UserHandle)
-	router.HandleFunc("/profile", apiSession.GetUserProfile)
-	router.HandleFunc("/restaurants", apiRestaurants.GetRestaurants)
-	router.HandleFunc("/restaurants/{restaurant_id:[0-9]+}", apiRestaurants.GetRestaurantByID)
+	router.HandleFunc("/session", apiSession.SessionHandle).Methods("DELETE", "POST")
+	router.HandleFunc("/user", apiSession.UserHandle).Methods("POST")
+	router.HandleFunc("/profile", apiSession.GetUserProfile).Methods("GET", "PUT")
+	router.HandleFunc("/restaurants", apiRestaurants.GetRestaurants).Methods("GET")
+	router.HandleFunc("/restaurants/{restaurant_id:[0-9]+}", apiRestaurants.GetRestaurantByID).Methods("GET")
 
 	fmt.Println("Server started")
 

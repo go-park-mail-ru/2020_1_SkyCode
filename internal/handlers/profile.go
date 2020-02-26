@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
@@ -61,41 +59,19 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 	if r.Method == http.MethodGet {
 		session, err := r.Cookie(_models.CookieSessionName)
 
-		if err == http.ErrNoCookie {
-			log.Println("Unauthorized")
-			log.Println(session)
-
-			data := &ErrorResponse{
-				Error: "unauthorized",
-			}
-
-			w.WriteHeader(401)
-
-			_ = json.NewEncoder(w).Encode(data)
-
+		if session == nil {
+			HttpResponseBody(w, "Server error", 500)
 			return
 		}
 
-		if session == nil {
-			log.Println("Server error")
-
-			w.WriteHeader(500)
+		if err == http.ErrNoCookie {
+			HttpResponseBody(w, "Unauthorized", 401)
 			return
 		}
 
 		userID, ok := api.Sessions[session.Value]
 		if !ok {
-			log.Println("Unauthorized")
-			log.Println(session)
-
-			data := &ErrorResponse{
-				Error: "unauthorized",
-			}
-
-			w.WriteHeader(401)
-
-			_ = json.NewEncoder(w).Encode(data)
-
+			HttpResponseBody(w, "Unauthorized", 401)
 			return
 		}
 
@@ -108,13 +84,6 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 			ProfilePhoto: user.ProfilePhoto,
 		}
 
-		if err != nil {
-			log.Println("Server error")
-
-			w.WriteHeader(500)
-			return
-		}
-
 		_ = json.NewEncoder(w).Encode(profile)
 
 		return
@@ -124,41 +93,20 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 		err := r.ParseMultipartForm(5 * 1024 * 1025)
 
 		if err != nil {
-			log.Println("Request Entity Too Large")
-
-			data := &ErrorResponse{
-				Error: "Request Entity Too Large",
-			}
-
-			w.WriteHeader(413)
-
-			_ = json.NewEncoder(w).Encode(data)
-
+			HttpResponseBody(w, "Request Entity Too Large", 413)
 			return
 		}
 
 		session, err := r.Cookie(_models.CookieSessionName)
 
 		if session == nil {
-			log.Println("Server error")
-
-			w.WriteHeader(500)
+			HttpResponseBody(w, "Server error", 500)
 			return
 		}
 
 		userID, ok := api.Sessions[session.Value]
 		if !ok {
-			log.Println("Unauthorized")
-			log.Println(session)
-
-			data := &ErrorResponse{
-				Error: "unauthorized",
-			}
-
-			w.WriteHeader(401)
-
-			_ = json.NewEncoder(w).Encode(data)
-
+			HttpResponseBody(w, "Unauthorized", 401)
 			return
 		}
 
@@ -167,16 +115,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 		tempUser, err := api.updateUser(r, *user)
 
 		if err != nil {
-			log.Println("Bad request")
-
-			data := &ErrorResponse{
-				Error: "Bad request",
-			}
-
-			w.WriteHeader(400)
-
-			_ = json.NewEncoder(w).Encode(data)
-
+			HttpResponseBody(w, "Bad request", 400)
 			return
 		}
 
@@ -189,9 +128,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 				err := os.Remove(user.ProfilePhoto)
 
 				if err != nil {
-					log.Println("Server error")
-
-					w.WriteHeader(500)
+					HttpResponseBody(w, "Server error", 500)
 					return
 				}
 			}
@@ -201,14 +138,18 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 			filePath := `images/` + id.String() + `.jpg`
 
 			if _, err := os.Stat("images/"); os.IsNotExist(err) {
-				os.Mkdir("images", 0775)
+				err := os.Mkdir("images", 0775)
+
+				if err != nil {
+					HttpResponseBody(w, "Server error", 500)
+					return
+				}
 			}
 
 			err = ioutil.WriteFile(filePath, data, 0644)
 
 			if err != nil {
-				fmt.Println(err)
-				http.Error(w, `Server error`, 500)
+				HttpResponseBody(w, "Server error", 500)
 				return
 			}
 

@@ -2,17 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	_models "github.com/2020_1_Skycode/internal/models"
 	"github.com/google/uuid"
-	"log"
 	"net/http"
 	"time"
 )
-
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
 
 type SessionHandler struct {
 	Sessions  map[string]uint
@@ -25,30 +19,30 @@ type LoginInput struct {
 }
 
 func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	if r.Method == http.MethodPost {
 		decoder := json.NewDecoder(r.Body)
 		loginInput := new(LoginInput)
 		err := decoder.Decode(loginInput)
+
 		if err != nil {
-			log.Printf("Error while unmarshalling JSON: %s", err)
-			http.Error(w, `Invalid JSONData`, 400)
+			HttpResponseBody(w, "Bad params", 400)
 			return
 		}
 
 		id, user, ok := api.UserStore.GetUserByEmail(loginInput.Email)
 		if !ok {
-			http.Error(w, `User with this email doesn't exist`, 400)
+			HttpResponseBody(w, "No such user", 400)
 			return
 		}
 
 		if user.Password != loginInput.Password {
-			http.Error(w, `Invalid password`, 400)
+			HttpResponseBody(w, "Invalid password", 400)
 			return
 		}
 
-		//SID := _models.GenerateSessionCookie()
 		SID := uuid.New().String()
-
 		api.Sessions[SID] = id
 
 		cookie := &http.Cookie{
@@ -58,18 +52,21 @@ func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request)
 		}
 		http.SetCookie(w, cookie)
 
+		_ = json.NewEncoder(w).Encode(user)
+
+		return
 	}
 
 	if r.Method == http.MethodDelete {
 		session, err := r.Cookie(_models.CookieSessionName)
 		if err == http.ErrNoCookie {
-			http.Error(w, `Access denied`, 401)
+			HttpResponseBody(w, "Access denied", 401)
 			return
 		}
 
 		_, ok := api.Sessions[session.Value]
 		if !ok {
-			http.Error(w, `Access denied`, 401)
+			HttpResponseBody(w, "Access denied", 401)
 			return
 		}
 
@@ -77,7 +74,7 @@ func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request)
 
 		session.Expires = time.Now().AddDate(0, 0, -1)
 		http.SetCookie(w, session)
-	}
 
-	fmt.Println(api.Sessions)
+		HttpResponseBody(w, "", 200)
+	}
 }
