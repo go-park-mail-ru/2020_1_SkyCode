@@ -1,7 +1,10 @@
 package middlewares
 
 import (
+	"github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type MWController struct {}
@@ -28,5 +31,13 @@ func (mw *MWController) CORS(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+	})
+}
+
+func (mw *MWController) AccessLogging(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r)
+		data := []string{r.Method, r.URL.String(), r.RemoteAddr, time.Now().UTC().String()}
+		logrus.Info(strings.Join(data, " "))
 	})
 }

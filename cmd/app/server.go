@@ -24,6 +24,7 @@ func main() {
 	mwController := &mw.MWController{}
 
 	router.Use(mwController.CORS)
+	router.Use(mwController.AccessLogging)
 
 	router.HandleFunc("/session", apiSession.SessionHandle).Methods("DELETE", "POST", "OPTIONS")
 	router.HandleFunc("/user", apiSession.UserHandle).Methods("POST", "OPTIONS")
