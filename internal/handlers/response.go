@@ -10,14 +10,14 @@ type ErrorResponseBody struct {
 }
 
 type SuccessResponseBody struct {
-	Message string `json:"error"`
+	Message string `json:"message"`
 }
 
 func HttpResponseBody(w http.ResponseWriter, error string, code int) {
 	var data interface{}
 
 	if error == "" {
-		data = SuccessResponseBody{
+		data = &SuccessResponseBody{
 			Message: "success",
 		}
 	} else {
