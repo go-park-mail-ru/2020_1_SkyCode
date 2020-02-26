@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"io/ioutil"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -10,8 +10,6 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/stretchr/testify/require"
-
-	json2 "encoding/json"
 
 	_handlers "github.com/2020_1_Skycode/internal/handlers"
 	_models "github.com/2020_1_Skycode/internal/models"
@@ -24,12 +22,7 @@ func TestGetRestaurants(t *testing.T) {
 		Restaurants: _models.BaseResStorage,
 	}
 
-	expectedRestaurants, err := json2.Marshal(_models.BaseResStorage)
-
-	if err != nil {
-		t.Error("Error with BasResStorage")
-		return
-	}
+	expectedRestaurants := h.Restaurants
 
 	r := httptest.NewRequest("GET", "/restaurants", nil)
 	w := httptest.NewRecorder()
@@ -41,13 +34,10 @@ func TestGetRestaurants(t *testing.T) {
 		return
 	}
 
-	result, errRead := ioutil.ReadAll(w.Result().Body)
-	if errRead != nil {
-		t.Error("Error with read response body")
-		return
-	}
+	var result _models.ResStorage
+	_ = json.NewDecoder(w.Result().Body).Decode(&result)
 
-	require.EqualValues(t, expectedRestaurants, result)
+	require.EqualValues(t, expectedRestaurants.Restaurants, result.Restaurants)
 }
 
 func TestGetRestaurantByID(t *testing.T) {
@@ -59,17 +49,10 @@ func TestGetRestaurantByID(t *testing.T) {
 		Restaurants: _models.BaseResStorage,
 	}
 
-	restaurant, err := _models.BaseResStorage.GetRestaurantByID(testID)
+	expectedRest, err := _models.BaseResStorage.GetRestaurantByID(testID)
 
 	if err != nil {
 		t.Error("Error with get by ID BasResStorage")
-		return
-	}
-
-	expected, errMarsh := json2.Marshal(restaurant)
-
-	if errMarsh != nil {
-		t.Error("Error with marshal json")
 		return
 	}
 
@@ -87,13 +70,10 @@ func TestGetRestaurantByID(t *testing.T) {
 		return
 	}
 
-	result, errRead := ioutil.ReadAll(w.Result().Body)
-	if errRead != nil {
-		t.Error("Error with read response body")
-		return
-	}
+	var result _models.Restaurant
+	_ = json.NewDecoder(w.Result().Body).Decode(&result)
 
-	require.EqualValues(t, expected, result)
+	require.EqualValues(t, *expectedRest, result)
 }
 
 func TestGetRestaurantByID404(t *testing.T) {

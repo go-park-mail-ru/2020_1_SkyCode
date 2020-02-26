@@ -37,6 +37,13 @@ func TestCreateUserAndAuthorized(t *testing.T) {
 			"",
 		},
 		2: {
+			"t@m.ru",
+			"pass",
+			"testuser",
+			"testuser",
+			"",
+		},
+		3: {
 			"testemail@test.com",
 			"password",
 			"Test",
@@ -61,10 +68,10 @@ func TestCreateUserAndAuthorized(t *testing.T) {
 		return
 	}
 
-	require.EqualValues(t, h.UserStore.Users, expectedUsers)
+	require.EqualValues(t, expectedUsers, h.UserStore.Users)
 
 	cookieSession := cookie[0].Value
-	if h.Sessions[cookieSession] != 2 {
+	if h.Sessions[cookieSession] != 3 {
 		t.Error("Cookie set incorrect")
 		return
 	}
