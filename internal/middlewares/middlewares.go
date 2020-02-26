@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -10,8 +11,14 @@ func (mw *MWController) CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
-		if origin == "http://localhost:3000" || origin == "http://127.0.0.1:3000" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
+		log.Println(origin)
+
+		if origin == "http://localhost:3000" {
+			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		}
+
+		if origin == "http://127.0.0.1:3000" {
+			w.Header().Set("Access-Control-Allow-Origin", "http://127.0.0.1:3000")
 		}
 
 		//w.Header().Set("Access-Control-Allow-Origin", origin)

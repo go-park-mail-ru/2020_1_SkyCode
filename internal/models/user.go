@@ -31,8 +31,15 @@ func NewUserStore() *UserStore {
 				"testuser",
 				"",
 			},
+			2: {
+				"t@m.ru",
+				"pass",
+				"testuser",
+				"testuser",
+				"",
+			},
 		},
-		nextID: 2,
+		nextID: 3,
 	}
 }
 
