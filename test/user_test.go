@@ -52,11 +52,13 @@ func TestCreateUserAndAuthorized(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Error("Status is not ok")
+		return
 	}
 
 	cookie := w.Result().Cookies()
 	if len(cookie) == 0 {
 		t.Error("Cookie is not seted")
+		return
 	}
 
 	require.EqualValues(t, h.UserStore.Users, expectedUsers)
@@ -64,6 +66,7 @@ func TestCreateUserAndAuthorized(t *testing.T) {
 	cookieSession := cookie[0].Value
 	if h.Sessions[cookieSession] != 2 {
 		t.Error("Cookie set incorrect")
+		return
 	}
 }
 
@@ -89,11 +92,13 @@ func TestAuthorizingAndLogout(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Error("Status is not ok")
+		return
 	}
 
 	cookie := w.Result().Cookies()
 	if len(cookie) == 0 {
 		t.Error("Cookie is not seted")
+		return
 	}
 	cookieSession := cookie[0].Value
 	require.Equal(t, h.Sessions[cookieSession], uint(1))
@@ -107,6 +112,7 @@ func TestAuthorizingAndLogout(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Error("Status is not ok")
+		return
 	}
 
 	require.Equal(t, h.Sessions, map[string]uint{})

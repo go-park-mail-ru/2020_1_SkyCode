@@ -222,9 +222,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 			ProfilePhoto: user.ProfilePhoto,
 		}
 
-		jsonProfile, _ := json.Marshal(profile)
-
-		_ = json.NewEncoder(w).Encode(jsonProfile)
+		_ = json.NewEncoder(w).Encode(profile)
 
 		return
 	}

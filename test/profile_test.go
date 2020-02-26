@@ -2,8 +2,7 @@ package handlers
 
 import (
 	"bytes"
-	json2 "encoding/json"
-	"io/ioutil"
+	"encoding/json"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -25,16 +24,11 @@ func TestGetUserProfile(t *testing.T) {
 
 	user := h.UserStore.GetUserByID(1)
 
-	profile := _handlers.Profile{
+	expectedProfile := _handlers.Profile{
 		Email:        user.Email,
 		FirstName:    user.FirstName,
 		LastName:     user.LastName,
 		ProfilePhoto: user.ProfilePhoto,
-	}
-	expected, err := json2.Marshal(profile)
-
-	if err != nil {
-		t.Error("Error marshaling user")
 	}
 
 	body := bytes.NewReader([]byte(
@@ -51,11 +45,13 @@ func TestGetUserProfile(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Error("Status is not ok")
+		return
 	}
 
 	cookie := w.Result().Cookies()
 	if len(cookie) == 0 {
 		t.Error("Cookie is not seted")
+		return
 	}
 	cookieSession := cookie[0].Value
 	require.Equal(t, h.Sessions[cookieSession], uint(1))
@@ -63,19 +59,23 @@ func TestGetUserProfile(t *testing.T) {
 	r2, _ := http.NewRequest("GET", "/profile", nil)
 
 	r2.Header = http.Header{"Cookie": w.HeaderMap["Set-Cookie"]}
-	w = httptest.NewRecorder()
+	w2 := httptest.NewRecorder()
 
-	h.GetUserProfile(w, r2)
+	h.GetUserProfile(w2, r2)
 
-	if w.Code != http.StatusOK {
+	if w2.Code != http.StatusOK {
 		t.Error("Status is not ok")
+		return
 	}
 
-	result, errRead := ioutil.ReadAll(w.Result().Body)
+	resultProfile := _handlers.Profile{}
+	errRead := json.NewDecoder(w2.Result().Body).Decode(&resultProfile)
 	if errRead != nil {
-		t.Error("Error with read response body")
+		t.Error("Error with read response body", errRead)
+		return
 	}
-	require.EqualValues(t, expected, result)
+
+	require.EqualValues(t, expectedProfile, resultProfile)
 }
 
 func TestUpdateProfile(t *testing.T) {
@@ -142,13 +142,12 @@ func TestUpdateProfile(t *testing.T) {
 		t.Error("Status is not ok")
 	}
 
-	result, errRead := ioutil.ReadAll(wu.Result().Body)
+	resultProfile := _handlers.Profile{}
+	errRead := json.NewDecoder(wu.Result().Body).Decode(&resultProfile)
 	if errRead != nil {
 		t.Error("Error with read response body")
 	}
 
-	resultProfile := _handlers.Profile{}
-	json2.Unmarshal(result, &resultProfile)
 	require.NotEqual(t, "", resultProfile.ProfilePhoto)
 	os.RemoveAll("images/")
 	resultProfile.ProfilePhoto = ""

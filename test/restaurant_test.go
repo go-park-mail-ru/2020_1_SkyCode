@@ -28,6 +28,7 @@ func TestGetRestaurants(t *testing.T) {
 
 	if err != nil {
 		t.Error("Error with BasResStorage")
+		return
 	}
 
 	r := httptest.NewRequest("GET", "/restaurants", nil)
@@ -37,11 +38,13 @@ func TestGetRestaurants(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Error("Status is not ok")
+		return
 	}
 
 	result, errRead := ioutil.ReadAll(w.Result().Body)
 	if errRead != nil {
 		t.Error("Error with read response body")
+		return
 	}
 
 	require.EqualValues(t, expectedRestaurants, result)
@@ -60,12 +63,14 @@ func TestGetRestaurantByID(t *testing.T) {
 
 	if err != nil {
 		t.Error("Error with get by ID BasResStorage")
+		return
 	}
 
 	expected, errMarsh := json2.Marshal(restaurant)
 
 	if errMarsh != nil {
 		t.Error("Error with marshal json")
+		return
 	}
 
 	idstr := strconv.Itoa(int(testID))
@@ -79,11 +84,13 @@ func TestGetRestaurantByID(t *testing.T) {
 
 	if w.Code != http.StatusOK {
 		t.Error("Status is not ok")
+		return
 	}
 
 	result, errRead := ioutil.ReadAll(w.Result().Body)
 	if errRead != nil {
 		t.Error("Error with read response body")
+		return
 	}
 
 	require.EqualValues(t, expected, result)
