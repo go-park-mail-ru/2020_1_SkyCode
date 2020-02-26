@@ -8,10 +8,6 @@ type MWController struct {}
 
 func (mw *MWController) CORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
-			return
-		}
-
 		origin := r.Header.Get("Origin")
 
 		if origin == "http://localhost:3000" {
@@ -26,6 +22,10 @@ func (mw *MWController) CORS(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+
+		if r.Method == http.MethodOptions {
+			return
+		}
 
 		next.ServeHTTP(w, r)
 	})
