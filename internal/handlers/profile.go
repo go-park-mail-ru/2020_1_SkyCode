@@ -59,12 +59,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 	if r.Method == http.MethodGet {
 		session, err := r.Cookie(_models.CookieSessionName)
 
-		if session == nil {
-			HttpResponseBody(w, "Server error", 500)
-			return
-		}
-
-		if err == http.ErrNoCookie {
+		if session == nil || err == http.ErrNoCookie {
 			HttpResponseBody(w, "Unauthorized", 401)
 			return
 		}
