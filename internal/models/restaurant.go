@@ -35,17 +35,17 @@ var ResArray = map[uint]*Restaurant{
 			{
 				Name: "Potato free",
 				Price: 150,
-				Image: "/potatoFree.jpg",
+				Image: "/images/Vestern-Gurme-MakKombo.png",
 			},
 			{
 				Name: "Hamburger",
 				Price: 230,
-				Image: "/hamburger.jpg",
+				Image: "/images/Fish-Roll-MakKombo.png",
 			},
 			{
 				Name: "Cola",
 				Price: 70,
-				Image: "/cola.jpg",
+				Image: "/images/Vestern-Gurme-MakKombo.png",
 			},
 		},
 	},
@@ -58,17 +58,17 @@ var ResArray = map[uint]*Restaurant{
 			{
 				Name: "Potato free",
 				Price: 150,
-				Image: "/potatoFree.jpg",
+				Image: "/mcdonalds/Vestern-Gurme-MakKombo.png",
 			},
 			{
 				Name: "Hamburger",
 				Price: 230,
-				Image: "/hamburger.jpg",
+				Image: "/mcdonalds/Fish-Roll-MakKombo.png",
 			},
 			{
 				Name: "Cola",
 				Price: 70,
-				Image: "/cola.jpg",
+				Image: "/mcdonalds/Vestern-Gurme-MakKombo.png",
 			},
 		},
 	},
