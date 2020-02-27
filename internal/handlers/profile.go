@@ -141,7 +141,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 				}
 			}
 
-			err = ioutil.WriteFile(filePath, data, 0644)
+			err = ioutil.WriteFile(`images/` + filePath, data, 0644)
 
 			if err != nil {
 				HttpResponseBody(w, "Server error", 500)
