@@ -120,7 +120,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 		if file != nil {
 			defer file.Close()
 			if user.ProfilePhoto != "" {
-				err := os.Remove(user.ProfilePhoto)
+				err := os.Remove("images/" + user.ProfilePhoto)
 
 				if err != nil {
 					HttpResponseBody(w, err.Error(), 500)
