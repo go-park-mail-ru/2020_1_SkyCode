@@ -130,7 +130,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 
 			id := uuid.New()
 			data, _ := ioutil.ReadAll(file)
-			filePath := `images/` + id.String() + `.jpg`
+			filePath := id.String() + `.jpg`
 
 			if _, err := os.Stat("images/"); os.IsNotExist(err) {
 				err := os.Mkdir("images", 0775)
