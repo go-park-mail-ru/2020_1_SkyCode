@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	_models "github.com/2020_1_Skycode/internal/models"
 	"net/http"
 	"time"
+
+	_models "github.com/2020_1_Skycode/internal/models"
 )
 
 func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
@@ -17,6 +18,16 @@ func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		HttpResponseBody(w, "Invalid JSONData", 400)
 		return
+	}
+
+	_, _, userAppear := api.UserStore.GetUserByEmail(userInput.Email)
+	if userAppear {
+		HttpResponseBody(w, "User with this data already appears", 400)
+		return
+	}
+
+	if userInput.ProfilePhoto == "" {
+		userInput.ProfilePhoto = "default.jpg"
 	}
 
 	id, err := api.UserStore.AddUser(userInput)
@@ -41,7 +52,6 @@ func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
 		LastName:     userInput.LastName,
 		ProfilePhoto: userInput.ProfilePhoto,
 	}
-
 
 	_ = json.NewEncoder(w).Encode(profile)
 }

@@ -1,42 +1,58 @@
 package main
 
 import (
-	"fmt"
-	_handlers "github.com/2020_1_Skycode/internal/handlers"
-	mw "github.com/2020_1_Skycode/internal/middlewares"
-	_models "github.com/2020_1_Skycode/internal/models"
-	"github.com/gorilla/mux"
-	"net/http"
+	_middleware "github.com/2020_1_Skycode/internal/middlewares"
+	_sessionsDelivery "github.com/2020_1_Skycode/internal/sessions/delivery"
+	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
+	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
+	"github.com/2020_1_Skycode/internal/tools"
+	_usersDelivery "github.com/2020_1_Skycode/internal/users/delivery"
+	_usersRepository "github.com/2020_1_Skycode/internal/users/repository"
+	_usersUseCase "github.com/2020_1_Skycode/internal/users/usecase"
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx"
+	"log"
 )
 
 func main() {
-	router := mux.NewRouter()
-
-	apiSession := &_handlers.SessionHandler{
-		UserStore: _models.NewUserStore(),
-		Sessions:  make(map[string]uint, 10),
-	}
-
-	apiRestaurants := &_handlers.RestaurantHandler{
-		Restaurants: _models.BaseResStorage,
-	}
-
-	mwController := &mw.MWController{}
-
-	router.Use(mwController.CORS)
-	router.Use(mwController.AccessLogging)
-
-	router.HandleFunc("/session", apiSession.SessionHandle).Methods("DELETE", "POST", "OPTIONS")
-	router.HandleFunc("/user", apiSession.UserHandle).Methods("POST", "OPTIONS")
-	router.HandleFunc("/profile", apiSession.GetUserProfile).Methods("GET", "PUT", "OPTIONS")
-	router.HandleFunc("/restaurants", apiRestaurants.GetRestaurants).Methods("GET")
-	router.HandleFunc("/restaurants/{restaurant_id:[0-9]+}", apiRestaurants.GetRestaurantByID).Methods("GET")
-
-	fmt.Println("Server started")
-
-	err := http.ListenAndServe(":8080", router)
+	config, err := tools.LoadConf("../../configs/config.json")
 
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
+
+	dbConn, err := pgx.Connect(pgx.ConnConfig{
+		Host:     config.Database.Host,
+		Port:     config.Database.Port,
+		Database: config.Database.Name,
+		User:     config.Database.User,
+		Password: "",
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer func() {
+		if err := dbConn.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	e := gin.New()
+
+	userRepo := _usersRepository.NewUserRepository(dbConn)
+	userUcase := _usersUseCase.NewUserUseCase(userRepo)
+
+	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
+	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
+
+	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
+
+
+	_ = _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
+	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
+	_ = _usersDelivery.NewUserHandler(e, userUcase, mwareC)
+
+	log.Fatal(e.Run())
 }

@@ -77,6 +77,31 @@ func TestCreateUserAndAuthorized(t *testing.T) {
 	}
 }
 
+func TestRepeatCreateUser(t *testing.T) {
+	t.Parallel()
+
+	h := _handlers.SessionHandler{
+		Sessions:  make(map[string]uint, 10),
+		UserStore: _models.NewUserStore(),
+	}
+
+	body := bytes.NewReader([]byte(
+		`{
+			"email": "test@testmail.ru",
+			"password": "testpassword",
+			"firstname": "testuser",
+			"lastName": "testuser",
+			}`,
+	))
+
+	r := httptest.NewRequest("POST", "/user", body)
+	w := httptest.NewRecorder()
+
+	h.UserHandle(w, r)
+
+	require.EqualValues(t, http.StatusBadRequest, w.Code)
+}
+
 func TestAuthorizingAndLogout(t *testing.T) {
 	t.Parallel()
 

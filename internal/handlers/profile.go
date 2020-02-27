@@ -119,11 +119,11 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 		file, _, err := r.FormFile("profilephoto")
 		if file != nil {
 			defer file.Close()
-			if user.ProfilePhoto != "" {
-				err := os.Remove(user.ProfilePhoto)
+			if user.ProfilePhoto != "default.jpg" {
+				err := os.Remove("images/" + user.ProfilePhoto)
 
 				if err != nil {
-					HttpResponseBody(w, "Server error", 500)
+					HttpResponseBody(w, err.Error(), 500)
 					return
 				}
 			}
@@ -136,15 +136,15 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 				err := os.Mkdir("images", 0775)
 
 				if err != nil {
-					HttpResponseBody(w, "Server error", 500)
+					HttpResponseBody(w, err.Error(), 500)
 					return
 				}
 			}
 
-			err = ioutil.WriteFile(`images/` + filePath, data, 0644)
+			err = ioutil.WriteFile("images/" + filePath, data, 0644)
 
 			if err != nil {
-				HttpResponseBody(w, "Server error", 500)
+				HttpResponseBody(w, err.Error(), 500)
 				return
 			}
 

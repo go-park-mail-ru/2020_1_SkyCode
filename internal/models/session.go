@@ -1,6 +1,30 @@
 package models
 
-import "math/rand"
+import (
+	"github.com/google/uuid"
+	"math/rand"
+	"net/http"
+)
+
+type Session struct {
+	ID uint64 `json:"id"`
+	UserId uint64 `json:"userId"`
+	Token string `json:"token"`
+}
+
+func GenerateSession(userId uint64) (*Session, *http.Cookie) {
+	cookie := &http.Cookie{
+		Name:       "SkyDelivery",
+		Value:      uuid.New().String(),
+		MaxAge:    3600 * 12,
+		HttpOnly:   true,
+	}
+
+	return &Session{
+		UserId: userId,
+		Token:  cookie.Value,
+	}, cookie
+}
 
 var (
 	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
