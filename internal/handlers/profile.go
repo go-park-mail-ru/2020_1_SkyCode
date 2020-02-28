@@ -119,7 +119,7 @@ func (api *SessionHandler) GetUserProfile(w http.ResponseWriter, r *http.Request
 		file, _, err := r.FormFile("profilephoto")
 		if file != nil {
 			defer file.Close()
-			if user.ProfilePhoto != "" {
+			if user.ProfilePhoto != "default.jpg" {
 				err := os.Remove("images/" + user.ProfilePhoto)
 
 				if err != nil {
