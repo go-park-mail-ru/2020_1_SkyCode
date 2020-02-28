@@ -26,6 +26,10 @@ func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if userInput.ProfilePhoto == "" {
+		userInput.ProfilePhoto = "default.jpg"
+	}
+
 	id, err := api.UserStore.AddUser(userInput)
 	if err != nil {
 		HttpResponseBody(w, err.Error(), 400)
@@ -46,7 +50,7 @@ func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
 		Email:        userInput.Email,
 		FirstName:    userInput.FirstName,
 		LastName:     userInput.LastName,
-		ProfilePhoto: "default.jpg",
+		ProfilePhoto: userInput.ProfilePhoto,
 	}
 
 	_ = json.NewEncoder(w).Encode(profile)
