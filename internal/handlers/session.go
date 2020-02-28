@@ -49,6 +49,7 @@ func (api *SessionHandler) SessionHandle(w http.ResponseWriter, r *http.Request)
 			Name:    _models.CookieSessionName,
 			Value:   SID,
 			Expires: time.Now().Add(10 * time.Hour),
+			HttpOnly: true,
 		}
 		http.SetCookie(w, cookie)
 

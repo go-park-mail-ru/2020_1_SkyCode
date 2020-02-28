@@ -46,7 +46,7 @@ func (api *SessionHandler) UserHandle(w http.ResponseWriter, r *http.Request) {
 		Email:        userInput.Email,
 		FirstName:    userInput.FirstName,
 		LastName:     userInput.LastName,
-		ProfilePhoto: userInput.ProfilePhoto,
+		ProfilePhoto: "default.jpg",
 	}
 
 	_ = json.NewEncoder(w).Encode(profile)
