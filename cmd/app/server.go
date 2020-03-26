@@ -1,42 +1,56 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
-	_handlers "github.com/2020_1_Skycode/internal/handlers"
-	mw "github.com/2020_1_Skycode/internal/middlewares"
-	_models "github.com/2020_1_Skycode/internal/models"
-	"github.com/gorilla/mux"
-	"net/http"
+	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/users/delivery"
+	"github.com/2020_1_Skycode/internal/users/repository"
+	"github.com/2020_1_Skycode/internal/users/usecase"
+	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
+	"log"
+	"os"
 )
 
 func main() {
-	router := mux.NewRouter()
+	path, err := os.Getwd()
 
-	apiSession := &_handlers.SessionHandler{
-		UserStore: _models.NewUserStore(),
-		Sessions:  make(map[string]uint, 10),
-	}
+	fmt.Println(path)
 
-	apiRestaurants := &_handlers.RestaurantHandler{
-		Restaurants: _models.BaseResStorage,
-	}
-
-	mwController := &mw.MWController{}
-
-	router.Use(mwController.CORS)
-	router.Use(mwController.AccessLogging)
-
-	router.HandleFunc("/session", apiSession.SessionHandle).Methods("DELETE", "POST", "OPTIONS")
-	router.HandleFunc("/user", apiSession.UserHandle).Methods("POST", "OPTIONS")
-	router.HandleFunc("/profile", apiSession.GetUserProfile).Methods("GET", "PUT", "OPTIONS")
-	router.HandleFunc("/restaurants", apiRestaurants.GetRestaurants).Methods("GET")
-	router.HandleFunc("/restaurants/{restaurant_id:[0-9]+}", apiRestaurants.GetRestaurantByID).Methods("GET")
-
-	fmt.Println("Server started")
-
-	err := http.ListenAndServe(":8080", router)
+	config, err := tools.LoadConf("../../configs/config.json")
 
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
+
+	dataSourceName := "host=%s dbname=%s dbname=%s sslmode=disable"
+
+	dbConn, err := sql.Open("postgres", fmt.Sprintf(dataSourceName,
+		config.Database.Host,
+		config.Database.Port,
+		config.Database.Name,
+	))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := dbConn.Ping(); err != nil {
+		log.Fatal(err)
+	}
+
+	defer func() {
+		if err := dbConn.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	e := gin.New()
+
+	userRepo := repository.NewUserRepository(dbConn)
+	userUcase := usecase.NewUserUseCase(userRepo)
+	_ = delivery.NewUserHandler(e, userUcase)
+
+	log.Fatal(e.Run())
 }

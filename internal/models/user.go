@@ -7,40 +7,19 @@ import (
 )
 
 type User struct {
+	ID           uint64 `json:"id"`
 	Email        string `json:"email"`
-	Password     string `json:"password"`
+	Password     string `json:"-"`
 	FirstName    string `json:"firstName"`
 	LastName     string `json:"lastName"`
-	ProfilePhoto string `json:"profilephoto"`
+	Phone        string `json:"phone"`
+	ProfilePhoto string `json:"profile_photo"`
 }
 
 type UserStore struct {
 	Users  map[uint]*User
 	mu     sync.RWMutex
 	nextID uint
-}
-
-func NewUserStore() *UserStore {
-	return &UserStore{
-		mu: sync.RWMutex{},
-		Users: map[uint]*User{
-			1: {
-				"test@testmail.ru",
-				"testpassword",
-				"testuser",
-				"testuser",
-				"default.jpg",
-			},
-			2: {
-				"t@m.ru",
-				"pass",
-				"testuser",
-				"testuser",
-				"default.jpg",
-			},
-		},
-		nextID: 3,
-	}
 }
 
 func (user User) IsValid() error {
