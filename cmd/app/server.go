@@ -3,14 +3,18 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"os"
+
+	_restDelivery "github.com/2020_1_Skycode/internal/restaurants/delivery"
+	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
+	_restUcase "github.com/2020_1_Skycode/internal/restaurants/usecase"
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/internal/users/delivery"
 	"github.com/2020_1_Skycode/internal/users/repository"
 	"github.com/2020_1_Skycode/internal/users/usecase"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
-	"log"
-	"os"
 )
 
 func main() {
@@ -51,6 +55,10 @@ func main() {
 	userRepo := repository.NewUserRepository(dbConn)
 	userUcase := usecase.NewUserUseCase(userRepo)
 	_ = delivery.NewUserHandler(e, userUcase)
+
+	restRepo := _restRepo.NewRestaurantRepository(dbConn)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo)
+	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
 
 	log.Fatal(e.Run())
 }
