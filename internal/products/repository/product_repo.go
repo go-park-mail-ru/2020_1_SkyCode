@@ -1,0 +1,39 @@
+package repository
+
+import (
+	"database/sql"
+
+	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/products"
+)
+
+type ProductRepository struct {
+	db *sql.DB
+}
+
+func NewProductRepository(db *sql.DB) products.Repository {
+	return &ProductRepository{
+		db: db,
+	}
+}
+
+func (pr *ProductRepository) GetRestaurantProducts(restID uint64) ([]*models.Product, error) {
+	productList := []*models.Product{}
+
+	rows, err := pr.db.Query("SELECT id, name, price, image FROM products p WHERE restaurant_id = $1", restID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		product := &models.Product{}
+		err = rows.Scan(&product.ID, &product.Name, &product.Price, &product.Image)
+		if err != nil {
+			return nil, err
+		}
+		productList = append(productList, product)
+	}
+
+	return productList, nil
+}

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
 	_restDelivery "github.com/2020_1_Skycode/internal/restaurants/delivery"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	_restUcase "github.com/2020_1_Skycode/internal/restaurants/usecase"
@@ -56,8 +57,10 @@ func main() {
 	userUcase := usecase.NewUserUseCase(userRepo)
 	_ = delivery.NewUserHandler(e, userUcase)
 
+	prodRepo := _productRepo.NewProductRepository(dbConn)
+
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsUseCase(restRepo)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, prodRepo)
 	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
 
 	log.Fatal(e.Run())
