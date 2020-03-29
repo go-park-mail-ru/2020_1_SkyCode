@@ -7,13 +7,13 @@ import (
 )
 
 type User struct {
-	ID           uint64 `json:"id"`
-	Email        string `json:"email"`
-	Password     string `json:"-"`
-	FirstName    string `json:"firstName"`
-	LastName     string `json:"lastName"`
-	Phone        string `json:"phone"`
-	ProfilePhoto string `json:"profile_photo"`
+	ID        uint64 `json:"id"`
+	Email     string `json:"email"`
+	Password  string `json:"-"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Phone     string `json:"phone"`
+	Avatar    string `json:"profile_photo"`
 }
 
 type UserStore struct {

@@ -6,4 +6,6 @@ import (
 
 type Repository interface {
 	InsertInto(user *models.User) error
+	Update(user *models.User) error
+	Get(user *models.User) error
 }

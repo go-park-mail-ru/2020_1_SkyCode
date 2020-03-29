@@ -22,3 +22,20 @@ func (uUC *UserUseCase) CreateUser(user *models.User) error {
 
 	return nil
 }
+
+func (uUC *UserUseCase) UpdateBio(user *models.User) error {
+	if err := uUC.userRepo.Update(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (uUC *UserUseCase) GetUser(user *models.User) error {
+	if err := uUC.userRepo.Get(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+

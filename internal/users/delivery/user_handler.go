@@ -1,11 +1,11 @@
 package delivery
 
 import (
-	"fmt"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -25,18 +25,17 @@ func NewUserHandler(router *gin.Engine, uUC users.UseCase) *UserHandler {
 
 func (uh *UserHandler) SignUp() gin.HandlerFunc {
 	type SignUpRequest struct {
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
-		Phone     string `json:"phone"`
-		Password  string `json:"password"`
+		FirstName string `json:"first_name, omitempty" binding:"required"`
+		LastName  string `json:"last_name, omitempty" binding:"required"`
+		Phone     string `json:"phone, omitempty" binding:"required"`
+		Password  string `json:"password, omitempty" binding:"required"`
 	}
 
 	return func(c *gin.Context) {
 		req := &SignUpRequest{}
 
-		fmt.Println("SignUp")
-
 		if err := c.Bind(req); err != nil {
+			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
 			})
@@ -46,12 +45,13 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 
 		u := &models.User{
 			FirstName: req.FirstName,
-			LastName: req.LastName,
-			Phone: req.Phone,
-			Password: req.Password,
+			LastName:  req.LastName,
+			Phone:     req.Phone,
+			Password:  req.Password,
 		}
 
 		if err := uh.userUseCase.CreateUser(u); err != nil {
+			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
 			})
@@ -63,4 +63,38 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 			Message: "User has been registered",
 		})
 	}
+}
+
+func (uh *UserHandler) EditBio() gin.HandlerFunc {
+	type EditBioRequest struct {
+		FirstName string `json:"first_name" binding:"required"`
+		LastName  string `json:"first_name" binding:"required"`
+		Email     string `json:"first_name" binding:"required"`
+	}
+	
+	return func(c *gin.Context) {
+		updProfile := &EditBioRequest{}
+
+		if err := c.Bind(updProfile); err != nil {
+			logrus.Info("Bad params")
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+	}
+}
+
+func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
+	return nil
+}
+
+func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
+	return nil
+}
+
+func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
+	return nil
 }
