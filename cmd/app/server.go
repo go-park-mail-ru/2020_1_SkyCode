@@ -2,6 +2,10 @@ package main
 
 import (
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
+	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
+	_restDelivery "github.com/2020_1_Skycode/internal/restaurants/delivery"
+	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
+	_restUcase "github.com/2020_1_Skycode/internal/restaurants/usecase"
 	_sessionsDelivery "github.com/2020_1_Skycode/internal/sessions/delivery"
 	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
@@ -41,6 +45,11 @@ func main() {
 
 	e := gin.New()
 
+	prodRepo := _productRepo.NewProductRepository(dbConn)
+
+	restRepo := _restRepo.NewRestaurantRepository(dbConn)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, prodRepo)
+
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
 
@@ -49,10 +58,10 @@ func main() {
 
 	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 
-
 	_ = _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
 	_ = _usersDelivery.NewUserHandler(e, userUcase, mwareC)
+	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
 
 	log.Fatal(e.Run())
 }
