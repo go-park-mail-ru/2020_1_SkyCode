@@ -12,4 +12,7 @@ var (
 	DeleteSessionError = errors.New("Error while deleting session")
 	Unauthorized = errors.New("Unauthorized")
 	SessionTypeAssertionErr = errors.New("Error assert to session type")
+	UserTypeAssertionErr = errors.New("Error assert to user type")
+	UpdatePhoneError = errors.New("Error updating phone number")
+	DeleteAvatarError = errors.New("Error deleting avatar")
 )

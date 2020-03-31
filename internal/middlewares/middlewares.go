@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"github.com/2020_1_Skycode/internal/sessions"
+	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -11,11 +12,13 @@ import (
 
 type MWController struct {
 	sessionUC sessions.UseCase
+	userUC users.UseCase
 }
 
-func NewMiddleWareController(router *gin.Engine, sessionUC sessions.UseCase) *MWController {
+func NewMiddleWareController(router *gin.Engine, sessionUC sessions.UseCase, userUC users.UseCase) *MWController {
 	mw := &MWController{
 		sessionUC: sessionUC,
+		userUC: userUC,
 	}
 
 	router.Use(mw.CORS())
@@ -58,7 +61,16 @@ func (mw *MWController) CheckAuth() gin.HandlerFunc {
 			return
 		}
 
+		user, err := mw.userUC.GetUserById(sess.UserId)
+
+		if err != nil {
+			logrus.Info(err)
+			c.Next()
+			return
+		}
+
 		c.Set("session", sess)
+		c.Set("user", user)
 		c.Next()
 	}
 }

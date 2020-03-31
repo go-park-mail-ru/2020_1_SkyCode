@@ -48,11 +48,9 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 			return
 		}
 
-		user := &models.User{
-			Phone: req.Phone,
-		}
+		user, err := sh.UserUseCase.GetUserByPhone(req.Phone)
 
-		if err := sh.UserUseCase.GetUser(user); err != nil {
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusNotFound, tools.Error{
 				ErrorMessage: tools.NoSuchUser.Error(),

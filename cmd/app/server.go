@@ -47,12 +47,12 @@ func main() {
 	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
 	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
 
-	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase)
+	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 
 
-	_ = _middleware.NewMiddleWareController(e, sessionsUcase)
+	_ = _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
-	_ = _usersDelivery.NewUserHandler(e, userUcase)
+	_ = _usersDelivery.NewUserHandler(e, userUcase, mwareC)
 
 	log.Fatal(e.Run())
 }

@@ -31,11 +31,61 @@ func (uUC *UserUseCase) UpdateBio(user *models.User) error {
 	return nil
 }
 
-func (uUC *UserUseCase) GetUser(user *models.User) error {
-	if err := uUC.userRepo.Get(user); err != nil {
+func (uUC *UserUseCase) UpdatePhoneNumber(id uint64, phone string) error {
+	user := &models.User{
+		ID: id,
+		Phone: phone,
+	}
+	if err := uUC.userRepo.UpdatePhone(user); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (uUC *UserUseCase) UpdateAvatar(id uint64, path string) error {
+	user := &models.User{
+		ID: id,
+		Avatar: path,
+	}
+	if err := uUC.userRepo.UpdateAvatar(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (uUC *UserUseCase) UpdatePassword(id uint64, password string) error {
+	user := &models.User{
+		ID: id,
+		Password: password,
+	}
+	if err := uUC.userRepo.UpdatePassword(user); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (uUC *UserUseCase) GetUserById(userId uint64) (*models.User, error) {
+	user := &models.User{
+		ID: userId,
+	}
+	if err := uUC.userRepo.GetById(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (uUC *UserUseCase) GetUserByPhone(phone string) (*models.User, error) {
+	user := &models.User{
+		Phone: phone,
+	}
+	if err := uUC.userRepo.GetByPhone(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 

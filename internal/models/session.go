@@ -4,7 +4,6 @@ import (
 	"github.com/google/uuid"
 	"math/rand"
 	"net/http"
-	"time"
 )
 
 type Session struct {
@@ -17,7 +16,7 @@ func GenerateSession(userId uint64) (*Session, *http.Cookie) {
 	cookie := &http.Cookie{
 		Name:       "SkyDelivery",
 		Value:      uuid.New().String(),
-		MaxAge:    time.Now().Add(24 * time.Hour).Second(),
+		MaxAge:    3600 * 12,
 		HttpOnly:   true,
 	}
 
