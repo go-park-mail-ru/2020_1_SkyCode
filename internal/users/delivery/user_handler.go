@@ -26,10 +26,10 @@ func NewUserHandler(router *gin.Engine, uUC users.UseCase, middlewareC *middlewa
 
 	router.GET("api/v1/profile", middlewareC.CheckAuth(), uh.GetProfile())
 	router.POST("api/v1/signup", uh.SignUp())
-	router.POST("api/v1/profile/bio", middlewareC.CheckAuth(), uh.EditBio())
-	router.POST("api/v1/profile/avatar", middlewareC.CheckAuth(), uh.EditAvatar())
-	router.POST("api/v1/profile/password", middlewareC.CheckAuth(), uh.ChangePassword())
-	router.POST("api/v1/profile/phone", middlewareC.CheckAuth(), uh.ChangePhoneNumber())
+	router.PUT("api/v1/profile/bio", middlewareC.CheckAuth(), uh.EditBio())
+	router.PUT("api/v1/profile/avatar", middlewareC.CheckAuth(), uh.EditAvatar())
+	router.PUT("api/v1/profile/password", middlewareC.CheckAuth(), uh.ChangePassword())
+	router.PUT("api/v1/profile/phone", middlewareC.CheckAuth(), uh.ChangePhoneNumber())
 
 	return uh
 }
