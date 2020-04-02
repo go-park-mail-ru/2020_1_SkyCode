@@ -19,7 +19,6 @@ create table sessions
     id      serial      not null primary key,
     userId  int         not null,
     token   varchar(50) not null,
-    expires timestamp   not null,
     foreign key (userId) references users (id)
 );
 

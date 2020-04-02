@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"github.com/2020_1_Skycode/internal/sessions"
+	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -36,6 +37,10 @@ func (mw *MWController) CORS() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
 
 		if c.Request.Method == http.MethodOptions {
+			c.JSON(http.StatusOK, tools.Message{
+				Message: "OPTIONS ok",
+			})
+
 			return
 		}
 
