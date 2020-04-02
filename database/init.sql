@@ -36,5 +36,6 @@ create table products (
     rest_id int         not null,
     name    varchar(30) not null,
     price   money       not null,
+    image   varhcar(30)
     foreign key (restaurant_id) references restaurants (id)
 )
