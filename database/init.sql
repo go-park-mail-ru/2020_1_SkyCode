@@ -1,7 +1,7 @@
 drop table if exists users;
 drop table if exists sessions;
-drop_table if exists restaurants;
-drop_table if exists products;
+drop table if exists restaurants;
+drop table if exists products;
 
 create table users
 (
