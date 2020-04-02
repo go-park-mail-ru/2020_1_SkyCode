@@ -6,6 +6,7 @@ import (
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/renstrom/shortuuid"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -165,7 +166,7 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 
 		filename := shortuuid.New() + "-" + file.Filename
 
-		if err := c.SaveUploadedFile(file, tools.AvatarPath + filename); err != nil {
+		if err := c.SaveUploadedFile(file, tools.AvatarPath+filename); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
@@ -202,7 +203,7 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 
 func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
 	type ChangePhoneNumberRequest struct {
-		NewPhone string `json:"newPhone" binding:"required"`
+		NewPhone string `json:"newPhone" binding:"required" validate:"numeric"`
 	}
 	return func(c *gin.Context) {
 		req := &ChangePhoneNumberRequest{}
@@ -232,6 +233,17 @@ func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, tools.Error{
 				ErrorMessage: tools.UserTypeAssertionErr.Error(),
 			})
+			return
+		}
+
+		validate := validator.New()
+
+		if err := validate.Struct(req); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
 			return
 		}
 
