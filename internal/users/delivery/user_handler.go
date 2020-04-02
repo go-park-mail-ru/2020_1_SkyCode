@@ -334,6 +334,8 @@ func (uh *UserHandler) GetProfile() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, user)
+		c.JSON(http.StatusOK, tools.UserMessage{
+			User: user,
+		})
 	}
 }

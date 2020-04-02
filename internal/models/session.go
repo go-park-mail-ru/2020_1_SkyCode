@@ -18,6 +18,7 @@ func GenerateSession(userId uint64) (*Session, *http.Cookie) {
 		Value:      uuid.New().String(),
 		MaxAge:    3600 * 12,
 		HttpOnly:   true,
+		Secure: true,
 	}
 
 	return &Session{
