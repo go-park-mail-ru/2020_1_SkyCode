@@ -52,7 +52,7 @@ func (pr *ProductRepository) GetProductByID(prodID uint64) (*models.Product, err
 
 func (pr *ProductRepository) InsertInto(product *models.Product) error {
 	if err := pr.db.QueryRow("INSERT INTO products (name, price, image, rest_id) "+
-		"($1, $2, $3, $4) RETURNING id",
+		"VALUES ($1, $2, $3, $4) RETURNING id",
 		product.Name,
 		product.Price,
 		product.Image,

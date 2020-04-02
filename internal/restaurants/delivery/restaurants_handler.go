@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 
@@ -28,8 +29,9 @@ func (rh *RestaurantHandler) GetRestaurants() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restList, err := rh.restUseCase.GetRestaurants()
 		if err != nil {
+			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: "DB ERROR",
+				ErrorMessage: "text",
 			})
 
 			return
@@ -45,14 +47,16 @@ func (rh *RestaurantHandler) GetRestaurantByID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 		if err != nil {
+			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
 			})
 		}
 		rest, err := rh.restUseCase.GetRestaurantByID(id)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, tools.Error{ // change status and error
-				ErrorMessage: "DB ERROR",
+			logrus.Info(err)
+			c.JSON(http.StatusNotFound, tools.Error{ // change error
+				ErrorMessage: "text",
 			})
 
 			return

@@ -6,20 +6,20 @@ import (
 	"github.com/2020_1_Skycode/internal/restaurants"
 )
 
-type RestarauntUseCase struct {
-	restarauntRepo restaurants.Repository
+type RestaurantUseCase struct {
+	restaurantRepo restaurants.Repository
 	productRepo    products.Repository
 }
 
-func NewRestaurantsUseCase(rr restaurants.Repository, pr products.Repository) *RestarauntUseCase {
-	return &RestarauntUseCase{
-		restarauntRepo: rr,
+func NewRestaurantsUseCase(rr restaurants.Repository, pr products.Repository) *RestaurantUseCase {
+	return &RestaurantUseCase{
+		restaurantRepo: rr,
 		productRepo:    pr,
 	}
 }
 
-func (rUC *RestarauntUseCase) GetRestaurants() ([]*models.Restaurant, error) {
-	restList, err := rUC.restarauntRepo.GetAll()
+func (rUC *RestaurantUseCase) GetRestaurants() ([]*models.Restaurant, error) {
+	restList, err := rUC.restaurantRepo.GetAll()
 	if err != nil {
 		return nil, err
 	}
@@ -27,8 +27,8 @@ func (rUC *RestarauntUseCase) GetRestaurants() ([]*models.Restaurant, error) {
 	return restList, nil
 }
 
-func (rUC *RestarauntUseCase) GetRestaurantByID(id uint64) (*models.Restaurant, error) {
-	rest, err := rUC.restarauntRepo.GetByID(id)
+func (rUC *RestaurantUseCase) GetRestaurantByID(id uint64) (*models.Restaurant, error) {
+	rest, err := rUC.restaurantRepo.GetByID(id)
 	if err != nil {
 		return nil, err
 	}

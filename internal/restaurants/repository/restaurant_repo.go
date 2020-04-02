@@ -27,12 +27,12 @@ func (rr *RestaurantRepository) GetAll() ([]*models.Restaurant, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		restaraunt := &models.Restaurant{}
-		err = rows.Scan(&restaraunt.ID, &restaraunt.Name, &restaraunt.Rating, &restaraunt.Image)
+		restaurant := &models.Restaurant{}
+		err = rows.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Rating, &restaurant.Image)
 		if err != nil {
 			return nil, err
 		}
-		restaurantsList = append(restaurantsList, restaraunt)
+		restaurantsList = append(restaurantsList, restaurant)
 	}
 
 	return restaurantsList, nil
