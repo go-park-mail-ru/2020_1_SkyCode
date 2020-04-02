@@ -3,7 +3,8 @@
     "name": "sky_delivery",
     "host": "localhost",
     "port": 5432,
-    "user": "sky_user"
+    "user": "sky_user",
+    "password": "pswd"
   },
   "server": {
     "host": "localhost",

@@ -12,6 +12,7 @@ type Config struct {
 		Host string `json:"host"`
 		Port uint16 `json:"port"`
 		User string `json:"user"`
+		Password string `json:"password"`
 	} `json:"database"`
 
 	Server struct {
