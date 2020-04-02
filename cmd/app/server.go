@@ -15,6 +15,7 @@ import (
 	_usersUseCase "github.com/2020_1_Skycode/internal/users/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx"
+	_ "github.com/lib/pq"
 	"log"
 )
 

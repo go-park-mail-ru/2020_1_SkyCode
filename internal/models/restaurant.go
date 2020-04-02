@@ -1,5 +1,7 @@
 package models
 
+import "errors"
+
 type Restaurant struct {
 	ID          uint64     `json:"id"`
 	Name        string     `json:"name"`
