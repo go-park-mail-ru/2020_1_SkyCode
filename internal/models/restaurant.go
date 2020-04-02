@@ -3,10 +3,11 @@ package models
 import "errors"
 
 type Restaurant struct {
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Rating      float32       `json:"rating"`
-	Image       string        `json:"image"`
+	ID          uint64    `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Rating      float32   `json:"rating"`
+	Image       string    `json:"image"`
 	Products    []Product `json:"products"`
 }
 
@@ -33,17 +34,17 @@ var ResArray = map[uint]*Restaurant{
 		Image:       "/kfc.jpg",
 		Products: []Product{
 			{
-				Name: "Potato free",
+				Name:  "Potato free",
 				Price: 150,
 				Image: "/images/Vestern-Gurme-MakKombo.png",
 			},
 			{
-				Name: "Hamburger",
+				Name:  "Hamburger",
 				Price: 230,
 				Image: "/images/Fish-Roll-MakKombo.png",
 			},
 			{
-				Name: "Cola",
+				Name:  "Cola",
 				Price: 70,
 				Image: "/images/Vestern-Gurme-MakKombo.png",
 			},
@@ -56,17 +57,17 @@ var ResArray = map[uint]*Restaurant{
 		Image:       "/mac.jpg",
 		Products: []Product{
 			{
-				Name: "Potato free",
+				Name:  "Potato free",
 				Price: 150,
 				Image: "/mcdonalds/Vestern-Gurme-MakKombo.png",
 			},
 			{
-				Name: "Hamburger",
+				Name:  "Hamburger",
 				Price: 230,
 				Image: "/mcdonalds/Fish-Roll-MakKombo.png",
 			},
 			{
-				Name: "Cola",
+				Name:  "Cola",
 				Price: 70,
 				Image: "/mcdonalds/Vestern-Gurme-MakKombo.png",
 			},
@@ -79,17 +80,17 @@ var ResArray = map[uint]*Restaurant{
 		Image:       "/bk.jpg",
 		Products: []Product{
 			{
-				Name: "Potato free",
+				Name:  "Potato free",
 				Price: 150,
 				Image: "/potatoFree.jpg",
 			},
 			{
-				Name: "Hamburger",
+				Name:  "Hamburger",
 				Price: 230,
 				Image: "/hamburger.jpg",
 			},
 			{
-				Name: "Cola",
+				Name:  "Cola",
 				Price: 70,
 				Image: "/cola.jpg",
 			},

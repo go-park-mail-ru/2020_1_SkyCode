@@ -2,6 +2,9 @@ package main
 
 import (
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
+	_restDelivery "github.com/2020_1_Skycode/internal/restaurants/delivery"
+	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
+	_restUcase "github.com/2020_1_Skycode/internal/restaurants/usecase"
 	_sessionsDelivery "github.com/2020_1_Skycode/internal/sessions/delivery"
 	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
@@ -11,6 +14,7 @@ import (
 	_usersUseCase "github.com/2020_1_Skycode/internal/users/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx"
+	_ "github.com/lib/pq"
 	"log"
 )
 
@@ -49,10 +53,13 @@ func main() {
 
 	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 
-
 	_ = _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
 	_ = _usersDelivery.NewUserHandler(e, userUcase, mwareC)
+
+	restRepo := _restRepo.NewRestaurantRepository(dbConn)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo)
+	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
 
 	log.Fatal(e.Run())
 }
