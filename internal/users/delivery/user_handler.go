@@ -24,6 +24,7 @@ func NewUserHandler(router *gin.Engine, uUC users.UseCase, middlewareC *middlewa
 		middlewareC: middlewareC,
 	}
 
+	router.GET("api/v1/profile", middlewareC.CheckAuth(), uh.GetProfile())
 	router.POST("api/v1/signup", uh.SignUp())
 	router.POST("api/v1/profile/bio", middlewareC.CheckAuth(), uh.EditBio())
 	router.POST("api/v1/profile/avatar", middlewareC.CheckAuth(), uh.EditAvatar())
@@ -309,5 +310,30 @@ func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
 		c.JSON(http.StatusOK, tools.Message{
 			Message: "success",
 		})
+	}
+}
+
+func (uh *UserHandler) GetProfile() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		usr, exists := c.Get("user")
+
+		if !exists {
+			c.JSON(http.StatusUnauthorized, tools.Error{
+				ErrorMessage: tools.Unauthorized.Error(),
+			})
+
+			return
+		}
+
+		user, ok := usr.(*models.User)
+
+		if !ok {
+			c.JSON(http.StatusInternalServerError, tools.Error{
+				ErrorMessage: tools.UserTypeAssertionErr.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, user)
 	}
 }

@@ -1,9 +1,9 @@
 {
   "database": {
-    "name": "sky_delivery",
+    "name": "SkyDelivery",
     "host": "localhost",
     "port": 5432,
-    "user": "sky_user",
+    "user": "skyuser",
     "password": "pswd"
   },
   "server": {
