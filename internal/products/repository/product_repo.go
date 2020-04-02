@@ -20,7 +20,7 @@ func NewProductRepository(db *pgx.Conn) products.Repository {
 func (pr *ProductRepository) GetRestaurantProducts(restID uint64) ([]*models.Product, error) {
 	productList := []*models.Product{}
 
-	rows, err := pr.db.Query("SELECT id, name, price, image FROM products WHERE restaurant_id = $1", restID)
+	rows, err := pr.db.Query("SELECT id, name, price, image FROM products WHERE rest_id = $1", restID)
 	if err != nil {
 		return nil, err
 	}
