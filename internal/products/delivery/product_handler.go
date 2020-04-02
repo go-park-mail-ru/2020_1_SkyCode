@@ -123,16 +123,6 @@ func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
 			return
 		}
 
-		restID, err := strconv.ParseUint(c.Param("prod_id"), 10, 64)
-		if err != nil {
-			logrus.Info(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
-			})
-
-			return
-		}
-
 		prodID, err := strconv.ParseUint(c.Param("prod_id"), 10, 64)
 		if err != nil {
 			logrus.Info(err)
@@ -144,10 +134,9 @@ func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
 		}
 
 		product := &models.Product{
-			ID:     prodID,
-			Name:   req.Name,
-			Price:  req.Price,
-			RestId: restID,
+			ID:    prodID,
+			Name:  req.Name,
+			Price: req.Price,
 		}
 
 		if err = ph.productUseCase.UpdateProduct(product); err != nil {

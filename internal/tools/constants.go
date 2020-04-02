@@ -1,6 +1,7 @@
 package tools
 
 const (
-	AvatarPath        = "/Users/jackblack/Dev/2020_1_SkyCode/images/"
-	ProductImagesPath = ""
+	AvatarPath           = "images/"
+	ProductImagesPath    = "images/product/"
+	RestaurantImagesPath = "images/restaurants/"
 )

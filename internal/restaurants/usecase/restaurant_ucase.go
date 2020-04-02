@@ -42,3 +42,46 @@ func (rUC *RestaurantUseCase) GetRestaurantByID(id uint64) (*models.Restaurant, 
 
 	return rest, nil
 }
+
+func (rUC *RestaurantUseCase) CreateRestaurant(rest *models.Restaurant) error {
+	if err := rUC.restaurantRepo.InsertInto(rest); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantUseCase) UpdateRestaurant(rest *models.Restaurant) error {
+	updRestaurant := &models.Restaurant{
+		ID:          rest.ID,
+		Name:        rest.Name,
+		Description: rest.Description,
+	}
+
+	if err := rUC.restaurantRepo.Update(updRestaurant); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantUseCase) UpdateImage(restID uint64, filename string) error {
+	updRestaurant := &models.Restaurant{
+		ID:    restID,
+		Image: filename,
+	}
+
+	if err := rUC.restaurantRepo.UpdateImage(updRestaurant); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantUseCase) Delete(restID uint64) error {
+	if err := rUC.restaurantRepo.Delete(restID); err != nil {
+		return err
+	}
+
+	return nil
+}

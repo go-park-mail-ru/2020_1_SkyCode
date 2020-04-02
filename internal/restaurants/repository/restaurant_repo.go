@@ -1,10 +1,9 @@
 package repository
 
 import (
-	"github.com/jackc/pgx"
-
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurants"
+	"github.com/jackc/pgx"
 )
 
 type RestaurantRepository struct {
@@ -50,4 +49,43 @@ func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {
 		return nil, err
 	}
 	return restaurant, nil
+}
+
+func (rr *RestaurantRepository) InsertInto(rest *models.Restaurant) error {
+	if err := rr.db.QueryRow("INSERT INTO restaurants (name, description, rating, image) "+
+		"VALUES ($1, $2, $3, $4) RETURNING id",
+		rest.Name,
+		rest.Description,
+		rest.Rating,
+		rest.Image).Scan(&rest.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RestaurantRepository) Update(rest *models.Restaurant) error {
+	if _, err := rr.db.Exec("UPDATE restaurants SET name = $2, description = $3 "+
+		"WHERE id = $1", rest.ID, rest.Name, rest.Description); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RestaurantRepository) UpdateImage(rest *models.Restaurant) error {
+	if _, err := rr.db.Exec("UPDATE restaurants SET image = $2 "+
+		"WHERE id = $1", rest.ID, rest.Image); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RestaurantRepository) Delete(restID uint64) error {
+	if _, err := rr.db.Exec("DELETE FROM restaurants WHERE id = $1", restID); err != nil {
+		return err
+	}
+
+	return nil
 }
