@@ -63,5 +63,5 @@ func main() {
 	_ = _usersDelivery.NewUserHandler(e, userUcase, mwareC)
 	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
 
-	log.Fatal(e.Run())
+	log.Fatal(e.Run(":5000"))
 }
