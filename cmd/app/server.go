@@ -2,7 +2,9 @@ package main
 
 import (
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
+	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
+	_productUseCase "github.com/2020_1_Skycode/internal/products/usecase"
 	_restDelivery "github.com/2020_1_Skycode/internal/restaurants/delivery"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	_restUcase "github.com/2020_1_Skycode/internal/restaurants/usecase"
@@ -31,7 +33,7 @@ func main() {
 		Port:     config.Database.Port,
 		Database: config.Database.Name,
 		User:     config.Database.User,
-		Password: "",
+		Password: config.Database.Password,
 	})
 
 	if err != nil {
@@ -47,6 +49,7 @@ func main() {
 	e := gin.New()
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
+	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
 	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, prodRepo)
@@ -63,6 +66,7 @@ func main() {
 	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
 	_ = _usersDelivery.NewUserHandler(e, userUcase, mwareC)
 	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
+	_ = _productDelivery.NewProductHandler(e, prodUcase)
 
-	log.Fatal(e.Run())
+	log.Fatal(e.Run(":5000"))
 }

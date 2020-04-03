@@ -6,6 +6,7 @@ import (
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/renstrom/shortuuid"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -23,11 +24,12 @@ func NewUserHandler(router *gin.Engine, uUC users.UseCase, middlewareC *middlewa
 		middlewareC: middlewareC,
 	}
 
+	router.GET("api/v1/profile", middlewareC.CheckAuth(), uh.GetProfile())
 	router.POST("api/v1/signup", uh.SignUp())
-	router.POST("api/v1/profile/bio", middlewareC.CheckAuth(), uh.EditBio())
-	router.POST("api/v1/profile/avatar", middlewareC.CheckAuth(), uh.EditAvatar())
-	router.POST("api/v1/profile/password", middlewareC.CheckAuth(), uh.ChangePassword())
-	router.POST("api/v1/profile/phone", middlewareC.CheckAuth(), uh.ChangePhoneNumber())
+	router.PUT("api/v1/profile/bio", middlewareC.CheckAuth(), uh.EditBio())
+	router.PUT("api/v1/profile/avatar", middlewareC.CheckAuth(), uh.EditAvatar())
+	router.PUT("api/v1/profile/password", middlewareC.CheckAuth(), uh.ChangePassword())
+	router.PUT("api/v1/profile/phone", middlewareC.CheckAuth(), uh.ChangePhoneNumber())
 
 	return uh
 }
@@ -165,7 +167,7 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 
 		filename := shortuuid.New() + "-" + file.Filename
 
-		if err := c.SaveUploadedFile(file, tools.AvatarPath + filename); err != nil {
+		if err := c.SaveUploadedFile(file, tools.AvatarPath+filename); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
@@ -202,7 +204,7 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 
 func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
 	type ChangePhoneNumberRequest struct {
-		NewPhone string `json:"newPhone" binding:"required"`
+		NewPhone string `json:"newPhone" binding:"required" validate:"numeric"`
 	}
 	return func(c *gin.Context) {
 		req := &ChangePhoneNumberRequest{}
@@ -232,6 +234,17 @@ func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, tools.Error{
 				ErrorMessage: tools.UserTypeAssertionErr.Error(),
 			})
+			return
+		}
+
+		validate := validator.New()
+
+		if err := validate.Struct(req); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
 			return
 		}
 
@@ -299,3 +312,32 @@ func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
 		})
 	}
 }
+
+func (uh *UserHandler) GetProfile() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		usr, exists := c.Get("user")
+
+		if !exists {
+			c.JSON(http.StatusUnauthorized, tools.Error{
+				ErrorMessage: tools.Unauthorized.Error(),
+			})
+
+			return
+		}
+
+		user, ok := usr.(*models.User)
+
+		if !ok {
+			c.JSON(http.StatusInternalServerError, tools.Error{
+				ErrorMessage: tools.UserTypeAssertionErr.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.UserMessage{
+			User: user,
+		})
+	}
+}
+
+
