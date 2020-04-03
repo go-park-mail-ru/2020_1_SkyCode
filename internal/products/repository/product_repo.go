@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/jackc/pgx"
-
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/products"
 )
