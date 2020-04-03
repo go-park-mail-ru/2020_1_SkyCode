@@ -26,12 +26,12 @@ func (rr *RestaurantRepository) GetAll() ([]*models.Restaurant, error) {
 
 	defer rows.Close()
 	for rows.Next() {
-		restaraunt := &models.Restaurant{}
-		err = rows.Scan(&restaraunt.ID, &restaraunt.Name, &restaraunt.Rating, &restaraunt.Image)
+		restaurant := &models.Restaurant{}
+		err = rows.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Rating, &restaurant.Image)
 		if err != nil {
 			return nil, err
 		}
-		restaurantsList = append(restaurantsList, restaraunt)
+		restaurantsList = append(restaurantsList, restaurant)
 	}
 
 	return restaurantsList, nil
@@ -49,4 +49,43 @@ func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {
 		return nil, err
 	}
 	return restaurant, nil
+}
+
+func (rr *RestaurantRepository) InsertInto(rest *models.Restaurant) error {
+	if err := rr.db.QueryRow("INSERT INTO restaurants (name, description, rating, image) "+
+		"VALUES ($1, $2, $3, $4) RETURNING id",
+		rest.Name,
+		rest.Description,
+		rest.Rating,
+		rest.Image).Scan(&rest.ID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RestaurantRepository) Update(rest *models.Restaurant) error {
+	if _, err := rr.db.Exec("UPDATE restaurants SET name = $2, description = $3 "+
+		"WHERE id = $1", rest.ID, rest.Name, rest.Description); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RestaurantRepository) UpdateImage(rest *models.Restaurant) error {
+	if _, err := rr.db.Exec("UPDATE restaurants SET image = $2 "+
+		"WHERE id = $1", rest.ID, rest.Image); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rr *RestaurantRepository) Delete(restID uint64) error {
+	if _, err := rr.db.Exec("DELETE FROM restaurants WHERE id = $1", restID); err != nil {
+		return err
+	}
+
+	return nil
 }
