@@ -32,6 +32,15 @@ func (pUC *ProductUseCase) GetProductByID(id uint64) (*models.Product, error) {
 	return product, nil
 }
 
+func (pUC *ProductUseCase) GetProductsByRestaurantID(id uint64) ([]*models.Product, error) {
+	productList, err := pUC.productRepo.GetProductsByRestID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return productList, err
+}
+
 func (pUC *ProductUseCase) UpdateProduct(product *models.Product) error {
 	updProduct := &models.Product{
 		ID:    product.ID,

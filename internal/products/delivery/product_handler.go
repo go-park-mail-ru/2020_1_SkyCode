@@ -22,6 +22,7 @@ func NewProductHandler(router *gin.Engine, pUC products.UseCase) *ProductHandler
 	}
 
 	router.GET("api/v1/products/:prod_id", ph.GetProduct())
+	router.GET("api/v1/restaurants/:rest_id/product", ph.GetProducts())
 	router.POST("api/v1/restaurants/:rest_id/product", ph.CreateProduct())
 	router.POST("api/v1/products/:prod_id/update", ph.UpdateProduct())
 	router.POST("api/v1/products/:prod_id/image", ph.UpdateImage())
@@ -53,6 +54,32 @@ func (ph *ProductHandler) GetProduct() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, product)
+	}
+}
+
+func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		products, err := ph.productUseCase.GetProductsByRestaurantID(id)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusNotFound, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, products)
 	}
 }
 

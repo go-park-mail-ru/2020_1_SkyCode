@@ -33,13 +33,6 @@ func (rUC *RestaurantUseCase) GetRestaurantByID(id uint64) (*models.Restaurant, 
 		return nil, err
 	}
 
-	productList, err := rUC.productRepo.GetProductsByRestID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	rest.Products = productList
-
 	return rest, nil
 }
 
