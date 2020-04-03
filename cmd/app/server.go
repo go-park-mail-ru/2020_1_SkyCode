@@ -32,7 +32,7 @@ func main() {
 		Port:     config.Database.Port,
 		Database: config.Database.Name,
 		User:     config.Database.User,
-		Password: "",
+		Password: config.Database.Password,
 	})
 
 	if err != nil {
