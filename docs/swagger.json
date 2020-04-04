@@ -52,6 +52,63 @@
                 }
             }
         },
+        "/orders/checkout": {
+            "post": {
+                "security": [
+                    {
+                        "basicAuth": []
+                    }
+                ],
+                "description": "Creating Order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Create Order Route",
+                "parameters": [
+                    {
+                        "description": "New order data",
+                        "name": "OrderReq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.orderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tools.Message"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/tools.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/tools.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/tools.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/product/:prod_id": {
             "delete": {
                 "description": "Updating Product Image",
@@ -973,6 +1030,43 @@
                 }
             }
         },
+        "delivery.orderRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "personNum",
+                "phone",
+                "price",
+                "products",
+                "userId"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "personNum": {
+                    "type": "integer"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "products": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OrderProduct"
+                    }
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
         "delivery.productRequest": {
             "type": "object",
             "required": [
@@ -1038,6 +1132,27 @@
                 },
                 "phone": {
                     "type": "string"
+                }
+            }
+        },
+        "models.OrderProduct": {
+            "type": "object",
+            "required": [
+                "count",
+                "productId"
+            ],
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "orderId": {
+                    "type": "integer"
+                },
+                "productId": {
+                    "type": "integer"
                 }
             }
         },

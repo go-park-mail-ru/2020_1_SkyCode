@@ -24,9 +24,9 @@ func NewRestaurantHandler(router *gin.Engine, rUC restaurants.UseCase) *Restaura
 	router.GET("api/v1/restaurants", rh.GetRestaurants())
 	router.GET("api/v1/restaurants/:rest_id", rh.GetRestaurantByID())
 	router.POST("api/v1/restaurants", rh.CreateRestaurant())
-	router.POST("api/v1/restaurants/:rest_id/update", rh.UpdateRestaurant())
-	router.POST("api/v1/restaurants/:rest_id/image", rh.UpdateImage())
-	router.POST("api/v1/restaurants/:rest_id", rh.DeleteRestaurant())
+	router.PUT("api/v1/restaurants/:rest_id/update", rh.UpdateRestaurant())
+	router.PUT("api/v1/restaurants/:rest_id/image", rh.UpdateImage())
+	router.DELETE("api/v1/restaurants/:rest_id", rh.DeleteRestaurant())
 
 	return rh
 }

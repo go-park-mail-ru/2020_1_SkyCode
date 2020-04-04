@@ -27,6 +27,32 @@ definitions:
     - firstName
     - lastName
     type: object
+  delivery.orderRequest:
+    properties:
+      address:
+        type: string
+      comment:
+        type: string
+      personNum:
+        type: integer
+      phone:
+        type: string
+      price:
+        type: number
+      products:
+        items:
+          $ref: '#/definitions/models.OrderProduct'
+        type: array
+      userId:
+        type: integer
+    required:
+    - address
+    - personNum
+    - phone
+    - price
+    - products
+    - userId
+    type: object
   delivery.productRequest:
     properties:
       name:
@@ -72,6 +98,20 @@ definitions:
     - lastName
     - password
     - phone
+    type: object
+  models.OrderProduct:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      orderId:
+        type: integer
+      productId:
+        type: integer
+    required:
+    - count
+    - productId
     type: object
   models.Product:
     properties:
@@ -162,6 +202,42 @@ paths:
       summary: Logout Route
       tags:
       - Session
+  /orders/checkout:
+    post:
+      consumes:
+      - application/json
+      description: Creating Order
+      parameters:
+      - description: New order data
+        in: body
+        name: OrderReq
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.orderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Create Order Route
+      tags:
+      - Order
   /product/:prod_id:
     delete:
       consumes:

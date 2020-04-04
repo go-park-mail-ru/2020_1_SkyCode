@@ -28,18 +28,31 @@ func NewOrderHandler(router *gin.Engine, orderUC orders.UseCase, mw *middlewares
 	return oh
 }
 
+type orderRequest struct {
+	UserID    uint64                 `json:"userId" binding:"required"`
+	Address   string                 `json:"address" binding:"required"`
+	Comment   string                 `json:"comment"`
+	Phone     string                 `json:"phone" binding:"required"`
+	PersonNum uint16                 `json:"personNum" binding:"required"`
+	Products  []*models.OrderProduct `json:"products" binding:"required"`
+	Price     float32                `json:"price" binding:"required"`
+}
+
+//@Tags Order
+//@Summary Create Order Route
+//@Description Creating Order
+//@Accept json
+//@Produce json
+//@Param OrderReq body orderRequest true "New order data"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /orders/checkout [post]
 func (oH *OrderHandler) Checkout() gin.HandlerFunc {
-	type OrderRequest struct {
-		UserID    uint64                 `json:"userId" binding:"required"`
-		Address   string                 `json:"address" binding:"required"`
-		Comment   string                 `json:"comment"`
-		Phone     string                 `json:"phone" binding:"required"`
-		PersonNum uint16                 `json:"personNum" binding:"required"`
-		Products  []*models.OrderProduct `json:"products" binding:"required"`
-		Price     float32                `json:"price" binding:"required"`
-	}
 	return func(c *gin.Context) {
-		req := &OrderRequest{}
+		req := &orderRequest{}
 
 		usr, exists := c.Get("user")
 
