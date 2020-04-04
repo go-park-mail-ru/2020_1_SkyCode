@@ -339,5 +339,3 @@ func (uh *UserHandler) GetProfile() gin.HandlerFunc {
 		})
 	}
 }
-
-
