@@ -1,7 +1,7 @@
 package tools
 
 const (
-	AvatarPath           = "images/"
-	ProductImagesPath    = "images/"
-	RestaurantImagesPath = "images/"
+	AvatarPath           = "/home/ubuntu/go/backend/images/"
+	ProductImagesPath    = "/home/ubuntu/go/backend/images/"
+	RestaurantImagesPath = "/home/ubuntu/go/backend/images/"
 )
