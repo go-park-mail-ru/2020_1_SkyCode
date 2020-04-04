@@ -15,4 +15,5 @@ var (
 	UserTypeAssertionErr = errors.New("Error assert to user type")
 	UpdatePhoneError = errors.New("Error updating phone number")
 	DeleteAvatarError = errors.New("Error deleting avatar")
+	CheckoutOrderError = errors.New("Error checkout order")
 )

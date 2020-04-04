@@ -2,6 +2,9 @@ package main
 
 import (
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
+	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
+	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
+	_ordersUseCase "github.com/2020_1_Skycode/internal/orders/usecase"
 	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
 	_productUseCase "github.com/2020_1_Skycode/internal/products/usecase"
@@ -75,13 +78,17 @@ func main() {
 	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
 	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
 
+	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn)
+	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
+
 	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 
 	_ = _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
-	_ = _usersDelivery.NewUserHandler(e, userUcase, mwareC)
+	_ = _usersDelivery.NewUserHandler(e, userUcase, sessionsUcase, mwareC)
 	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
 	_ = _productDelivery.NewProductHandler(e, prodUcase)
+	_ = _ordersDelivery.NewOrderHandler(e, ordersUcase, mwareC)
 
 	log.Fatal(e.Run(":5000"))
 }

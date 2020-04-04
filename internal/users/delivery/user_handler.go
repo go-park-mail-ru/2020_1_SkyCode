@@ -3,6 +3,7 @@ package delivery
 import (
 	"github.com/2020_1_Skycode/internal/middlewares"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/sessions"
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
@@ -15,12 +16,14 @@ import (
 
 type UserHandler struct {
 	userUseCase users.UseCase
+	sessionUseCase sessions.UseCase
 	middlewareC *middlewares.MWController
 }
 
-func NewUserHandler(router *gin.Engine, uUC users.UseCase, middlewareC *middlewares.MWController) *UserHandler {
+func NewUserHandler(router *gin.Engine, uUC users.UseCase, sUC sessions.UseCase, middlewareC *middlewares.MWController) *UserHandler {
 	uh := &UserHandler{
 		userUseCase: uUC,
+		sessionUseCase: sUC,
 		middlewareC: middlewareC,
 	}
 
@@ -92,6 +95,25 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 
 			return
 		}
+
+		session, cookie := models.GenerateSession(u.ID)
+
+		if err := uh.sessionUseCase.StoreSession(session); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusNotFound, tools.Error{
+				ErrorMessage: tools.SessionStoreError.Error(),
+			})
+
+			return
+		}
+
+		c.SetCookie(cookie.Name,
+			cookie.Value,
+			cookie.MaxAge,
+			cookie.Path,
+			cookie.Domain,
+			cookie.Secure,
+			cookie.HttpOnly)
 
 		c.JSON(http.StatusOK, tools.Message{
 			Message: "User has been registered",

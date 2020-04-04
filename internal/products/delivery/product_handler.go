@@ -24,9 +24,9 @@ func NewProductHandler(router *gin.Engine, pUC products.UseCase) *ProductHandler
 	router.GET("api/v1/products/:prod_id", ph.GetProduct())
 	router.GET("api/v1/restaurants/:rest_id/product", ph.GetProducts())
 	router.POST("api/v1/restaurants/:rest_id/product", ph.CreateProduct())
-	router.POST("api/v1/products/:prod_id/update", ph.UpdateProduct())
-	router.POST("api/v1/products/:prod_id/image", ph.UpdateImage())
-	router.POST("api/v1/products/:prod_id", ph.DeleteProduct())
+	router.PUT("api/v1/products/:prod_id/update", ph.UpdateProduct())
+	router.PUT("api/v1/products/:prod_id/image", ph.UpdateImage())
+	router.DELETE("api/v1/products/:prod_id/delete", ph.DeleteProduct())
 
 	return ph
 }
@@ -130,6 +130,28 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			return
 		}
 
+		file, err := c.FormFile("image")
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		filename := shortuuid.New() + "-" + file.Filename
+
+		if err := c.SaveUploadedFile(file, tools.ProductImagesPath + filename); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
 		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
 		if err != nil {
 			logrus.Info(err)
@@ -144,6 +166,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			Name:   req.Name,
 			Price:  req.Price,
 			RestId: restID,
+			Image: filename,
 		}
 
 		if err = ph.productUseCase.CreateProduct(product); err != nil {

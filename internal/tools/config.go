@@ -8,10 +8,10 @@ import (
 
 type Config struct {
 	Database struct {
-		Name     string `json:"name"`
-		Host     string `json:"host"`
-		Port     uint16 `json:"port"`
-		User     string `json:"user"`
+		Name string `json:"name"`
+		Host string `json:"host"`
+		Port uint16 `json:"port"`
+		User string `json:"user"`
 		Password string `json:"password"`
 	} `json:"database"`
 
