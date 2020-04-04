@@ -101,6 +101,28 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			return
 		}
 
+		file, err := c.FormFile("image")
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		filename := shortuuid.New() + "-" + file.Filename
+
+		if err := c.SaveUploadedFile(file, tools.ProductImagesPath + filename); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
 		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
 		if err != nil {
 			logrus.Info(err)
@@ -115,6 +137,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			Name:   req.Name,
 			Price:  req.Price,
 			RestId: restID,
+			Image: filename,
 		}
 
 		if err = ph.productUseCase.CreateProduct(product); err != nil {
