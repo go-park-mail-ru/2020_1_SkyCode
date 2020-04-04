@@ -70,7 +70,7 @@ func main() {
 
 	_ = _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
 	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
-	_ = _usersDelivery.NewUserHandler(e, userUcase, mwareC)
+	_ = _usersDelivery.NewUserHandler(e, userUcase, sessionsUcase, mwareC)
 	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
 	_ = _productDelivery.NewProductHandler(e, prodUcase)
 	_ = _ordersDelivery.NewOrderHandler(e, ordersUcase, mwareC)
