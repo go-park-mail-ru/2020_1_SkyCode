@@ -83,7 +83,6 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 			cookie.MaxAge,
 			cookie.Path,
 			cookie.Domain,
-			cookie.SameSite,
 			cookie.Secure,
 			cookie.HttpOnly)
 
@@ -136,7 +135,6 @@ func (sh *SessionHandler) LogOut() gin.HandlerFunc {
 			cookie.MaxAge,
 			cookie.Path,
 			cookie.Domain,
-			cookie.SameSite,
 			cookie.Secure,
 			cookie.HttpOnly)
 
