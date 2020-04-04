@@ -36,3 +36,23 @@ create table products (
     image   varchar(50),
     foreign key (rest_id) references restaurants (id)
 );
+
+create table orders (
+    id        serial      not null primary key,
+    userId    int         not null,
+    address   varchar(30) not null,
+    price     real        not null,
+    phone     varchar(15) not null,
+    comment   varchar(50),
+    personNum int         not null,
+    foreign key (userId) references users (id)
+);
+
+create table orderProducts (
+    id        serial      not null primary key,
+    orderId   int         not null,
+    productId int         not null,
+    count     int         not null,
+    foreign   key (orderId) references orders (id),
+    foreign   key (productId) references products (id)
+);

@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"fmt"
 	"github.com/2020_1_Skycode/internal/middlewares"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/orders"
@@ -22,22 +23,23 @@ func NewOrderHandler(router *gin.Engine, orderUC orders.UseCase, mw *middlewares
 	}
 
 	router.POST("api/v1/orders/checkout", oh.MiddlewareC.CheckAuth(), oh.Checkout())
-	router.GET("api/v1/orders/:orderID")
+	router.GET("api/v1/orders/:orderID", oh.MiddlewareC.CheckAuth(), oh.Checkout())
 
 	return oh
 }
 
 func (oH *OrderHandler) Checkout() gin.HandlerFunc {
-	type OrderStructRequest struct {
+	type OrderRequest struct {
 		UserID    uint64                 `json:"userId" binding:"required"`
 		Address   string                 `json:"address" binding:"required"`
-		Comment   string                 `json:"comment" binding:"required"`
+		Comment   string                 `json:"comment"`
+		Phone     string                 `json:"phone" binding:"required"`
 		PersonNum uint16                 `json:"personNum" binding:"required"`
 		Products  []*models.OrderProduct `json:"products" binding:"required"`
 		Price     float32                `json:"price" binding:"required"`
 	}
 	return func(c *gin.Context) {
-		req := &OrderStructRequest{}
+		req := &OrderRequest{}
 
 		usr, exists := c.Get("user")
 
@@ -60,10 +62,14 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
-			c.JSON(http.StatusOK, tools.Error{
+			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
 			})
+
+			return
 		}
+
+		fmt.Println(req)
 
 		order := &models.Order{
 			UserID:    req.UserID,
@@ -79,6 +85,8 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
 			})
+
+			return
 		}
 
 		c.JSON(http.StatusOK, tools.Message{

@@ -17,12 +17,13 @@ func NewOrdersRepository(db *pgx.Conn) *OrdersRepository{
 }
 
 func (oR *OrdersRepository) InsertOrder(order *models.Order) error {
-	if err := oR.db.QueryRow("INSERT INTO orders(userId, address, comment, personNum, price) "+
-		"VALUES ($1, $2, $3, $4, $5) RETURNING id",
+	if err := oR.db.QueryRow("INSERT INTO orders(userId, address, comment, personNum, phone, price) "+
+		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
 		order.UserID,
 		order.Address,
 		order.Comment,
 		order.PersonNum,
+		order.Phone,
 		order.Price).Scan(&order.ID); err != nil {
 		return err
 	}
@@ -36,10 +37,10 @@ func (oR *OrdersRepository) InsertOrder(order *models.Order) error {
 
 func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*models.OrderProduct) error {
 	var values string
-	sqlInsert := "INSERT INTO orders(orderId, productId, count) VALUES"
+	sqlInsert := "INSERT INTO orderProducts(orderId, productId, count) VALUES"
 
 	for _, v := range products {
-		values += fmt.Sprintf(" (%d, %d, %d)", v.ID, v.ProductID, v.Count)
+		values += fmt.Sprintf(" (%d, %d, %d)", orderID, v.ProductID, v.Count)
 	}
 
 	if _, err := oR.db.Exec(sqlInsert + values); err != nil {
