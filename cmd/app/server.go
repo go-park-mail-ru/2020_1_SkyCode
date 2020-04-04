@@ -63,9 +63,6 @@ func main() {
 
 	e := gin.New()
 
-	url := ginSwagger.URL("http://localhost:5000/swagger/doc.json")
-	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
-
 	prodRepo := _productRepo.NewProductRepository(dbConn)
 	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
 
@@ -89,6 +86,8 @@ func main() {
 	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
 	_ = _productDelivery.NewProductHandler(e, prodUcase)
 	_ = _ordersDelivery.NewOrderHandler(e, ordersUcase, mwareC)
+
+	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	log.Fatal(e.Run(":5000"))
 }
