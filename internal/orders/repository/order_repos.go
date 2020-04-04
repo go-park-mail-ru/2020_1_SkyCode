@@ -40,8 +40,12 @@ func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*mode
 	sqlInsert := "INSERT INTO orderProducts(orderId, productId, count) VALUES"
 
 	for _, v := range products {
-		values += fmt.Sprintf(" (%d, %d, %d)", orderID, v.ProductID, v.Count)
+		values += fmt.Sprintf(" (%d, %d, %d),", orderID, v.ProductID, v.Count)
 	}
+
+	array :=[]rune(values)
+	array[len(array) - 1] = ';'
+	values = string(array)
 
 	if _, err := oR.db.Exec(sqlInsert + values); err != nil {
 		return err
