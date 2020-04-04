@@ -16,6 +16,11 @@ type RestaurantHandler struct {
 	restUseCase restaurants.UseCase
 }
 
+type restaurantRequest struct {
+	Name        string `json:"name, omitempty" binding:"required"`
+	Description string `json:"description, omitempty" binding:"required"`
+}
+
 func NewRestaurantHandler(router *gin.Engine, rUC restaurants.UseCase) *RestaurantHandler {
 	rh := &RestaurantHandler{
 		restUseCase: rUC,
@@ -31,6 +36,14 @@ func NewRestaurantHandler(router *gin.Engine, rUC restaurants.UseCase) *Restaura
 	return rh
 }
 
+//@Tags Restaurant
+//@Summary Get Restaurants List Route
+//@Description Returning list of all restaurants
+//@Accept json
+//@Produce json
+//@Success 200 {array} models.Restaurant{}
+//@Failure 400 {object} tools.Error
+//@Router /api/v1/restaurants [get]
 func (rh *RestaurantHandler) GetRestaurants() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restList, err := rh.restUseCase.GetRestaurants()
@@ -50,6 +63,16 @@ func (rh *RestaurantHandler) GetRestaurants() gin.HandlerFunc {
 	}
 }
 
+//@Tags Restaurant
+//@Summary Get Restaurant By ID Route
+//@Description Returning restaurant model
+//@Accept json
+//@Produce json
+//@Param rest_id path uint64 true "Restaurant id"
+//@Success 200 {object} models.Restaurant
+//@Failure 400 {object} tools.Error
+//@Failure 404 {object} tools.Error
+//@Router /api/v1/restaurants/:rest_id [get]
 func (rh *RestaurantHandler) GetRestaurantByID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
@@ -73,14 +96,19 @@ func (rh *RestaurantHandler) GetRestaurantByID() gin.HandlerFunc {
 	}
 }
 
+//@Tags Restaurant
+//@Summary Create New Restaurant Route
+//@Description Add new restaurant
+//@Accept json
+//@Produce json
+//@Param RestReq body restaurantRequest true "New restaurant data"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Router /api/v1/restaurants [post]
 func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
-	type RestaurantRequest struct {
-		Name        string `json:"name, omitempty" binding:"required"`
-		Description string `json:"description, omitempty" binding:"required"`
-	}
 
 	return func(c *gin.Context) {
-		req := &RestaurantRequest{}
+		req := &restaurantRequest{}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -111,14 +139,19 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 	}
 }
 
+//@Tags Restaurant
+//@Summary Update Restaurant Route
+//@Description Updating Restaurant
+//@Accept json
+//@Produce json
+//@Param rest_id path uint64 true "Id of restaurant"
+//@Param RestReq body restaurantRequest true "New restaurant data"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Router /api/v1/restaurants/:rest_id/update [put]
 func (rh *RestaurantHandler) UpdateRestaurant() gin.HandlerFunc {
-	type RestaurantRequest struct {
-		Name        string `json:"name, omitempty" binding:"required"`
-		Description string `json:"description, omitempty" binding:"required"`
-	}
-
 	return func(c *gin.Context) {
-		req := &RestaurantRequest{}
+		req := &restaurantRequest{}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -160,6 +193,16 @@ func (rh *RestaurantHandler) UpdateRestaurant() gin.HandlerFunc {
 	}
 }
 
+//@Tags Restaurant
+//@Summary Update Restaurant Image Route
+//@Description Updating Restaurant Image
+//@Accept json
+//@Produce json
+//@Param rest_id path uint64 true "Id of restaurant"
+//@Param image formData file true "New restaurant image"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Router /api/v1/restaurants/:rest_id/image [put]
 func (rh *RestaurantHandler) UpdateImage() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		file, err := c.FormFile("image")
@@ -230,6 +273,15 @@ func (rh *RestaurantHandler) UpdateImage() gin.HandlerFunc {
 	}
 }
 
+//@Tags Restaurant
+//@Summary Delete Restaurant Route
+//@Description Deleting Restaurant
+//@Accept json
+//@Produce json
+//@Param rest_id path uint64 true "Id of restaurant"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Router /api/v1/restaurants/:rest_id [delete]
 func (rh *RestaurantHandler) DeleteRestaurant() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)

@@ -83,7 +83,6 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 			cookie.MaxAge,
 			cookie.Path,
 			cookie.Domain,
-			cookie.SameSite,
 			cookie.Secure,
 			cookie.HttpOnly)
 
@@ -127,7 +126,7 @@ func (sh *SessionHandler) LogOut() gin.HandlerFunc {
 		cookie := &http.Cookie{
 			Name:     "SkyDelivery",
 			Value:    session.Token,
-			MaxAge:  -1,
+			MaxAge:   -1,
 			HttpOnly: true,
 		}
 
@@ -136,7 +135,6 @@ func (sh *SessionHandler) LogOut() gin.HandlerFunc {
 			cookie.MaxAge,
 			cookie.Path,
 			cookie.Domain,
-			cookie.SameSite,
 			cookie.Secure,
 			cookie.HttpOnly)
 

@@ -1,0 +1,222 @@
+basePath: /api/v1
+definitions:
+  delivery.restaurantRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - description
+    - name
+    type: object
+  models.Product:
+    properties:
+      id:
+        type: integer
+      image:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      rest_id:
+        type: integer
+    type: object
+  models.Restaurant:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      name:
+        type: string
+      products:
+        items:
+          $ref: '#/definitions/models.Product'
+        type: array
+      rating:
+        type: number
+    type: object
+  tools.Error:
+    properties:
+      error:
+        type: string
+    type: object
+  tools.Message:
+    properties:
+      message:
+        type: object
+    type: object
+host: localhost:5000
+info:
+  contact:
+    name: API Support
+  description: This is a SkyDelivery server for Technopark Project.
+  license: {}
+  title: Swagger SkyDelivery API
+  version: "1.0"
+paths:
+  /api/v1/restaurants:
+    get:
+      consumes:
+      - application/json
+      description: Returning list of all restaurants
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Restaurant'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Get Restaurants List Route
+      tags:
+      - Restaurant
+    post:
+      consumes:
+      - application/json
+      description: Add new restaurant
+      parameters:
+      - description: New restaurant data
+        in: body
+        name: RestReq
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.restaurantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Create New Restaurant Route
+      tags:
+      - Restaurant
+  /api/v1/restaurants/:rest_id:
+    delete:
+      consumes:
+      - application/json
+      description: Deleting Restaurant
+      parameters:
+      - description: Id of restaurant
+        in: path
+        name: rest_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Delete Restaurant Route
+      tags:
+      - Restaurant
+    get:
+      consumes:
+      - application/json
+      description: Returning restaurant model
+      parameters:
+      - description: Restaurant id
+        in: path
+        name: rest_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Restaurant'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Get Restaurant By ID Route
+      tags:
+      - Restaurant
+  /api/v1/restaurants/:rest_id/image:
+    put:
+      consumes:
+      - application/json
+      description: Updating Restaurant Image
+      parameters:
+      - description: Id of restaurant
+        in: path
+        name: rest_id
+        required: true
+        type: integer
+      - description: New restaurant image
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Update Restaurant Image Route
+      tags:
+      - Restaurant
+  /api/v1/restaurants/:rest_id/update:
+    put:
+      consumes:
+      - application/json
+      description: Updating Restaurant
+      parameters:
+      - description: Id of restaurant
+        in: path
+        name: rest_id
+        required: true
+        type: integer
+      - description: New restaurant data
+        in: body
+        name: RestReq
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.restaurantRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Update Restaurant Route
+      tags:
+      - Restaurant
+swagger: "2.0"

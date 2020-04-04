@@ -18,9 +18,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx"
 	_ "github.com/lib/pq"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
+
+	_ "github.com/2020_1_Skycode/docs"
 )
 
+// @title Swagger SkyDelivery API
+// @version 1.0
+// @description This is a SkyDelivery server for Technopark Project.
+
+// @contact.name API Support
+
+// @host localhost:5000
+// @BasePath /api/v1
 func main() {
 	config, err := tools.LoadConf("../../configs/config.json")
 
@@ -47,6 +59,9 @@ func main() {
 	}()
 
 	e := gin.New()
+
+	url := ginSwagger.URL("http://localhost:5000/swagger/doc.json")
+	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
 	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
