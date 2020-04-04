@@ -37,16 +37,39 @@ func NewUserHandler(router *gin.Engine, uUC users.UseCase, sUC sessions.UseCase,
 	return uh
 }
 
-func (uh *UserHandler) SignUp() gin.HandlerFunc {
-	type SignUpRequest struct {
-		FirstName string `json:"firstName, omitempty" binding:"required"`
-		LastName  string `json:"lastName, omitempty" binding:"required"`
-		Phone     string `json:"phone, omitempty" binding:"required"`
-		Password  string `json:"password, omitempty" binding:"required"`
-	}
+type signUpRequest struct {
+	FirstName string `json:"firstName, omitempty" binding:"required"`
+	LastName  string `json:"lastName, omitempty" binding:"required"`
+	Phone     string `json:"phone, omitempty" binding:"required"`
+	Password  string `json:"password, omitempty" binding:"required"`
+}
 
+type editBioRequest struct {
+	FirstName string `json:"firstName" binding:"required"`
+	LastName  string `json:"lastName" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+}
+
+type changePasswordRequest struct {
+	NewPassword string `json:"newPassword" binding:"required"`
+}
+
+type changePhoneNumberRequest struct {
+	NewPhone string `json:"newPhone" binding:"required" validate:"numeric"`
+}
+
+//@Tags User
+//@Summary Sign Up Route
+//@Description Signing up
+//@Accept json
+//@Produce json
+//@Param "SignUpReq" body signUpRequest true "New user data"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Router /signup [post]
+func (uh *UserHandler) SignUp() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		req := &SignUpRequest{}
+		req := &signUpRequest{}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -98,15 +121,21 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 	}
 }
 
+//@Tags User
+//@Summary Edit Bio Route
+//@Description Editing bio data of user
+//@Accept json
+//@Produce json
+//@Param "bioReq" body editBioRequest true "Bio data of user"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /profile/bio [put]
 func (uh *UserHandler) EditBio() gin.HandlerFunc {
-	type EditBioRequest struct {
-		FirstName string `json:"firstName" binding:"required"`
-		LastName  string `json:"lastName" binding:"required"`
-		Email     string `json:"email"`
-	}
-
 	return func(c *gin.Context) {
-		updProfile := &EditBioRequest{}
+		updProfile := &editBioRequest{}
 
 		if err := c.Bind(updProfile); err != nil {
 			logrus.Info("Bad params")
@@ -155,6 +184,18 @@ func (uh *UserHandler) EditBio() gin.HandlerFunc {
 	}
 }
 
+//@Tags User
+//@Summary Edit Avatar Route
+//@Description Changing Avatar Of User
+//@Accept mpfd
+//@Produce json
+//@Param "image" formData file true "New avatar of user"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /profile/avatar [put]
 func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		usr, exists := c.Get("user")
@@ -224,12 +265,21 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 	}
 }
 
+//@Tags User
+//@Summary Change Phone Number Route
+//@Description Changing Phone Number Of User
+//@Accept json
+//@Produce json
+//@Param "phone" body changePhoneNumberRequest true "New phone number of user"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /profile/phone [put]
 func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
-	type ChangePhoneNumberRequest struct {
-		NewPhone string `json:"newPhone" binding:"required" validate:"numeric"`
-	}
 	return func(c *gin.Context) {
-		req := &ChangePhoneNumberRequest{}
+		req := &changePhoneNumberRequest{}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -285,12 +335,21 @@ func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
 	}
 }
 
+//@Tags User
+//@Summary Change Password Route
+//@Description Changing password of user
+//@Accept json
+//@Produce json
+//@Param "password" body changePasswordRequest true "New password"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /profile/password [put]
 func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
-	type ChangePasswordRequest struct {
-		NewPassword string `json:"newPassword" binding:"required"`
-	}
 	return func(c *gin.Context) {
-		req := &ChangePasswordRequest{}
+		req := &changePasswordRequest{}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -335,6 +394,16 @@ func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
 	}
 }
 
+//@Tags User
+//@Summary Get Profile Route
+//@Description Getting Profile Of User
+//@Accept json
+//@Produce json
+//@Success 200 object models.User
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /profile [get]
 func (uh *UserHandler) GetProfile() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		usr, exists := c.Get("user")

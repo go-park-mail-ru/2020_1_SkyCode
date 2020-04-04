@@ -31,6 +31,21 @@ func NewProductHandler(router *gin.Engine, pUC products.UseCase) *ProductHandler
 	return ph
 }
 
+type productRequest struct {
+	Name  string  `json:"name, omitempty" binding:"required"`
+	Price float32 `json:"price, omitempty" binding:"required"`
+}
+
+//@Tags Product
+//@Summary Get Product Route
+//@Description Returning Product Model
+//@Accept json
+//@Produce json
+//@Param prod_id path int true "Product ID"
+//@Success 200 object models.Product
+//@Failure 400 object tools.Error
+//@Failure 404 object tools.Error
+//@Router /product/prod:id [get]
 func (ph *ProductHandler) GetProduct() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.ParseUint(c.Param("prod_id"), 10, 64)
@@ -57,6 +72,15 @@ func (ph *ProductHandler) GetProduct() gin.HandlerFunc {
 	}
 }
 
+//@Tags Product
+//@Summary Get Products Of Restaurant Route
+//@Description Returning Products List of Restaurant
+//@Accept json
+//@Produce json
+//@Param rest_id path int true "Id of restaurant"
+//@Success 200 array models.Product
+//@Failure 400 object tools.Error
+//@Router /restaurants/rest:id/product [get]
 func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
@@ -83,14 +107,19 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 	}
 }
 
+//@Tags Product
+//@Summary Create Product Route
+//@Description Creating Product
+//@Accept json
+//@Produce json
+//@Param rest_id path int true "Restaurant ID"
+//@Param ProdReq body productRequest true "New product data"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Router /restaurants/rest:id/product [post]
 func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
-	type ProductRequest struct {
-		Name  string  `json:"name, omitempty" binding:"required"`
-		Price float32 `json:"price, omitempty" binding:"required"`
-	}
-
 	return func(c *gin.Context) {
-		req := &ProductRequest{}
+		req := &productRequest{}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -155,6 +184,16 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 	}
 }
 
+//@Tags Product
+//@Summary Update Product Route
+//@Description Updating Product
+//@Accept json
+//@Produce json
+//@Param prod_id path int true "Product ID"
+//@Param ProdReq body productRequest true "New product data"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Router /product/:prod_id/update [put]
 func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
 	type UpdateProductRequest struct {
 		Name  string  `json:"name, omitempty" binding:"required"`
@@ -204,6 +243,17 @@ func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
 	}
 }
 
+//@Tags Product
+//@Summary Update Product Image Route
+//@Description Updating Product Image
+//@Accept mpfd
+//@Produce json
+//@Param prod_id path int true "Product ID"
+//@Param ProdReq formData file true "New product image"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 500 object tools.Error
+//@Router /product/:prod_id/image [put]
 func (ph *ProductHandler) UpdateImage() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		file, err := c.FormFile("image")
@@ -275,6 +325,16 @@ func (ph *ProductHandler) UpdateImage() gin.HandlerFunc {
 	}
 }
 
+//@Tags Product
+//@Summary Update Product Image Route
+//@Description Updating Product Image
+//@Accept json
+//@Produce json
+//@Param prod_id path int true "Product ID"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 500 object tools.Error
+//@Router /product/:prod_id [delete]
 func (ph *ProductHandler) DeleteProduct() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		prodID, err := strconv.ParseUint(c.Param("prod_id"), 10, 64)
