@@ -30,14 +30,25 @@ func NewSessionHandler(router *gin.Engine, sessionUC sessions.UseCase, usersUC u
 	return sh
 }
 
+type signInRequest struct {
+	Phone    string `json:"phone" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+//@Tags Session
+//@Summary Sign In Route
+//@Description Signing in user
+//@Accept json
+//@Produce json
+//@Param SignInReq body signInRequest true "User data"
+//@Success 200 object models.User
+//@Failure 400 object tools.Error
+//@Failure 404 object tools.Error
+//@Router /signin [post]
 func (sh *SessionHandler) SignIn() gin.HandlerFunc {
-	type SignInRequest struct {
-		Phone    string `json:"phone" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
 
 	return func(c *gin.Context) {
-		req := &SignInRequest{}
+		req := &signInRequest{}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -92,6 +103,16 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 	}
 }
 
+//@Tags Session
+//@Summary Logout Route
+//@Description Logouting user
+//@Accept json
+//@Produce json
+//@Success 200 object tools.Message
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /logout [post]
 func (sh *SessionHandler) LogOut() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sess, exists := c.Get("session")

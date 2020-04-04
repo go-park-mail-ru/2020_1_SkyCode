@@ -107,6 +107,8 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 //@Param "bioReq" body editBioRequest true "Bio data of user"
 //@Success 200 object tools.Message
 //@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
 //@Security basicAuth
 //@Router /profile/bio [put]
 func (uh *UserHandler) EditBio() gin.HandlerFunc {
@@ -168,6 +170,7 @@ func (uh *UserHandler) EditBio() gin.HandlerFunc {
 //@Param "image" formData file true "New avatar of user"
 //@Success 200 object tools.Message
 //@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
 //@Failure 500 object tools.Error
 //@Security basicAuth
 //@Router /profile/avatar [put]
@@ -248,6 +251,8 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 //@Param "phone" body changePhoneNumberRequest true "New phone number of user"
 //@Success 200 object tools.Message
 //@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
 //@Security basicAuth
 //@Router /profile/phone [put]
 func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
@@ -316,6 +321,8 @@ func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
 //@Param "password" body changePasswordRequest true "New password"
 //@Success 200 object tools.Message
 //@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
 //@Security basicAuth
 //@Router /profile/password [put]
 func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
@@ -371,7 +378,8 @@ func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
 //@Accept json
 //@Produce json
 //@Success 200 object models.User
-//@Failure 400 object tools.Error
+//@Failure 401 object tools.Error
+//@Failure 500 object tools.Error
 //@Security basicAuth
 //@Router /profile [get]
 func (uh *UserHandler) GetProfile() gin.HandlerFunc {

@@ -47,6 +47,16 @@ definitions:
     - description
     - name
     type: object
+  delivery.signInRequest:
+    properties:
+      password:
+        type: string
+      phone:
+        type: string
+    required:
+    - password
+    - phone
+    type: object
   delivery.signUpRequest:
     properties:
       firstName:
@@ -127,6 +137,31 @@ info:
   title: Swagger SkyDelivery API
   version: "1.0"
 paths:
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Logouting user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Logout Route
+      tags:
+      - Session
   /product/:prod_id:
     delete:
       consumes:
@@ -262,8 +297,12 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.User'
-        "400":
-          description: Bad Request
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/tools.Error'
       security:
@@ -291,6 +330,10 @@ paths:
             $ref: '#/definitions/tools.Message'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/tools.Error'
         "500":
@@ -325,8 +368,16 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/tools.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
       security:
-      - cookieAuth: []
+      - basicAuth: []
       summary: Edit Bio Route
       tags:
       - User
@@ -351,6 +402,14 @@ paths:
             $ref: '#/definitions/tools.Message'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/tools.Error'
       security:
@@ -379,6 +438,14 @@ paths:
             $ref: '#/definitions/tools.Message'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/tools.Error'
       security:
@@ -611,6 +678,36 @@ paths:
       summary: Create Product Route
       tags:
       - Product
+  /signin:
+    post:
+      consumes:
+      - application/json
+      description: Signing in user
+      parameters:
+      - description: User data
+        in: body
+        name: SignInReq
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.signInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Sign In Route
+      tags:
+      - Session
   /signup:
     post:
       consumes:
