@@ -1,5 +1,42 @@
 basePath: /api/v1
 definitions:
+  delivery.changePasswordRequest:
+    properties:
+      newPassword:
+        type: string
+    required:
+    - newPassword
+    type: object
+  delivery.changePhoneNumberRequest:
+    properties:
+      newPhone:
+        type: string
+    required:
+    - newPhone
+    type: object
+  delivery.editBioRequest:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    type: object
+  delivery.productRequest:
+    properties:
+      name:
+        type: string
+      price:
+        type: number
+    required:
+    - name
+    - price
+    type: object
   delivery.restaurantRequest:
     properties:
       description:
@@ -9,6 +46,22 @@ definitions:
     required:
     - description
     - name
+    type: object
+  delivery.signUpRequest:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+    required:
+    - firstName
+    - lastName
+    - password
+    - phone
     type: object
   models.Product:
     properties:
@@ -40,6 +93,21 @@ definitions:
       rating:
         type: number
     type: object
+  models.User:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+      phone:
+        type: string
+      profile_photo:
+        type: string
+    type: object
   tools.Error:
     properties:
       error:
@@ -59,7 +127,266 @@ info:
   title: Swagger SkyDelivery API
   version: "1.0"
 paths:
-  /api/v1/restaurants:
+  /product/:prod_id:
+    delete:
+      consumes:
+      - application/json
+      description: Updating Product Image
+      parameters:
+      - description: Product ID
+        in: path
+        name: prod_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Update Product Image Route
+      tags:
+      - Product
+  /product/:prod_id/image:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updating Product Image
+      parameters:
+      - description: Product ID
+        in: path
+        name: prod_id
+        required: true
+        type: integer
+      - description: New product image
+        in: formData
+        name: ProdReq
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Update Product Image Route
+      tags:
+      - Product
+  /product/:prod_id/update:
+    put:
+      consumes:
+      - application/json
+      description: Updating Product
+      parameters:
+      - description: Product ID
+        in: path
+        name: prod_id
+        required: true
+        type: integer
+      - description: New product data
+        in: body
+        name: ProdReq
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.productRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Update Product Route
+      tags:
+      - Product
+  /product/prod:id:
+    get:
+      consumes:
+      - application/json
+      description: Returning Product Model
+      parameters:
+      - description: Product ID
+        in: path
+        name: prod_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Product'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Get Product Route
+      tags:
+      - Product
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: Getting Profile Of User
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Get Profile Route
+      tags:
+      - User
+  /profile/avatar:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Changing Avatar Of User
+      parameters:
+      - description: New avatar of user
+        in: formData
+        name: '"image"'
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Edit Avatar Route
+      tags:
+      - User
+  /profile/bio:
+    put:
+      consumes:
+      - application/json
+      description: Editing bio data of user
+      parameters:
+      - description: Bio data of user
+        in: body
+        name: '"bioReq"'
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.editBioRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - cookieAuth: []
+      summary: Edit Bio Route
+      tags:
+      - User
+  /profile/password:
+    put:
+      consumes:
+      - application/json
+      description: Changing password of user
+      parameters:
+      - description: New password
+        in: body
+        name: '"password"'
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.changePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Change Password Route
+      tags:
+      - User
+  /profile/phone:
+    put:
+      consumes:
+      - application/json
+      description: Changing Phone Number Of User
+      parameters:
+      - description: New phone number of user
+        in: body
+        name: '"phone"'
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.changePhoneNumberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Change Phone Number Route
+      tags:
+      - User
+  /restaurants:
     get:
       consumes:
       - application/json
@@ -105,13 +432,13 @@ paths:
       summary: Create New Restaurant Route
       tags:
       - Restaurant
-  /api/v1/restaurants/:rest_id:
+  /restaurants/:rest_id:
     delete:
       consumes:
       - application/json
       description: Deleting Restaurant
       parameters:
-      - description: Id of restaurant
+      - description: Restaurant ID
         in: path
         name: rest_id
         required: true
@@ -127,15 +454,19 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
       summary: Delete Restaurant Route
       tags:
       - Restaurant
     get:
       consumes:
       - application/json
-      description: Returning restaurant model
+      description: Returning Restaurant Model
       parameters:
-      - description: Restaurant id
+      - description: Restaurant ID
         in: path
         name: rest_id
         required: true
@@ -158,13 +489,13 @@ paths:
       summary: Get Restaurant By ID Route
       tags:
       - Restaurant
-  /api/v1/restaurants/:rest_id/image:
+  /restaurants/:rest_id/image:
     put:
       consumes:
       - application/json
       description: Updating Restaurant Image
       parameters:
-      - description: Id of restaurant
+      - description: Restaurant ID
         in: path
         name: rest_id
         required: true
@@ -175,7 +506,7 @@ paths:
         required: true
         type: file
       produces:
-      - application/json
+      - multipart/form-data
       responses:
         "200":
           description: OK
@@ -185,16 +516,20 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
       summary: Update Restaurant Image Route
       tags:
       - Restaurant
-  /api/v1/restaurants/:rest_id/update:
+  /restaurants/:rest_id/update:
     put:
       consumes:
       - application/json
       description: Updating Restaurant
       parameters:
-      - description: Id of restaurant
+      - description: Restaurant ID
         in: path
         name: rest_id
         required: true
@@ -219,4 +554,87 @@ paths:
       summary: Update Restaurant Route
       tags:
       - Restaurant
+  /restaurants/rest:id/product:
+    get:
+      consumes:
+      - application/json
+      description: Returning Products List of Restaurant
+      parameters:
+      - description: Id of restaurant
+        in: path
+        name: rest_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Product'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Get Products Of Restaurant Route
+      tags:
+      - Product
+    post:
+      consumes:
+      - application/json
+      description: Creating Product
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: rest_id
+        required: true
+        type: integer
+      - description: New product data
+        in: body
+        name: ProdReq
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.productRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Create Product Route
+      tags:
+      - Product
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Signing up
+      parameters:
+      - description: New user data
+        in: body
+        name: '"SignUpReq"'
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.signUpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+      summary: Sign Up Route
+      tags:
+      - User
 swagger: "2.0"
