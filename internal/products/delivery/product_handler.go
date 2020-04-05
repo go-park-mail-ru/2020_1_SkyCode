@@ -1,8 +1,10 @@
 package delivery
 
 import (
+	"github.com/2020_1_Skycode/internal/middlewares"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/products"
+	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/gin-gonic/gin"
 	"github.com/renstrom/shortuuid"
@@ -14,16 +16,20 @@ import (
 
 type ProductHandler struct {
 	productUseCase products.UseCase
+	restUseCase    restaurants.UseCase
+	middlewareC    *middlewares.MWController
 }
 
-func NewProductHandler(router *gin.Engine, pUC products.UseCase) *ProductHandler {
+func NewProductHandler(router *gin.Engine, pUC products.UseCase, rUC restaurants.UseCase, mw *middlewares.MWController) *ProductHandler {
 	ph := &ProductHandler{
 		productUseCase: pUC,
+		middlewareC:    mw,
+		restUseCase:    rUC,
 	}
 
 	router.GET("api/v1/products/:prod_id", ph.GetProduct())
 	router.GET("api/v1/restaurants/:rest_id/product", ph.GetProducts())
-	router.POST("api/v1/restaurants/:rest_id/product", ph.CreateProduct())
+	router.POST("api/v1/restaurants/:rest_id/product", mw.CheckAuth(), ph.CreateProduct())
 	router.PUT("api/v1/products/:prod_id/update", ph.UpdateProduct())
 	router.PUT("api/v1/products/:prod_id/image", ph.UpdateImage())
 	router.DELETE("api/v1/products/:prod_id/delete", ph.DeleteProduct())
@@ -121,6 +127,54 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &productRequest{}
 
+		user, err := ph.middlewareC.GetUser(c)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		if !user.IsManager() && !user.IsAdmin() {
+			c.JSON(http.StatusForbidden, tools.Error{
+				ErrorMessage: "User doesn't have permissions",
+			})
+
+			return
+		}
+
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		rest, err := ph.restUseCase.GetRestaurantByID(restID);
+
+		if err != nil {
+			c.JSON(http.StatusNotFound, tools.Error{
+				ErrorMessage: tools.RestaurantNotFoundError.Error(),
+			})
+
+			return
+		}
+
+		if rest.ManagerID != user.ID && !user.IsAdmin() {
+			logrus.Info(rest, user)
+			c.JSON(http.StatusForbidden, tools.Error{
+				ErrorMessage: tools.RestaurantPermissionsError.Error(),
+			})
+
+			return
+		}
+
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
@@ -143,17 +197,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 
 		filename := shortuuid.New() + "-" + file.Filename
 
-		if err := c.SaveUploadedFile(file, tools.ProductImagesPath + filename); err != nil {
-			logrus.Info(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
-			})
-
-			return
-		}
-
-		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
-		if err != nil {
+		if err := c.SaveUploadedFile(file, tools.ProductImagesPath+filename); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
@@ -166,7 +210,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			Name:   req.Name,
 			Price:  req.Price,
 			RestId: restID,
-			Image: filename,
+			Image:  filename,
 		}
 
 		if err = ph.productUseCase.CreateProduct(product); err != nil {

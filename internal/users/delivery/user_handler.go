@@ -146,22 +146,13 @@ func (uh *UserHandler) EditBio() gin.HandlerFunc {
 			return
 		}
 
-		usr, exists := c.Get("user")
+		user, err := uh.middlewareC.GetUser(c)
 
-		if !exists {
-			c.JSON(http.StatusUnauthorized, tools.Error{
-				ErrorMessage: tools.Unauthorized.Error(),
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
 			})
 
-			return
-		}
-
-		user, ok := usr.(*models.User)
-
-		if !ok {
-			c.JSON(http.StatusInternalServerError, tools.Error{
-				ErrorMessage: tools.UserTypeAssertionErr.Error(),
-			})
 			return
 		}
 
@@ -198,22 +189,13 @@ func (uh *UserHandler) EditBio() gin.HandlerFunc {
 //@Router /profile/avatar [put]
 func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		usr, exists := c.Get("user")
+		user, err := uh.middlewareC.GetUser(c)
 
-		if !exists {
-			c.JSON(http.StatusUnauthorized, tools.Error{
-				ErrorMessage: tools.Unauthorized.Error(),
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
 			})
 
-			return
-		}
-
-		user, ok := usr.(*models.User)
-
-		if !ok {
-			c.JSON(http.StatusInternalServerError, tools.Error{
-				ErrorMessage: tools.UserTypeAssertionErr.Error(),
-			})
 			return
 		}
 
@@ -290,22 +272,13 @@ func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
 			return
 		}
 
-		usr, exists := c.Get("user")
+		user, err := uh.middlewareC.GetUser(c)
 
-		if !exists {
-			c.JSON(http.StatusUnauthorized, tools.Error{
-				ErrorMessage: tools.Unauthorized.Error(),
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
 			})
 
-			return
-		}
-
-		user, ok := usr.(*models.User)
-
-		if !ok {
-			c.JSON(http.StatusInternalServerError, tools.Error{
-				ErrorMessage: tools.UserTypeAssertionErr.Error(),
-			})
 			return
 		}
 
@@ -360,22 +333,13 @@ func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
 			return
 		}
 
-		usr, exists := c.Get("user")
+		user, err := uh.middlewareC.GetUser(c)
 
-		if !exists {
-			c.JSON(http.StatusUnauthorized, tools.Error{
-				ErrorMessage: tools.Unauthorized.Error(),
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
 			})
 
-			return
-		}
-
-		user, ok := usr.(*models.User)
-
-		if !ok {
-			c.JSON(http.StatusInternalServerError, tools.Error{
-				ErrorMessage: tools.UserTypeAssertionErr.Error(),
-			})
 			return
 		}
 
@@ -406,22 +370,13 @@ func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
 //@Router /profile [get]
 func (uh *UserHandler) GetProfile() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		usr, exists := c.Get("user")
+		user, err := uh.middlewareC.GetUser(c)
 
-		if !exists {
-			c.JSON(http.StatusUnauthorized, tools.Error{
-				ErrorMessage: tools.Unauthorized.Error(),
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
 			})
 
-			return
-		}
-
-		user, ok := usr.(*models.User)
-
-		if !ok {
-			c.JSON(http.StatusInternalServerError, tools.Error{
-				ErrorMessage: tools.UserTypeAssertionErr.Error(),
-			})
 			return
 		}
 

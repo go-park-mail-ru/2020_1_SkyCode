@@ -41,8 +41,8 @@ func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {
 	restaurant := &models.Restaurant{}
 
 	err := rr.db.
-		QueryRow("SELECT id, name, description, rating, image FROM restaurants WHERE id = $1", id).
-		Scan(&restaurant.ID, &restaurant.Name, &restaurant.Description,
+		QueryRow("SELECT id, moderId, name, description, rating, image FROM restaurants WHERE id = $1", id).
+		Scan(&restaurant.ID, &restaurant.ManagerID, &restaurant.Name, &restaurant.Description,
 			&restaurant.Rating, &restaurant.Image)
 
 	if err != nil {
@@ -52,8 +52,9 @@ func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {
 }
 
 func (rr *RestaurantRepository) InsertInto(rest *models.Restaurant) error {
-	if err := rr.db.QueryRow("INSERT INTO restaurants (name, description, rating, image) "+
-		"VALUES ($1, $2, $3, $4) RETURNING id",
+	if err := rr.db.QueryRow("INSERT INTO restaurants (moderId, name, description, rating, image) "+
+		"VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		rest.ManagerID,
 		rest.Name,
 		rest.Description,
 		rest.Rating,

@@ -84,7 +84,7 @@ func main() {
 	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
 	_ = _usersDelivery.NewUserHandler(e, userUcase, sessionsUcase, mwareC)
 	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
-	_ = _productDelivery.NewProductHandler(e, prodUcase)
+	_ = _productDelivery.NewProductHandler(e, prodUcase, restUcase, mwareC)
 	_ = _ordersDelivery.NewOrderHandler(e, ordersUcase, mwareC)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

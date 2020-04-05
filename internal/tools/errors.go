@@ -16,4 +16,6 @@ var (
 	UpdatePhoneError = errors.New("Error updating phone number")
 	DeleteAvatarError = errors.New("Error deleting avatar")
 	CheckoutOrderError = errors.New("Error checkout order")
+	RestaurantNotFoundError = errors.New("Restaurant not found")
+	RestaurantPermissionsError = errors.New("You doesn't have permissions to manage this restaurant")
 )

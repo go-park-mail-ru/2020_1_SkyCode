@@ -54,22 +54,13 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &orderRequest{}
 
-		usr, exists := c.Get("user")
+		_, err := oH.MiddlewareC.GetUser(c)
 
-		if !exists {
-			c.JSON(http.StatusUnauthorized, tools.Error{
-				ErrorMessage: tools.Unauthorized.Error(),
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
 			})
 
-			return
-		}
-
-		_, ok := usr.(*models.User)
-
-		if !ok {
-			c.JSON(http.StatusInternalServerError, tools.Error{
-				ErrorMessage: tools.UserTypeAssertionErr.Error(),
-			})
 			return
 		}
 

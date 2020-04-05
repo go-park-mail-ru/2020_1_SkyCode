@@ -46,9 +46,9 @@ func (ur *UserRepository) Update(user *models.User) error {
 
 func (ur *UserRepository) UpdatePhone(user *models.User) error {
 	if err := ur.db.QueryRow("UPDATE users SET Phone = $2 WHERE id = $1" +
-		" RETURNING firstName, lastName, email, avatar",
+		" RETURNING firstName, lastName, email, avatar, role",
 		user.ID,
-		user.Phone).Scan(&user.FirstName, &user.LastName, &user.Email, &user.Avatar); err != nil {
+		user.Phone).Scan(&user.FirstName, &user.LastName, &user.Email, &user.Avatar, &user.Role); err != nil {
 		return err
 	}
 
@@ -57,9 +57,9 @@ func (ur *UserRepository) UpdatePhone(user *models.User) error {
 
 func (ur *UserRepository) UpdateAvatar(user *models.User) error {
 	if err := ur.db.QueryRow("UPDATE users SET Avatar = $2 WHERE id = $1" +
-		" RETURNING firstName, lastName, email, phone",
+		" RETURNING firstName, lastName, email, phone, role",
 		user.ID,
-		user.Avatar).Scan(&user.FirstName, &user.LastName, &user.Email, &user.Phone); err != nil {
+		user.Avatar).Scan(&user.FirstName, &user.LastName, &user.Email, &user.Phone, &user.Role); err != nil {
 		return err
 	}
 
@@ -68,9 +68,9 @@ func (ur *UserRepository) UpdateAvatar(user *models.User) error {
 
 func (ur *UserRepository) UpdatePassword(user *models.User) error {
 	if err := ur.db.QueryRow("UPDATE users SET Password = $2 WHERE id = $1" +
-		" RETURNING firstName, lastName, email, avatar",
+		" RETURNING firstName, lastName, email, avatar, role",
 		user.ID,
-		user.Password).Scan(&user.FirstName, &user.LastName, &user.Email, &user.Avatar); err != nil {
+		user.Password).Scan(&user.FirstName, &user.LastName, &user.Email, &user.Avatar, &user.Role); err != nil {
 		return err
 	}
 
@@ -78,8 +78,8 @@ func (ur *UserRepository) UpdatePassword(user *models.User) error {
 }
 
 func (ur *UserRepository) GetById(user *models.User) error {
-	if err := ur.db.QueryRow("SELECT firstName, lastName, email, password, avatar, phone FROM users WHERE id = $1",
-		user.ID).Scan(&user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Avatar, &user.Phone); err != nil {
+	if err := ur.db.QueryRow("SELECT firstName, lastName, email, password, avatar, phone, role FROM users WHERE id = $1",
+		user.ID).Scan(&user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Avatar, &user.Phone, &user.Role); err != nil {
 		return err
 	}
 
@@ -87,8 +87,8 @@ func (ur *UserRepository) GetById(user *models.User) error {
 }
 
 func (ur *UserRepository) GetByPhone(user *models.User) error {
-	if err := ur.db.QueryRow("SELECT id, firstName, lastName, email, password, avatar FROM users WHERE phone = $1",
-		user.Phone).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Avatar); err != nil {
+	if err := ur.db.QueryRow("SELECT id, firstName, lastName, email, password, avatar, role FROM users WHERE phone = $1",
+		user.Phone).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.Avatar, &user.Role); err != nil {
 		return err
 	}
 

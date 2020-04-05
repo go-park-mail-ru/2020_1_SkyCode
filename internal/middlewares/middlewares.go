@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/internal/users"
@@ -79,6 +80,36 @@ func (mw *MWController) CheckAuth() gin.HandlerFunc {
 		c.Set("user", user)
 		c.Next()
 	}
+}
+
+func (mw *MWController) GetUser(c *gin.Context) (*models.User, error) {
+	usr, exists := c.Get("user")
+	if !exists {
+		return nil, tools.Unauthorized
+	}
+
+	user, ok := usr.(*models.User)
+	if !ok {
+		return nil, tools.UserTypeAssertionErr
+	}
+
+	return user, nil
+}
+
+func (mw *MWController) GetSession(c *gin.Context) (*models.Session, error) {
+	sess, exists := c.Get("session")
+
+	if !exists {
+		return nil, tools.Unauthorized
+	}
+
+	session, ok := sess.(*models.Session)
+
+	if !ok {
+		return nil, tools.SessionTypeAssertionErr
+	}
+
+	return session, nil
 }
 
 func (mw *MWController) AccessLogging(next http.Handler) http.Handler {

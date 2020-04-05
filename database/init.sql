@@ -10,7 +10,9 @@ create table users (
     email     varchar(30),
     phone     varchar(15) not null unique,
     password  varchar(20) not null,
-    avatar    varchar(50)
+    avatar    varchar(50),
+    role      varchar(30) not null
+    constraint checkRoleInsert CHECK (role IN ('Admin', 'User', 'Moderator'))
 );
 
 create table sessions (
@@ -22,6 +24,7 @@ create table sessions (
 
 create table restaurants (
     id          serial      not null primary key,
+    moderId     int         not null,
     name        varchar(30) not null,
     description text        not null,
     rating      real        not null,

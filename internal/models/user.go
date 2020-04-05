@@ -1,9 +1,5 @@
 package models
 
-import (
-	"sync"
-)
-
 type User struct {
 	ID        uint64 `json:"id"`
 	Email     string `json:"email"`
@@ -12,10 +8,17 @@ type User struct {
 	LastName  string `json:"lastName"`
 	Phone     string `json:"phone"`
 	Avatar    string `json:"profile_photo"`
+	Role      string `json:"role"`
 }
 
-type UserStore struct {
-	Users  map[uint]*User
-	mu     sync.RWMutex
-	nextID uint
+func (u *User) IsAdmin() bool {
+	return u.Role == "Admin"
+}
+
+func (u *User) IsManager() bool {
+	return u.Role == "Moderator"
+}
+
+func (u *User) IsUser() bool {
+	return u.Role == "User"
 }
