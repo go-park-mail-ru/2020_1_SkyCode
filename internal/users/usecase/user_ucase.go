@@ -16,6 +16,7 @@ func NewUserUseCase(ur users.Repository) users.UseCase {
 }
 
 func (uUC *UserUseCase) CreateUser(user *models.User) error {
+	user.SetUser()
 	if err := uUC.userRepo.InsertInto(user); err != nil {
 		return err
 	}

@@ -22,3 +22,15 @@ func (u *User) IsManager() bool {
 func (u *User) IsUser() bool {
 	return u.Role == "User"
 }
+
+func (u *User) SetAdmin() {
+	u.Role = "Admin"
+}
+
+func (u *User) SetManager() {
+	u.Role = "Moderator"
+}
+
+func (u *User) SetUser() {
+	u.Role = "User"
+}

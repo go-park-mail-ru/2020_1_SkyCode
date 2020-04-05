@@ -17,14 +17,15 @@ func NewUserRepository(db *pgx.Conn) users.Repository {
 }
 
 func (ur *UserRepository) InsertInto(user *models.User) error {
-	if err := ur.db.QueryRow("INSERT INTO users(firstName, lastName, email, phone, password, avatar) "+
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+	if err := ur.db.QueryRow("INSERT INTO users(firstName, lastName, email, phone, password, avatar, role) "+
+		"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
 		user.FirstName,
 		user.LastName,
 		user.Email,
 		user.Phone,
 		user.Password,
-		user.Avatar).Scan(&user.ID); err != nil {
+		user.Avatar,
+		user.Role).Scan(&user.ID); err != nil {
 		return err
 	}
 
