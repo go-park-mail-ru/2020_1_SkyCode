@@ -23,6 +23,7 @@ func NewMiddleWareController(router *gin.Engine, sessionUC sessions.UseCase, use
 		userUC: userUC,
 	}
 
+	router.Use(mw.AccessLogging())
 	router.Use(mw.CORS())
 
 	return mw
@@ -30,9 +31,8 @@ func NewMiddleWareController(router *gin.Engine, sessionUC sessions.UseCase, use
 
 func (mw *MWController) CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		logrus.Info("CORS handler")
 		origin := c.Request.Header.Get("Origin")
-
-		logrus.Info(origin)
 
 		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -52,6 +52,7 @@ func (mw *MWController) CORS() gin.HandlerFunc {
 
 func (mw *MWController) CheckAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		logrus.Info("Check auth")
 		cookie, err := c.Cookie("SkyDelivery");
 
 		if err != nil {
@@ -112,10 +113,10 @@ func (mw *MWController) GetSession(c *gin.Context) (*models.Session, error) {
 	return session, nil
 }
 
-func (mw *MWController) AccessLogging(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		next.ServeHTTP(w, r)
-		data := []string{r.Method, r.URL.String(), r.RemoteAddr, time.Now().UTC().String()}
+func (mw *MWController) AccessLogging() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		data := []string{c.Request.Method, c.Request.URL.String(), c.Request.RemoteAddr, time.Now().UTC().String()}
 		logrus.Info(strings.Join(data, " "))
-	})
+		c.Next()
+	}
 }
