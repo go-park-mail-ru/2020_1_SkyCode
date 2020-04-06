@@ -195,7 +195,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			return
 		}
 
-		filename := shortuuid.New() + "-" + file.Filename
+		filename := shortuuid.New()
 
 		if err := c.SaveUploadedFile(file, tools.ProductImagesPath+filename); err != nil {
 			logrus.Info(err)
