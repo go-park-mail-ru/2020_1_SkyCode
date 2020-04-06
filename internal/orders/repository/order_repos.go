@@ -1,16 +1,16 @@
 package repository
 
 import (
+	"database/sql"
 	"fmt"
-	"github.com/jackc/pgx"
 	"github.com/2020_1_Skycode/internal/models"
 )
 
 type OrdersRepository struct {
-	db *pgx.Conn
+	db *sql.DB
 }
 
-func NewOrdersRepository(db *pgx.Conn) *OrdersRepository{
+func NewOrdersRepository(db *sql.DB) *OrdersRepository{
 	return &OrdersRepository{
 		db: db,
 	}

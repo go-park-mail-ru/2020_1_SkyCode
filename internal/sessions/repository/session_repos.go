@@ -1,17 +1,17 @@
 package repository
 
 import (
+	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
-	"github.com/jackc/pgx"
 )
 
 type Repository struct {
-	db *pgx.Conn
+	db *sql.DB
 }
 
-func NewSessionRepository(db *pgx.Conn) *Repository {
+func NewSessionRepository(db *sql.DB) *Repository {
 	return &Repository{
-		db:db,
+		db: db,
 	}
 }
 

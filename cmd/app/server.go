@@ -1,6 +1,9 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
+	_ "github.com/2020_1_Skycode/docs"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
 	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
@@ -19,14 +22,19 @@ import (
 	_usersRepository "github.com/2020_1_Skycode/internal/users/repository"
 	_usersUseCase "github.com/2020_1_Skycode/internal/users/usecase"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx"
 	_ "github.com/lib/pq"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
-
-	_ "github.com/2020_1_Skycode/docs"
 )
+
+type DatabaseInfo struct {
+	Host string `json:"host"`
+	Port int `json:"port"`
+	Name string `json:"name"`
+	User string `json:"user"`
+	Password string `json:"password"`
+}
 
 // @title Swagger SkyDelivery API
 // @version 1.0
@@ -43,13 +51,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	dbConn, err := pgx.Connect(pgx.ConnConfig{
-		Host:     config.Database.Host,
-		Port:     config.Database.Port,
-		Database: config.Database.Name,
-		User:     config.Database.User,
-		Password: config.Database.Password,
-	})
+	//dbConn, err := pgx.Connect(pgx.ConnConfig{
+	//	Host:     config.Database.Host,
+	//	Port:     config.Database.Port,
+	//	Database: config.Database.Name,
+	//	User:     config.Database.User,
+	//	Password: config.Database.Password,
+	//})
+
+	connString := fmt.Sprintf("host=%s port=%d dbname=%s user=%s sslmode=disable password=%s",
+		config.Database.Host,
+		config.Database.Port,
+		config.Database.Name,
+		config.Database.User,
+		config.Database.Password)
+
+	dbConn, err := sql.Open("postgres", connString)
 
 	if err != nil {
 		log.Fatal(err)

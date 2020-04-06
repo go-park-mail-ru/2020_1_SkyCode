@@ -1,23 +1,23 @@
 package repository
 
 import (
+	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurants"
-	"github.com/jackc/pgx"
 )
 
 type RestaurantRepository struct {
-	db *pgx.Conn
+	db *sql.DB
 }
 
-func NewRestaurantRepository(db *pgx.Conn) restaurants.Repository {
+func NewRestaurantRepository(db *sql.DB) restaurants.Repository {
 	return &RestaurantRepository{
 		db: db,
 	}
 }
 
 func (rr *RestaurantRepository) GetAll() ([]*models.Restaurant, error) {
-	restaurantsList := []*models.Restaurant{}
+	var restaurantsList []*models.Restaurant
 
 	rows, err := rr.db.Query("SELECT id, name, rating, image FROM restaurants")
 	if err != nil {

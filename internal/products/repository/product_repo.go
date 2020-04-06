@@ -1,16 +1,16 @@
 package repository
 
 import (
-	"github.com/jackc/pgx"
+	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/products"
 )
 
 type ProductRepository struct {
-	db *pgx.Conn
+	db *sql.DB
 }
 
-func NewProductRepository(db *pgx.Conn) products.Repository {
+func NewProductRepository(db *sql.DB) products.Repository {
 	return &ProductRepository{
 		db: db,
 	}
