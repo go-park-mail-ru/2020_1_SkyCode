@@ -29,10 +29,10 @@ import (
 )
 
 type DatabaseInfo struct {
-	Host string `json:"host"`
-	Port int `json:"port"`
-	Name string `json:"name"`
-	User string `json:"user"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Name     string `json:"name"`
+	User     string `json:"user"`
 	Password string `json:"password"`
 }
 
@@ -50,14 +50,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	//dbConn, err := pgx.Connect(pgx.ConnConfig{
-	//	Host:     config.Database.Host,
-	//	Port:     config.Database.Port,
-	//	Database: config.Database.Name,
-	//	User:     config.Database.User,
-	//	Password: config.Database.Password,
-	//})
 
 	connString := fmt.Sprintf("host=%s port=%d dbname=%s user=%s sslmode=disable password=%s",
 		config.Database.Host,
