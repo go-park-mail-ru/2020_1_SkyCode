@@ -6,6 +6,7 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/orders"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/requestValidator"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -14,12 +15,15 @@ import (
 type OrderHandler struct {
 	OrderUseCase orders.UseCase
 	MiddlewareC  *middlewares.MWController
+	v              *requestValidator.RequestValidator
 }
 
-func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC orders.UseCase, mw *middlewares.MWController) *OrderHandler {
+func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC orders.UseCase,
+	validator *requestValidator.RequestValidator, mw *middlewares.MWController) *OrderHandler {
 	oh := &OrderHandler{
 		OrderUseCase: orderUC,
 		MiddlewareC:  mw,
+		v: validator,
 	}
 
 	private.POST("/orders/checkout", oh.Checkout())
@@ -30,13 +34,13 @@ func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC 
 }
 
 type orderRequest struct {
-	UserID    uint64                 `json:"userId" binding:"required"`
-	Address   string                 `json:"address" binding:"required"`
+	UserID    uint64                 `json:"userId" binding:"required" validate:"regexp=numberRegexString"`
+	Address   string                 `json:"address" binding:"required" validate:"min=5"`
 	Comment   string                 `json:"comment"`
-	Phone     string                 `json:"phone" binding:"required"`
-	PersonNum uint16                 `json:"personNum" binding:"required"`
-	Products  []*models.OrderProduct `json:"products" binding:"required"`
-	Price     float32                `json:"price" binding:"required"`
+	Phone     string                 `json:"phone" binding:"required" validate:"min=11,max=15"`
+	PersonNum uint16                 `json:"personNum" binding:"required" validate:"regexp=numberRegexString"`
+	Products  []*models.OrderProduct `json:"products" binding:"required" required:"dive,required"`
+	Price     float32                `json:"price" binding:"required" validate:"regexp=numberRegexString"`
 }
 
 //@Tags Order
@@ -69,6 +73,17 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := oH.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return

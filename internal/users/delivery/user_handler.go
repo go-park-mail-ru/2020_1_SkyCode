@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"fmt"
 	"github.com/2020_1_Skycode/internal/middlewares"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
@@ -44,24 +43,24 @@ func NewUserHandler(private *gin.RouterGroup, public *gin.RouterGroup, uUC users
 }
 
 type signUpRequest struct {
-	FirstName string `json:"firstName, omitempty" binding:"required"`
-	LastName  string `json:"lastName, omitempty" binding:"required"`
-	Phone     string `json:"phone, omitempty" binding:"required"`
+	FirstName string `json:"firstName, omitempty" binding:"required" validate:"min=2"`
+	LastName  string `json:"lastName, omitempty" binding:"required" validate:"min=2"`
+	Phone     string `json:"phone, omitempty" binding:"required" validate:"min=11,max=15"`
 	Password  string `json:"password, omitempty" binding:"required" validate:"passwd"`
 }
 
 type editBioRequest struct {
-	FirstName string `json:"firstName" binding:"required"`
-	LastName  string `json:"lastName" binding:"required"`
-	Email     string `json:"email"`
+	FirstName string `json:"firstName" binding:"required" validate:"min=2"`
+	LastName  string `json:"lastName" binding:"required" validate:"min=2"`
+	Email     string `json:"email" validate:"email"`
 }
 
 type changePasswordRequest struct {
-	NewPassword string `json:"newPassword" binding:"required"`
+	NewPassword string `json:"newPassword" binding:"required" validate:"passwd"`
 }
 
 type changePhoneNumberRequest struct {
-	NewPhone string `json:"newPhone" binding:"required" validate:"numeric"`
+	NewPhone string `json:"newPhone" binding:"required" validate:"min=11,max=15"`
 }
 
 //@Tags User
@@ -86,8 +85,28 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 			return
 		}
 
-		errors := uh.v.ValidateRequest(req)
-		fmt.Println(errors)
+		errorsList := uh.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.ErrorRequestValidation.Error(),
+			})
+
+			return
+		}
+
+		_, err := uh.userUseCase.GetUserByPhone(req.Phone)
+
+		if err == nil {
+			logrus.Info(tools.UserExists)
+			c.JSON(http.StatusOK, tools.Error{
+				ErrorMessage: tools.UserExists.Error(),
+			})
+
+			return
+		}
+
 
 		u := &models.User{
 			FirstName: req.FirstName,
@@ -150,6 +169,17 @@ func (uh *UserHandler) EditBio() gin.HandlerFunc {
 			logrus.Info("Bad params")
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := uh.v.ValidateRequest(updProfile)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -281,6 +311,17 @@ func (uh *UserHandler) ChangePhoneNumber() gin.HandlerFunc {
 			return
 		}
 
+		errorsList := uh.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
+			})
+
+			return
+		}
+
 		user, err := uh.middlewareC.GetUser(c)
 
 		if err != nil {
@@ -337,6 +378,17 @@ func (uh *UserHandler) ChangePassword() gin.HandlerFunc {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := uh.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return

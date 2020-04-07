@@ -6,6 +6,7 @@ import (
 	"github.com/2020_1_Skycode/internal/sessions"
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/internal/tools/CSRFManager"
+	"github.com/2020_1_Skycode/internal/tools/requestValidator"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -17,15 +18,17 @@ type SessionHandler struct {
 	UserUseCase    users.UseCase
 	MiddlewareC    *middlewares.MWController
 	tM             *CSRFManager.CSRFManager
+	v              *requestValidator.RequestValidator
 }
 
 func NewSessionHandler(private *gin.RouterGroup, public *gin.RouterGroup, sessionUC sessions.UseCase, usersUC users.UseCase,
-	tM *CSRFManager.CSRFManager, mwareC *middlewares.MWController) *SessionHandler {
+	validator *requestValidator.RequestValidator, tM *CSRFManager.CSRFManager, mwareC *middlewares.MWController) *SessionHandler {
 	sh := &SessionHandler{
 		SessionUseCase: sessionUC,
 		UserUseCase:    usersUC,
 		MiddlewareC:    mwareC,
 		tM:             tM,
+		v:              validator,
 	}
 
 	public.POST("/signin", sh.SignIn())
@@ -58,6 +61,17 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := sh.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return

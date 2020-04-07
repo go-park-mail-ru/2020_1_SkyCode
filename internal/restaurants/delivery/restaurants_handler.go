@@ -4,6 +4,7 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/requestValidator"
 	"github.com/gin-gonic/gin"
 	"github.com/renstrom/shortuuid"
 	"github.com/sirupsen/logrus"
@@ -14,11 +15,14 @@ import (
 
 type RestaurantHandler struct {
 	restUseCase restaurants.UseCase
+	v           *requestValidator.RequestValidator
 }
 
-func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup, rUC restaurants.UseCase) *RestaurantHandler {
+func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
+	validator *requestValidator.RequestValidator, rUC restaurants.UseCase) *RestaurantHandler {
 	rh := &RestaurantHandler{
 		restUseCase: rUC,
+		v: validator,
 	}
 
 	public.GET("/restaurants", rh.GetRestaurants())
@@ -120,6 +124,17 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 			return
 		}
 
+		errorsList := rh.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
+			})
+
+			return
+		}
+
 		rest := &models.Restaurant{
 			Name:        req.Name,
 			Description: req.Description,
@@ -158,6 +173,17 @@ func (rh *RestaurantHandler) UpdateRestaurant() gin.HandlerFunc {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := rh.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return

@@ -6,6 +6,7 @@ import (
 	"github.com/2020_1_Skycode/internal/products"
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/requestValidator"
 	"github.com/gin-gonic/gin"
 	"github.com/renstrom/shortuuid"
 	"github.com/sirupsen/logrus"
@@ -18,13 +19,16 @@ type ProductHandler struct {
 	productUseCase products.UseCase
 	restUseCase    restaurants.UseCase
 	middlewareC    *middlewares.MWController
+	v              *requestValidator.RequestValidator
 }
 
-func NewProductHandler(private *gin.RouterGroup, public *gin.RouterGroup, pUC products.UseCase, rUC restaurants.UseCase, mw *middlewares.MWController) *ProductHandler {
+func NewProductHandler(private *gin.RouterGroup, public *gin.RouterGroup, pUC products.UseCase,
+	validator *requestValidator.RequestValidator, rUC restaurants.UseCase, mw *middlewares.MWController) *ProductHandler {
 	ph := &ProductHandler{
 		productUseCase: pUC,
 		middlewareC:    mw,
 		restUseCase:    rUC,
+		v: validator,
 	}
 
 	public.GET("/products/:prod_id", ph.GetProduct())
@@ -39,8 +43,8 @@ func NewProductHandler(private *gin.RouterGroup, public *gin.RouterGroup, pUC pr
 }
 
 type productRequest struct {
-	Name  string  `json:"name, omitempty" binding:"required"`
-	Price float32 `json:"price, omitempty" binding:"required"`
+	Name  string  `json:"name, omitempty" binding:"required" validate:"min=2"`
+	Price float32 `json:"price, omitempty" binding:"required" validate:"regexp=numberRegexString"`
 }
 
 //@Tags Product
@@ -139,6 +143,17 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			return
 		}
 
+		errorsList := ph.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
+			})
+
+			return
+		}
+
 		if !user.IsManager() && !user.IsAdmin() {
 			c.JSON(http.StatusForbidden, tools.Error{
 				ErrorMessage: "User doesn't have permissions",
@@ -157,7 +172,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			return
 		}
 
-		rest, err := ph.restUseCase.GetRestaurantByID(restID);
+		rest, err := ph.restUseCase.GetRestaurantByID(restID)
 
 		if err != nil {
 			c.JSON(http.StatusNotFound, tools.Error{
@@ -252,6 +267,17 @@ func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := ph.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return

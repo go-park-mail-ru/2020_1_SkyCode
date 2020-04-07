@@ -90,11 +90,11 @@ func main() {
 
 	privateGroup.Use(mwareC.CSRFControl())
 
-	_ = _sessionsDelivery.NewSessionHandler(privateGroup, publicGroup, sessionsUcase, userUcase, csrfManager, mwareC)
+	_ = _sessionsDelivery.NewSessionHandler(privateGroup, publicGroup, sessionsUcase, userUcase, reqValidator, csrfManager, mwareC)
 	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, reqValidator, mwareC)
-	_ = _restDelivery.NewRestaurantHandler(privateGroup, publicGroup, restUcase)
-	_ = _productDelivery.NewProductHandler(privateGroup, publicGroup, prodUcase, restUcase, mwareC)
-	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, mwareC)
+	_ = _restDelivery.NewRestaurantHandler(privateGroup, publicGroup, reqValidator, restUcase)
+	_ = _productDelivery.NewProductHandler(privateGroup, publicGroup, prodUcase, reqValidator, restUcase, mwareC)
+	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, reqValidator, mwareC)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

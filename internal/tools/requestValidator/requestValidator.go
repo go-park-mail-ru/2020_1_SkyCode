@@ -19,8 +19,6 @@ func NewRequestValidator() *RequestValidator {
 	translator := en.New()
 	uni := ut.New(translator, translator)
 
-	// this is usually known or extracted from http 'Accept-Language' header
-	// also see uni.FindTranslator(...)
 	trans, found := uni.GetTranslator("en")
 	if !found {
 		log.Fatal("translator not found")
