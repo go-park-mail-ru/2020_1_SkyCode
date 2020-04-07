@@ -42,7 +42,7 @@ func (mw *MWController) CORS() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE, PUT")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, X-Csrf-Token")
 		c.Writer.Header().Set("Access-Control-Expose-Headers", "X-Csrf-Token")
 
 		if c.Request.Method == http.MethodOptions {
