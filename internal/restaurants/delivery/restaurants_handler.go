@@ -16,17 +16,18 @@ type RestaurantHandler struct {
 	restUseCase restaurants.UseCase
 }
 
-func NewRestaurantHandler(router *gin.Engine, rUC restaurants.UseCase) *RestaurantHandler {
+func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup, rUC restaurants.UseCase) *RestaurantHandler {
 	rh := &RestaurantHandler{
 		restUseCase: rUC,
 	}
 
-	router.GET("api/v1/restaurants", rh.GetRestaurants())
-	router.GET("api/v1/restaurants/:rest_id", rh.GetRestaurantByID())
-	router.POST("api/v1/restaurants", rh.CreateRestaurant())
-	router.PUT("api/v1/restaurants/:rest_id/update", rh.UpdateRestaurant())
-	router.PUT("api/v1/restaurants/:rest_id/image", rh.UpdateImage())
-	router.DELETE("api/v1/restaurants/:rest_id", rh.DeleteRestaurant())
+	public.GET("/restaurants", rh.GetRestaurants())
+	public.GET("/restaurants/:rest_id", rh.GetRestaurantByID())
+
+	private.POST("/restaurants", rh.CreateRestaurant())
+	private.PUT("/restaurants/:rest_id/update", rh.UpdateRestaurant())
+	private.PUT("/restaurants/:rest_id/image", rh.UpdateImage())
+	private.DELETE("/restaurants/:rest_id", rh.DeleteRestaurant())
 
 	return rh
 }

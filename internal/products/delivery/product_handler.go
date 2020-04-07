@@ -20,19 +20,20 @@ type ProductHandler struct {
 	middlewareC    *middlewares.MWController
 }
 
-func NewProductHandler(router *gin.Engine, pUC products.UseCase, rUC restaurants.UseCase, mw *middlewares.MWController) *ProductHandler {
+func NewProductHandler(private *gin.RouterGroup, public *gin.RouterGroup, pUC products.UseCase, rUC restaurants.UseCase, mw *middlewares.MWController) *ProductHandler {
 	ph := &ProductHandler{
 		productUseCase: pUC,
 		middlewareC:    mw,
 		restUseCase:    rUC,
 	}
 
-	router.GET("api/v1/products/:prod_id", ph.GetProduct())
-	router.GET("api/v1/restaurants/:rest_id/product", ph.GetProducts())
-	router.POST("api/v1/restaurants/:rest_id/product", mw.CheckAuth(), ph.CreateProduct())
-	router.PUT("api/v1/products/:prod_id/update", ph.UpdateProduct())
-	router.PUT("api/v1/products/:prod_id/image", ph.UpdateImage())
-	router.DELETE("api/v1/products/:prod_id/delete", ph.DeleteProduct())
+	public.GET("/products/:prod_id", ph.GetProduct())
+	public.GET("/restaurants/:rest_id/product", ph.GetProducts())
+
+	private.POST("/restaurants/:rest_id/product", ph.CreateProduct())
+	private.PUT("/products/:prod_id/update", ph.UpdateProduct())
+	private.PUT("/products/:prod_id/image", ph.UpdateImage())
+	private.DELETE("/products/:prod_id/delete", ph.DeleteProduct())
 
 	return ph
 }

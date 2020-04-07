@@ -5,6 +5,7 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/CSRFManager"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -15,17 +16,21 @@ type SessionHandler struct {
 	SessionUseCase sessions.UseCase
 	UserUseCase    users.UseCase
 	MiddlewareC    *middlewares.MWController
+	tM             *CSRFManager.CSRFManager
 }
 
-func NewSessionHandler(router *gin.Engine, sessionUC sessions.UseCase, usersUC users.UseCase, mwareC *middlewares.MWController) *SessionHandler {
+func NewSessionHandler(private *gin.RouterGroup, public *gin.RouterGroup, sessionUC sessions.UseCase, usersUC users.UseCase,
+	tM *CSRFManager.CSRFManager, mwareC *middlewares.MWController) *SessionHandler {
 	sh := &SessionHandler{
 		SessionUseCase: sessionUC,
 		UserUseCase:    usersUC,
 		MiddlewareC:    mwareC,
+		tM:             tM,
 	}
 
-	router.POST("api/v1/signin", sh.SignIn())
-	router.POST("api/v1/logout", sh.MiddlewareC.CheckAuth(), sh.LogOut())
+	public.POST("/signin", sh.SignIn())
+
+	private.POST("/logout", sh.LogOut())
 
 	return sh
 }
@@ -46,7 +51,6 @@ type signInRequest struct {
 //@Failure 404 object tools.Error
 //@Router /signin [post]
 func (sh *SessionHandler) SignIn() gin.HandlerFunc {
-
 	return func(c *gin.Context) {
 		req := &signInRequest{}
 
@@ -70,6 +74,17 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 			return
 		}
 
+		session, err := sh.MiddlewareC.GetSession(c)
+
+		if err == nil && session.UserId == user.ID {
+			logrus.Info(tools.HashingError)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.Authorized.Error(),
+			})
+
+			return
+		}
+
 		if user.Password != req.Password {
 			c.JSON(http.StatusNotFound, tools.Error{
 				ErrorMessage: tools.WrongPassword.Error(),
@@ -88,6 +103,19 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 
 			return
 		}
+
+		csrfToken, err := sh.tM.GenerateCSRF(session.UserId, session.Token)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusInternalServerError, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		c.Writer.Header().Set("X-Csrf-Token", csrfToken)
 
 		c.SetCookie(cookie.Name,
 			cookie.Value,

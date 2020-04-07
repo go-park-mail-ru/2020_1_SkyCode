@@ -1,9 +1,11 @@
 package middlewares
 
 import (
+	"fmt"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/CSRFManager"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -15,16 +17,25 @@ import (
 type MWController struct {
 	sessionUC sessions.UseCase
 	userUC users.UseCase
+	cM *CSRFManager.CSRFManager
 }
 
-func NewMiddleWareController(router *gin.Engine, sessionUC sessions.UseCase, userUC users.UseCase) *MWController {
+func NewMiddleWareController(private *gin.RouterGroup, public *gin.RouterGroup, sessionUC sessions.UseCase,
+	userUC users.UseCase, cM *CSRFManager.CSRFManager) *MWController {
 	mw := &MWController{
 		sessionUC: sessionUC,
 		userUC: userUC,
+		cM: cM,
 	}
 
-	router.Use(mw.AccessLogging())
-	router.Use(mw.CORS())
+	public.Use(mw.AccessLogging())
+	public.Use(mw.CORS())
+	public.Use(mw.CheckAuth())
+
+	private.Use(mw.AccessLogging())
+	private.Use(mw.CORS())
+	private.Use(mw.CheckAuth())
+	private.Use(mw.CSRFControl())
 
 	return mw
 }
@@ -40,9 +51,12 @@ func (mw *MWController) CORS() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type")
 
 		if c.Request.Method == http.MethodOptions {
+			logrus.Info("OPTIONS")
 			c.JSON(http.StatusOK, tools.Message{
 				Message: "Options ok",
 			})
+
+			c.Abort()
 			return
 		}
 
@@ -113,10 +127,72 @@ func (mw *MWController) GetSession(c *gin.Context) (*models.Session, error) {
 	return session, nil
 }
 
+func (mw *MWController) CSRFControl() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.Request.Header.Get("X-Csrf-Token")
+
+		if token == "" {
+			logrus.Info(tools.CSRFNotPresented.Error())
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.CSRFNotPresented.Error(),
+			})
+
+			c.Abort()
+			return
+		}
+
+		session, err := mw.GetSession(c)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusUnauthorized, tools.Error{
+				ErrorMessage: tools.Unauthorized.Error(),
+			})
+
+			c.Abort()
+			return
+		}
+
+		err = mw.cM.ValidateCSRF(token, session.UserId, session.Token)
+
+		if err != nil {
+			if err == tools.ExpiredCSRFError {
+				newToken, err := mw.cM.GenerateCSRF(session.UserId, session.Token)
+
+				if err != nil {
+					logrus.Info(err)
+					c.JSON(http.StatusInternalServerError, tools.Error{
+						ErrorMessage: err.Error(),
+					})
+
+					c.Abort()
+					return
+				}
+
+				c.Writer.Header().Set("X-Csrf-Token", newToken)
+
+				c.Next()
+				return
+			}
+
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func (mw *MWController) AccessLogging() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		data := []string{c.Request.Method, c.Request.URL.String(), c.Request.RemoteAddr, time.Now().UTC().String()}
 		logrus.Info(strings.Join(data, " "))
+		fmt.Println(c.HandlerNames())
 		c.Next()
 	}
 }

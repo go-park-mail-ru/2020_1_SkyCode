@@ -20,19 +20,21 @@ type UserHandler struct {
 	middlewareC *middlewares.MWController
 }
 
-func NewUserHandler(router *gin.Engine, uUC users.UseCase, sUC sessions.UseCase, middlewareC *middlewares.MWController) *UserHandler {
+func NewUserHandler(private *gin.RouterGroup, public *gin.RouterGroup, uUC users.UseCase, sUC sessions.UseCase,
+	middlewareC *middlewares.MWController) *UserHandler {
 	uh := &UserHandler{
 		userUseCase: uUC,
 		sessionUseCase: sUC,
 		middlewareC: middlewareC,
 	}
 
-	router.GET("api/v1/profile", middlewareC.CheckAuth(), uh.GetProfile())
-	router.POST("api/v1/signup", uh.SignUp())
-	router.PUT("api/v1/profile/bio", middlewareC.CheckAuth(), uh.EditBio())
-	router.PUT("api/v1/profile/avatar", middlewareC.CheckAuth(), uh.EditAvatar())
-	router.PUT("api/v1/profile/password", middlewareC.CheckAuth(), uh.ChangePassword())
-	router.PUT("api/v1/profile/phone", middlewareC.CheckAuth(), uh.ChangePhoneNumber())
+	public.POST("/signup", uh.SignUp())
+
+	private.GET("/profile", uh.GetProfile())
+	private.PUT("/profile/bio", uh.EditBio())
+	private.PUT("/profile/avatar", uh.EditAvatar())
+	private.PUT("/profile/password", uh.ChangePassword())
+	private.PUT("/profile/phone", uh.ChangePhoneNumber())
 
 	return uh
 }

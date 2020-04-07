@@ -15,6 +15,7 @@ import (
 	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
 	"github.com/2020_1_Skycode/internal/tools"
+	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
 	_usersDelivery "github.com/2020_1_Skycode/internal/users/delivery"
 	_usersRepository "github.com/2020_1_Skycode/internal/users/repository"
 	_usersUseCase "github.com/2020_1_Skycode/internal/users/usecase"
@@ -78,14 +79,18 @@ func main() {
 	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn)
 	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
 
-	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
+	privateGroup := e.Group("/api/v1")
+	publicGroup := e.Group("/api/v1")
 
-	_ = _middleware.NewMiddleWareController(e, sessionsUcase, userUcase)
-	_ = _sessionsDelivery.NewSessionHandler(e, sessionsUcase, userUcase, mwareC)
-	_ = _usersDelivery.NewUserHandler(e, userUcase, sessionsUcase, mwareC)
-	_ = _restDelivery.NewRestaurantHandler(e, restUcase)
-	_ = _productDelivery.NewProductHandler(e, prodUcase, restUcase, mwareC)
-	_ = _ordersDelivery.NewOrderHandler(e, ordersUcase, mwareC)
+	csrfManager := _csrfManager.NewCSRFManager()
+
+	mwareC := _middleware.NewMiddleWareController(privateGroup, publicGroup, sessionsUcase, userUcase, csrfManager)
+
+	_ = _sessionsDelivery.NewSessionHandler(privateGroup, publicGroup, sessionsUcase, userUcase, csrfManager, mwareC)
+	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, mwareC)
+	_ = _restDelivery.NewRestaurantHandler(privateGroup, publicGroup, restUcase)
+	_ = _productDelivery.NewProductHandler(privateGroup, publicGroup, prodUcase, restUcase, mwareC)
+	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, mwareC)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

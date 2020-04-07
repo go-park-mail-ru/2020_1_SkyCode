@@ -16,14 +16,14 @@ type OrderHandler struct {
 	MiddlewareC  *middlewares.MWController
 }
 
-func NewOrderHandler(router *gin.Engine, orderUC orders.UseCase, mw *middlewares.MWController) *OrderHandler {
+func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC orders.UseCase, mw *middlewares.MWController) *OrderHandler {
 	oh := &OrderHandler{
 		OrderUseCase: orderUC,
 		MiddlewareC:  mw,
 	}
 
-	router.POST("api/v1/orders/checkout", oh.MiddlewareC.CheckAuth(), oh.Checkout())
-	router.GET("api/v1/orders/:orderID", oh.MiddlewareC.CheckAuth(), oh.Checkout())
+	private.POST("/orders/checkout", oh.Checkout())
+	private.GET("/orders/:orderID", oh.Checkout())
 
 	return oh
 }
