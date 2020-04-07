@@ -1,10 +1,12 @@
 package delivery
 
 import (
+	"fmt"
 	"github.com/2020_1_Skycode/internal/middlewares"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/requestValidator"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -18,19 +20,21 @@ type UserHandler struct {
 	userUseCase users.UseCase
 	sessionUseCase sessions.UseCase
 	middlewareC *middlewares.MWController
+	v *requestValidator.RequestValidator
 }
 
 func NewUserHandler(private *gin.RouterGroup, public *gin.RouterGroup, uUC users.UseCase, sUC sessions.UseCase,
-	middlewareC *middlewares.MWController) *UserHandler {
+	validator *requestValidator.RequestValidator, middlewareC *middlewares.MWController) *UserHandler {
 	uh := &UserHandler{
 		userUseCase: uUC,
 		sessionUseCase: sUC,
 		middlewareC: middlewareC,
+		v: validator,
 	}
 
 	public.POST("/signup", uh.SignUp())
+	public.GET("/profile", uh.GetProfile())
 
-	private.GET("/profile", uh.GetProfile())
 	private.PUT("/profile/bio", uh.EditBio())
 	private.PUT("/profile/avatar", uh.EditAvatar())
 	private.PUT("/profile/password", uh.ChangePassword())
@@ -43,7 +47,7 @@ type signUpRequest struct {
 	FirstName string `json:"firstName, omitempty" binding:"required"`
 	LastName  string `json:"lastName, omitempty" binding:"required"`
 	Phone     string `json:"phone, omitempty" binding:"required"`
-	Password  string `json:"password, omitempty" binding:"required"`
+	Password  string `json:"password, omitempty" binding:"required" validate:"passwd"`
 }
 
 type editBioRequest struct {
@@ -76,11 +80,14 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
 		}
+
+		errors := uh.v.ValidateRequest(req)
+		fmt.Println(errors)
 
 		u := &models.User{
 			FirstName: req.FirstName,

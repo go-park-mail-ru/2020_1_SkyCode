@@ -23,7 +23,8 @@ func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC 
 	}
 
 	private.POST("/orders/checkout", oh.Checkout())
-	private.GET("/orders/:orderID", oh.Checkout())
+
+	public.GET("/orders/:orderID", oh.Checkout())
 
 	return oh
 }
