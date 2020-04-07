@@ -23,4 +23,5 @@ var (
 	CSRFNotPresented = errors.New("CSRF not presented")
 	HashingError = errors.New("Hashing error")
 	Authorized = errors.New("Already authorized")
+	NotRequiredFields = errors.New("No such required fields")
 )

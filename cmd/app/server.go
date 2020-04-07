@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/2020_1_Skycode/docs"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
 	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
@@ -16,6 +17,7 @@ import (
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
 	"github.com/2020_1_Skycode/internal/tools"
 	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
+	_rValidator "github.com/2020_1_Skycode/internal/tools/requestValidator"
 	_usersDelivery "github.com/2020_1_Skycode/internal/users/delivery"
 	_usersRepository "github.com/2020_1_Skycode/internal/users/repository"
 	_usersUseCase "github.com/2020_1_Skycode/internal/users/usecase"
@@ -25,8 +27,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
-
-	_ "github.com/2020_1_Skycode/docs"
 )
 
 // @title Swagger SkyDelivery API
@@ -84,10 +84,12 @@ func main() {
 
 	csrfManager := _csrfManager.NewCSRFManager()
 
+	reqValidator := _rValidator.NewRequestValidator()
+
 	mwareC := _middleware.NewMiddleWareController(privateGroup, publicGroup, sessionsUcase, userUcase, csrfManager)
 
 	_ = _sessionsDelivery.NewSessionHandler(privateGroup, publicGroup, sessionsUcase, userUcase, csrfManager, mwareC)
-	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, mwareC)
+	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, reqValidator, mwareC)
 	_ = _restDelivery.NewRestaurantHandler(privateGroup, publicGroup, restUcase)
 	_ = _productDelivery.NewProductHandler(privateGroup, publicGroup, prodUcase, restUcase, mwareC)
 	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, mwareC)
