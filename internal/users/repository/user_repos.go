@@ -1,16 +1,16 @@
 package repository
 
 import (
+	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/users"
-	"github.com/jackc/pgx"
 )
 
 type UserRepository struct {
-	db *pgx.Conn
+	db *sql.DB
 }
 
-func NewUserRepository(db *pgx.Conn) users.Repository {
+func NewUserRepository(db *sql.DB) users.Repository {
 	return &UserRepository{
 		db: db,
 	}
