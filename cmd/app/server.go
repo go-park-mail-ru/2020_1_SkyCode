@@ -79,14 +79,16 @@ func main() {
 	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn)
 	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
 
-	privateGroup := e.Group("/api/v1")
-	publicGroup := e.Group("/api/v1")
-
 	csrfManager := _csrfManager.NewCSRFManager()
 
 	reqValidator := _rValidator.NewRequestValidator()
 
-	mwareC := _middleware.NewMiddleWareController(privateGroup, publicGroup, sessionsUcase, userUcase, csrfManager)
+	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase, userUcase, csrfManager)
+
+	publicGroup := e.Group("/api/v1")
+	privateGroup := e.Group("/api/v1")
+
+	privateGroup.Use(mwareC.CSRFControl())
 
 	_ = _sessionsDelivery.NewSessionHandler(privateGroup, publicGroup, sessionsUcase, userUcase, csrfManager, mwareC)
 	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, reqValidator, mwareC)

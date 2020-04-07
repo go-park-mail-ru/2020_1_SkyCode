@@ -20,7 +20,7 @@ type MWController struct {
 	cM *CSRFManager.CSRFManager
 }
 
-func NewMiddleWareController(private *gin.RouterGroup, public *gin.RouterGroup, sessionUC sessions.UseCase,
+func NewMiddleWareController(router *gin.Engine, sessionUC sessions.UseCase,
 	userUC users.UseCase, cM *CSRFManager.CSRFManager) *MWController {
 	mw := &MWController{
 		sessionUC: sessionUC,
@@ -28,15 +28,9 @@ func NewMiddleWareController(private *gin.RouterGroup, public *gin.RouterGroup, 
 		cM: cM,
 	}
 
-	public.Use(mw.AccessLogging())
-	public.Use(mw.CORS())
-	public.Use(mw.CheckAuth())
-
-	private.Use(mw.AccessLogging())
-	private.Use(mw.CORS())
-	private.Use(mw.CheckAuth())
-	private.Use(mw.CSRFControl())
-
+	router.Use(mw.AccessLogging())
+	router.Use(mw.CheckAuth())
+	router.Use(mw.CORS())
 	return mw
 }
 
