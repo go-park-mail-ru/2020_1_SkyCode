@@ -40,7 +40,7 @@ func (pr *ProductRepository) GetProductsByRestID(restID uint64) ([]*models.Produ
 func (pr *ProductRepository) GetProductByID(prodID uint64) (*models.Product, error) {
 	product := &models.Product{}
 
-	if err := pr.db.QueryRow("Select id, name, price, image, rest_id FROM products WHERE id = $1",
+	if err := pr.db.QueryRow("SELECT id, name, price, image, rest_id FROM products WHERE id = $1",
 		prodID).Scan(&product.ID, &product.Name, &product.Price,
 		&product.Image, &product.RestId); err != nil {
 		return nil, err
