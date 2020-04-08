@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -232,6 +233,7 @@ func (rh *RestaurantHandler) UpdateRestaurant() gin.HandlerFunc {
 //@Failure 500 object tools.Error
 //@Router /restaurants/:rest_id/image [put]
 func (rh *RestaurantHandler) UpdateImage() gin.HandlerFunc {
+	rootDir, _ := os.Getwd()
 	return func(c *gin.Context) {
 		file, err := c.FormFile("image")
 
@@ -254,9 +256,9 @@ func (rh *RestaurantHandler) UpdateImage() gin.HandlerFunc {
 			return
 		}
 
-		filename := shortuuid.New() + "-" + file.Filename
+		filename := shortuuid.New()
 
-		if err := c.SaveUploadedFile(file, tools.RestaurantImagesPath+filename); err != nil {
+		if err := c.SaveUploadedFile(file, filepath.Join(rootDir, tools.RestaurantImagesPath, filename)); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),

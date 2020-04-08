@@ -13,6 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 type UserHandler struct {
@@ -227,6 +228,8 @@ func (uh *UserHandler) EditBio() gin.HandlerFunc {
 //@Security basicAuth
 //@Router /profile/avatar [put]
 func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
+	rootDir, _ := os.Getwd()
+
 	return func(c *gin.Context) {
 		user, err := uh.middlewareC.GetUser(c)
 
@@ -251,7 +254,7 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 
 		filename := shortuuid.New()
 
-		if err := c.SaveUploadedFile(file, tools.AvatarPath+filename); err != nil {
+		if err := c.SaveUploadedFile(file, filepath.Join(rootDir, tools.AvatarPath, filename)); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
@@ -261,7 +264,7 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 		}
 
 		if user.Avatar != "" {
-			if err := os.Remove(tools.AvatarPath + user.Avatar); err != nil {
+			if err := os.Remove(filepath.Join(rootDir, tools.AvatarPath, user.Avatar)); err != nil {
 				logrus.Info(err)
 				c.JSON(http.StatusInternalServerError, tools.Error{
 					ErrorMessage: tools.DeleteAvatarError.Error(),

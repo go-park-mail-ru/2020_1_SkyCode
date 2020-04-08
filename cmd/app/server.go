@@ -30,14 +30,6 @@ import (
 	"log"
 )
 
-type DatabaseInfo struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Name     string `json:"name"`
-	User     string `json:"user"`
-	Password string `json:"password"`
-}
-
 // @title Swagger SkyDelivery API
 // @version 1.0
 // @description This is a SkyDelivery server for Technopark Project.
@@ -47,7 +39,7 @@ type DatabaseInfo struct {
 // @host localhost:5000
 // @BasePath /api/v1
 func main() {
-	config, err := tools.LoadConf("../../configs/config.json")
+	config, err := tools.LoadConf("./configs/config.json")
 
 	if err != nil {
 		log.Fatal(err)

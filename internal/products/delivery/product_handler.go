@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -129,6 +130,7 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 //@Failure 400 object tools.Error
 //@Router /restaurants/rest:id/product [post]
 func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
+	rootDir, _ := os.Getwd()
 	return func(c *gin.Context) {
 		req := &productRequest{}
 
@@ -213,7 +215,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 
 		filename := shortuuid.New()
 
-		if err := c.SaveUploadedFile(file, tools.ProductImagesPath+filename); err != nil {
+		if err := c.SaveUploadedFile(file, filepath.Join(rootDir, tools.ProductImagesPath, filename)); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
@@ -326,6 +328,7 @@ func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
 //@Failure 500 object tools.Error
 //@Router /product/:prod_id/image [put]
 func (ph *ProductHandler) UpdateImage() gin.HandlerFunc {
+	rootDir, _ := os.Getwd()
 	return func(c *gin.Context) {
 		file, err := c.FormFile("image")
 
@@ -338,9 +341,9 @@ func (ph *ProductHandler) UpdateImage() gin.HandlerFunc {
 			return
 		}
 
-		filename := shortuuid.New() + "-" + file.Filename
+		filename := shortuuid.New()
 
-		if err := c.SaveUploadedFile(file, tools.ProductImagesPath+filename); err != nil {
+		if err := c.SaveUploadedFile(file, filepath.Join(rootDir, tools.AvatarPath, filename)); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
