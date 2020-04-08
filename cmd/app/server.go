@@ -78,7 +78,7 @@ func main() {
 	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, prodRepo)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
