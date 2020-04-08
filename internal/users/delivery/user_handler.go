@@ -249,7 +249,7 @@ func (uh *UserHandler) EditAvatar() gin.HandlerFunc {
 			return
 		}
 
-		filename := shortuuid.New() + "-" + file.Filename
+		filename := shortuuid.New()
 
 		if err := c.SaveUploadedFile(file, tools.AvatarPath+filename); err != nil {
 			logrus.Info(err)
