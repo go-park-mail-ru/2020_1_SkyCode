@@ -15,7 +15,7 @@ import (
 type OrderHandler struct {
 	OrderUseCase orders.UseCase
 	MiddlewareC  *middlewares.MWController
-	v              *requestValidator.RequestValidator
+	v            *requestValidator.RequestValidator
 }
 
 func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC orders.UseCase,
@@ -23,7 +23,7 @@ func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC 
 	oh := &OrderHandler{
 		OrderUseCase: orderUC,
 		MiddlewareC:  mw,
-		v: validator,
+		v:            validator,
 	}
 
 	private.POST("/orders/checkout", oh.Checkout())
@@ -98,6 +98,7 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 			PersonNum: req.PersonNum,
 			Products:  req.Products,
 			Price:     req.Price,
+			Phone:     req.Phone,
 		}
 
 		if err := oH.OrderUseCase.CheckoutOrder(order); err != nil {
