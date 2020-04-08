@@ -2,14 +2,14 @@ package usecase
 
 import (
 	"github.com/2020_1_Skycode/internal/models"
-	"github.com/2020_1_Skycode/internal/sessions/repository"
+	"github.com/2020_1_Skycode/internal/sessions"
 )
 
 type UseCase struct {
-	sessionRepo *repository.Repository
+	sessionRepo sessions.Repository
 }
 
-func NewSessionUseCase(sessionRepo *repository.Repository) *UseCase {
+func NewSessionUseCase(sessionRepo sessions.Repository) *UseCase {
 	return &UseCase{
 		sessionRepo: sessionRepo,
 	}
@@ -25,7 +25,7 @@ func (sUC *UseCase) StoreSession(session *models.Session) error {
 
 func (sUC *UseCase) GetSession(token string) (*models.Session, error) {
 	currSession := &models.Session{
-		Token:     token,
+		Token: token,
 	}
 
 	if err := sUC.sessionRepo.Get(currSession); err != nil {
@@ -37,7 +37,7 @@ func (sUC *UseCase) GetSession(token string) (*models.Session, error) {
 
 func (sUC *UseCase) DeleteSession(sessionId uint64) error {
 	currSession := &models.Session{
-		ID:     sessionId,
+		ID: sessionId,
 	}
 
 	if err := sUC.sessionRepo.Delete(currSession); err != nil {

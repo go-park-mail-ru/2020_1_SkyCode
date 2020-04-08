@@ -7,4 +7,5 @@ import (
 type Repository interface {
 	InsertInto(session *models.Session) error
 	Delete(session *models.Session) error
+	Get(session *models.Session) error
 }

@@ -10,7 +10,7 @@ type OrdersRepository struct {
 	db *sql.DB
 }
 
-func NewOrdersRepository(db *sql.DB) *OrdersRepository{
+func NewOrdersRepository(db *sql.DB) *OrdersRepository {
 	return &OrdersRepository{
 		db: db,
 	}
@@ -37,14 +37,14 @@ func (oR *OrdersRepository) InsertOrder(order *models.Order) error {
 
 func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*models.OrderProduct) error {
 	var values string
-	sqlInsert := "INSERT INTO orderProducts(orderId, productId, count) VALUES"
+	sqlInsert := "INSERT INTO orderProducts (orderId, productId, count) VALUES"
 
 	for _, v := range products {
 		values += fmt.Sprintf(" (%d, %d, %d),", orderID, v.ProductID, v.Count)
 	}
 
-	array :=[]rune(values)
-	array[len(array) - 1] = ';'
+	array := []rune(values)
+	array[len(array)-1] = ';'
 	values = string(array)
 
 	if _, err := oR.db.Exec(sqlInsert + values); err != nil {

@@ -2,19 +2,16 @@ package usecase
 
 import (
 	"github.com/2020_1_Skycode/internal/models"
-	"github.com/2020_1_Skycode/internal/products"
 	"github.com/2020_1_Skycode/internal/restaurants"
 )
 
 type RestaurantUseCase struct {
 	restaurantRepo restaurants.Repository
-	productRepo    products.Repository
 }
 
-func NewRestaurantsUseCase(rr restaurants.Repository, pr products.Repository) *RestaurantUseCase {
+func NewRestaurantsUseCase(rr restaurants.Repository) *RestaurantUseCase {
 	return &RestaurantUseCase{
 		restaurantRepo: rr,
-		productRepo:    pr,
 	}
 }
 
