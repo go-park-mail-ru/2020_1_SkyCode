@@ -143,17 +143,6 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			return
 		}
 
-		errorsList := ph.v.ValidateRequest(req)
-
-		if len(*errorsList) > 0 {
-			logrus.Info(tools.NotRequiredFields)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.NotRequiredFields.Error(),
-			})
-
-			return
-		}
-
 		if !user.IsManager() && !user.IsAdmin() {
 			c.JSON(http.StatusForbidden, tools.Error{
 				ErrorMessage: "User doesn't have permissions",
@@ -195,6 +184,17 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := ph.v.ValidateRequest(req)
+
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
