@@ -29,7 +29,7 @@ func NewProductHandler(private *gin.RouterGroup, public *gin.RouterGroup, pUC pr
 		productUseCase: pUC,
 		middlewareC:    mw,
 		restUseCase:    rUC,
-		v: validator,
+		v:              validator,
 	}
 
 	public.GET("/products/:prod_id", ph.GetProduct())
@@ -374,7 +374,7 @@ func (ph *ProductHandler) UpdateImage() gin.HandlerFunc {
 		}
 
 		if product.Image != "" {
-			if err := os.Remove(tools.ProductImagesPath + product.Image); err != nil {
+			if err := os.Remove(filepath.Join(rootDir, tools.ProductImagesPath, product.Image)); err != nil {
 				logrus.Info(err)
 				c.JSON(http.StatusInternalServerError, tools.Error{
 					ErrorMessage: tools.DeleteAvatarError.Error(),

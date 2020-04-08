@@ -23,7 +23,7 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	validator *requestValidator.RequestValidator, rUC restaurants.UseCase) *RestaurantHandler {
 	rh := &RestaurantHandler{
 		restUseCase: rUC,
-		v: validator,
+		v:           validator,
 	}
 
 	public.GET("/restaurants", rh.GetRestaurants())
@@ -278,7 +278,7 @@ func (rh *RestaurantHandler) UpdateImage() gin.HandlerFunc {
 		}
 
 		if rest.Image != "" {
-			if err := os.Remove(tools.RestaurantImagesPath + rest.Image); err != nil {
+			if err := os.Remove(filepath.Join(rootDir, tools.RestaurantImagesPath, rest.Image)); err != nil {
 				logrus.Info(err)
 				c.JSON(http.StatusInternalServerError, tools.Error{
 					ErrorMessage: tools.DeleteAvatarError.Error(),
@@ -314,6 +314,7 @@ func (rh *RestaurantHandler) UpdateImage() gin.HandlerFunc {
 //@Failure 500 object tools.Error
 //@Router /restaurants/:rest_id [delete]
 func (rh *RestaurantHandler) DeleteRestaurant() gin.HandlerFunc {
+	rootDir, _ := os.Getwd()
 	return func(c *gin.Context) {
 		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
 		if err != nil {
@@ -336,7 +337,7 @@ func (rh *RestaurantHandler) DeleteRestaurant() gin.HandlerFunc {
 		}
 
 		if rest.Image != "" {
-			if err := os.Remove(tools.RestaurantImagesPath + rest.Image); err != nil {
+			if err := os.Remove(filepath.Join(rootDir, tools.RestaurantImagesPath, rest.Image)); err != nil {
 				logrus.Info(err)
 				c.JSON(http.StatusInternalServerError, tools.Error{
 					ErrorMessage: tools.DeleteAvatarError.Error(),
