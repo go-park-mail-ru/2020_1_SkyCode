@@ -37,8 +37,8 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 }
 
 type restaurantRequest struct {
-	Name        string `json:"name, omitempty" binding:"required"`
-	Description string `json:"description, omitempty" binding:"required"`
+	Name        string `json:"name, omitempty" binding:"required" validate:"min=3"`
+	Description string `json:"description, omitempty" binding:"required" validate:"min=10"`
 }
 
 //@Tags Restaurant

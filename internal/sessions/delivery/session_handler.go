@@ -39,8 +39,8 @@ func NewSessionHandler(private *gin.RouterGroup, public *gin.RouterGroup, sessio
 }
 
 type signInRequest struct {
-	Phone    string `json:"phone" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Phone    string `json:"phone" binding:"required" validate:"min=11,max=15"`
+	Password string `json:"password" binding:"required" validate:"passwd"`
 }
 
 //@Tags Session
