@@ -46,3 +46,47 @@ func (mr *MockUseCaseMockRecorder) CheckoutOrder(order interface{}) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutOrder", reflect.TypeOf((*MockUseCase)(nil).CheckoutOrder), order)
 }
+
+// GetAllUserOrders mocks base method
+func (m *MockUseCase) GetAllUserOrders(userID uint64) ([]*models.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllUserOrders", userID)
+	ret0, _ := ret[0].([]*models.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllUserOrders indicates an expected call of GetAllUserOrders
+func (mr *MockUseCaseMockRecorder) GetAllUserOrders(userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUserOrders", reflect.TypeOf((*MockUseCase)(nil).GetAllUserOrders), userID)
+}
+
+// GetOrderByID mocks base method
+func (m *MockUseCase) GetOrderByID(orderID, userID uint64) (*models.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrderByID", orderID, userID)
+	ret0, _ := ret[0].(*models.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrderByID indicates an expected call of GetOrderByID
+func (mr *MockUseCaseMockRecorder) GetOrderByID(orderID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrderByID", reflect.TypeOf((*MockUseCase)(nil).GetOrderByID), orderID, userID)
+}
+
+// DeleteOrder mocks base method
+func (m *MockUseCase) DeleteOrder(orderID, userID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOrder", orderID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOrder indicates an expected call of DeleteOrder
+func (mr *MockUseCaseMockRecorder) DeleteOrder(orderID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOrder", reflect.TypeOf((*MockUseCase)(nil).DeleteOrder), orderID, userID)
+}
