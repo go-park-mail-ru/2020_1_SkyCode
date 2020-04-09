@@ -54,9 +54,80 @@ func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*mode
 	return nil
 }
 
-func (oR *OrdersRepository) Get(order *models.Order) error {
-	if err := oR.db.QueryRow("SELECT userId, address, comment, personNum, price FROM orders WHERE id = $1",
-		order.ID).Scan(&order.UserID, &order.Address, &order.Comment, &order.PersonNum, &order.Price); err != nil {
+func (oR *OrdersRepository) GetAllByUserID(userID uint64) ([]*models.Order, error) {
+	var ordersList []*models.Order
+
+	rows, err := oR.db.Query("SELECT id, address, phone, price, comment, personnum FROM orders WHERE userId = $1",
+		userID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		order := &models.Order{}
+		err = rows.Scan(&order.ID, &order.Address, &order.Phone, &order.Price, &order.Comment, &order.PersonNum)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ordersList = append(ordersList, order)
+	}
+
+	return ordersList, nil
+}
+
+func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Order, error) {
+	order := &models.Order{}
+	err := oR.db.QueryRow("SELECT id, address, phone, price, comment, personnum FROM orders WHERE id = $1 AND userid = $2",
+		orderID,
+		userID).Scan(&order.ID, &order.Address, &order.Phone, &order.Price, &order.Comment, &order.PersonNum)
+
+	if err != nil {
+		return nil, err
+	}
+
+	products, err := oR.getOrderProducts(order.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	order.Products = products
+
+	return order, nil
+}
+
+func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.OrderProduct, error) {
+	var ordersProductList []*models.OrderProduct
+
+	rows, err := oR.db.Query("SELECT id, orderid, productid, count FROM orderproducts WHERE orderid = $1",
+		orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		order := &models.OrderProduct{}
+		err = rows.Scan(&order.ID, &order.OrderID, &order.ProductID, &order.Count)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ordersProductList = append(ordersProductList, order)
+	}
+
+	return ordersProductList, nil
+}
+
+func (oR *OrdersRepository) DeleteOrder(orderID uint64, userID uint64) error {
+	var id uint64
+	if err := oR.db.QueryRow("DELETE FROM orders CASCADE WHERE id = $1 AND userId = $2 RETURNING id",
+		orderID,
+		userID).Scan(&id); err != nil {
 		return err
 	}
 

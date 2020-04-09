@@ -22,3 +22,31 @@ func (oU *OrderUseCase) CheckoutOrder(order *models.Order) error {
 
 	return nil
 }
+
+func (oU *OrderUseCase) GetAllUserOrders(userID uint64) ([]*models.Order, error) {
+	orders, err := oU.orderRepo.GetAllByUserID(userID);
+
+	if err != nil {
+		return nil, err
+	}
+
+	return orders, nil
+}
+
+func (oU *OrderUseCase) GetOrderByID(orderID uint64, userID uint64) (*models.Order, error) {
+	order, err := oU.orderRepo.GetByID(orderID, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return order, err
+}
+
+func (oU *OrderUseCase) DeleteOrder(orderID uint64, userID uint64) error {
+	if err := oU.orderRepo.DeleteOrder(orderID, userID); err != nil {
+		return err
+	}
+
+	return nil
+}

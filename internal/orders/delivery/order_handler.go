@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 )
 
 type OrderHandler struct {
@@ -27,8 +28,9 @@ func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC 
 	}
 
 	private.POST("/orders/checkout", oh.Checkout())
-
-	public.GET("/orders/:orderID", oh.Checkout())
+	private.GET("/orders", oh.GetUserOrders())
+	private.GET("/orders/:orderID", oh.GetOrder())
+	private.DELETE("/orders/:orderID", oh.DeleteOrder())
 
 	return oh
 }
@@ -105,6 +107,109 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Message{
+			Message: "success",
+		})
+	}
+}
+
+func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := oH.MiddlewareC.GetUser(c)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		userOrders, err := oH.OrderUseCase.GetAllUserOrders(user.ID)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusInternalServerError, tools.Error{
+				ErrorMessage: tools.GetOrdersError.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Body{
+			"orders": userOrders,
+		})
+	}
+}
+
+func (oH *OrderHandler) GetOrder() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := oH.MiddlewareC.GetUser(c)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		orderID, err := strconv.ParseUint(c.Param("orderID"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+		}
+
+		userOrders, err := oH.OrderUseCase.GetOrderByID(orderID, user.ID)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusNotFound, tools.Error{
+				ErrorMessage: tools.NotFound.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Body{
+			"order": userOrders,
+		})
+	}
+}
+
+func (oH *OrderHandler) DeleteOrder() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := oH.MiddlewareC.GetUser(c)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		orderID, err := strconv.ParseUint(c.Param("orderID"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		if err := oH.OrderUseCase.DeleteOrder(orderID, user.ID); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusNotFound, tools.Error{
+				ErrorMessage: tools.NotFound.Error(),
 			})
 
 			return

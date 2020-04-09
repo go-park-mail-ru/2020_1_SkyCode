@@ -43,10 +43,10 @@ create table products (
 create table orders (
     id        serial      not null primary key,
     userId    int         not null,
-    address   varchar(30) not null,
+    address   varchar(255) not null,
     price     real        not null,
     phone     varchar(15) not null,
-    comment   varchar(50),
+    comment   varchar(255),
     personNum int         not null,
     foreign key (userId) references users (id)
 );
@@ -56,6 +56,6 @@ create table orderProducts (
     orderId   int         not null,
     productId int         not null,
     count     int         not null,
-    foreign   key (orderId) references orders (id),
-    foreign   key (productId) references products (id)
+    foreign   key (orderId) references orders (id) on delete cascade,
+    foreign   key (productId) references products (id) on delete cascade
 );

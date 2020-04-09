@@ -26,4 +26,5 @@ var (
 	NotRequiredFields = errors.New("No such required fields")
 	ErrorRequestValidation = errors.New("Request validation failed")
 	UserExists = errors.New("Phone number already exists")
+	GetOrdersError = errors.New("Get orders error")
 )

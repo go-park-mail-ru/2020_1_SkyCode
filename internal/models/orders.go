@@ -14,6 +14,6 @@ type Order struct {
 	Phone     string          `json:"phone"`
 	Comment   string          `json:"comment"`
 	PersonNum uint16          `json:"person_num"`
-	Products  []*OrderProduct `json:"products"`
+	Products  []*OrderProduct `json:"products, omitempty"`
 	Price     float32         `json:"price"`
 }
