@@ -26,10 +26,10 @@ func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC 
 		MiddlewareC:  mw,
 		v:            validator,
 	}
+	public.GET("/orders", oh.GetUserOrders())
+	public.GET("/orders/:orderID", oh.GetOrder())
 
 	private.POST("/orders/checkout", oh.Checkout())
-	private.GET("/orders", oh.GetUserOrders())
-	private.GET("/orders/:orderID", oh.GetOrder())
 	private.DELETE("/orders/:orderID", oh.DeleteOrder())
 
 	return oh
