@@ -1,0 +1,16 @@
+{
+  "database": {
+    "name": "SkyDelivery",
+    "host": "89.208.199.114",
+    "port": 5432,
+    "user": "skyuser",
+    "password": "pswd"
+  },
+  "server": {
+    "host": "localhost",
+    "port": "3000"
+  },
+  "images": {
+    "path": ""
+  }
+}
