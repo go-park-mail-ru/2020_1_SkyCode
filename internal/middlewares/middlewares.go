@@ -125,6 +125,7 @@ func (mw *MWController) GetSession(c *gin.Context) (*models.Session, error) {
 func (mw *MWController) CSRFControl() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Request.Header.Get("X-Csrf-Token")
+		c.Writer.Header().Set("X-XSS-Protection", "1")
 
 		if token == "" {
 			logrus.Info(tools.CSRFNotPresented.Error())
