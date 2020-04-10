@@ -135,6 +135,14 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := oH.MiddlewareC.GetUser(c)
 
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
 		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
 		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
 
