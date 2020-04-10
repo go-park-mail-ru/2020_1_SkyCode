@@ -59,6 +59,8 @@ create table orders
     comment   varchar(255),
     personNum int          not null,
     datetime  timestamp    not null default current_timestamp,
+    role      varchar(30)  not null
+        constraint checkRoleInsert CHECK (role IN ('Accepted', 'Delivering', 'Done')),
     foreign key (userId) references users (id),
     foreign key (restId) references restaurants (id)
 );

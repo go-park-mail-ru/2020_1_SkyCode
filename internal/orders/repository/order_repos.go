@@ -4,14 +4,18 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/restaurants"
+	"time"
 )
 
 type OrdersRepository struct {
+	RestRepository restaurants.Repository
 	db *sql.DB
 }
 
-func NewOrdersRepository(db *sql.DB) *OrdersRepository {
+func NewOrdersRepository(db *sql.DB, rR restaurants.Repository) *OrdersRepository {
 	return &OrdersRepository{
+		RestRepository: rR,
 		db: db,
 	}
 }
@@ -58,7 +62,7 @@ func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*mode
 func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
 	var ordersList []*models.Order
 
-	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, datetime from orders where userId = $1" +
+	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, datetime, status from orders where userId = $1" +
 		" LIMIT $2 OFFSET $3",
 		userID, count, (page - 1) * count)
 	if err != nil {
@@ -73,7 +77,11 @@ func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uin
 	defer rows.Close()
 	for rows.Next() {
 		order := &models.Order{}
-		err = rows.Scan(&order.ID, &order.UserID, &order.RestID, &order.Address, &order.Price, &order.Phone, &order.Comment, &order.PersonNum, &order.CreatedAt)
+		time := time.Time{}
+
+		err = rows.Scan(&order.ID, &order.UserID, &order.RestID, &order.Address, &order.Price, &order.Phone, &order.Comment, &order.PersonNum, &time, &order.Status)
+
+		order.CreatedAt = time.Format("2006/Jan/_2/15:04:05")
 
 		if err != nil {
 			return nil, 0, err
@@ -84,6 +92,14 @@ func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uin
 		if err != nil {
 			return nil, 0, err
 		}
+
+		restaurant, err := oR.RestRepository.GetByID(order.RestID)
+
+		if err != nil {
+			return nil, 0, err
+		}
+
+		order.RestName = restaurant.Name
 
 		order.Products = products
 		ordersList = append(ordersList, order)
@@ -116,7 +132,7 @@ func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Orde
 func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.Product, error) {
 	var ProductsList []*models.Product
 
-	rows, err := oR.db.Query("select id, rest_id, name, price, image from products where id in (select id from orderproducts where orderId = $1)",
+	rows, err := oR.db.Query("select p.id, p.rest_id, p.name, p.price, p.image, orderProducts.count from products p join (select productId, count from orderproducts where orderId = $1) as orderProducts on p.id = orderProducts.productId;",
 		orderID)
 	if err != nil {
 		return nil, err
@@ -125,7 +141,7 @@ func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.Product,
 	defer rows.Close()
 	for rows.Next() {
 		order := &models.Product{}
-		err = rows.Scan(&order.ID, &order.RestId, &order.Name, &order.Price, &order.Image)
+		err = rows.Scan(&order.ID, &order.RestId, &order.Name, &order.Price, &order.Image, &order.Count)
 
 		if err != nil {
 			return nil, err

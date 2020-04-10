@@ -78,7 +78,7 @@ func main() {
 	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
 	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
 
-	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn)
+	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
 	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
 
 	csrfManager := _csrfManager.NewCSRFManager()
