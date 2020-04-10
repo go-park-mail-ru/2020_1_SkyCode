@@ -27,7 +27,7 @@ func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC 
 		v:            validator,
 	}
 	public.GET("/orders", oh.GetUserOrders())
-	public.GET("/orders/:orderID", oh.GetOrder())
+	public.GET("/orders/:orderID", oh.GetUserOrder())
 
 	private.POST("/orders/checkout", oh.Checkout())
 	private.DELETE("/orders/:orderID", oh.DeleteOrder())
@@ -37,6 +37,7 @@ func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC 
 
 type orderRequest struct {
 	UserID    uint64                 `json:"userId" binding:"required"`
+	RestID    uint64                 `json:"restId" binding:"required"`
 	Address   string                 `json:"address" binding:"required" validate:"min=5"`
 	Comment   string                 `json:"comment"`
 	Phone     string                 `json:"phone" binding:"required" validate:"min=11,max=15"`
@@ -95,15 +96,15 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 
 		order := &models.Order{
 			UserID:    req.UserID,
+			RestID:    req.RestID,
 			Address:   req.Address,
 			Comment:   req.Comment,
 			PersonNum: req.PersonNum,
-			Products:  req.Products,
 			Price:     req.Price,
 			Phone:     req.Phone,
 		}
 
-		if err := oH.OrderUseCase.CheckoutOrder(order); err != nil {
+		if err := oH.OrderUseCase.CheckoutOrder(order, req.Products); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
@@ -134,20 +135,12 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := oH.MiddlewareC.GetUser(c)
 
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+
 		if err != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
-			})
-
-			return
-		}
-
-		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
-		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
-		if err != nil {
-			logrus.Info(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: "Bad params",
 			})
 
 			return
@@ -166,7 +159,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Body{
 			"orders": userOrders,
-			"total":  total,
+			"total": total,
 		})
 	}
 }
@@ -182,7 +175,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 //@Failure 404 object tools.Error
 //@Security basicAuth
 //@Router /orders/:order_id [get]
-func (oH *OrderHandler) GetOrder() gin.HandlerFunc {
+func (oH *OrderHandler) GetUserOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := oH.MiddlewareC.GetUser(c)
 

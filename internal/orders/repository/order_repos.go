@@ -16,10 +16,11 @@ func NewOrdersRepository(db *sql.DB) *OrdersRepository {
 	}
 }
 
-func (oR *OrdersRepository) InsertOrder(order *models.Order) error {
-	if err := oR.db.QueryRow("INSERT INTO orders(userId, address, comment, personNum, phone, price) "+
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+func (oR *OrdersRepository) InsertOrder(order *models.Order, ordProducts []*models.OrderProduct) error {
+	if err := oR.db.QueryRow("INSERT INTO orders(userId, restId, address, comment, personNum, phone, price) "+
+		"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
 		order.UserID,
+		order.RestID,
 		order.Address,
 		order.Comment,
 		order.PersonNum,
@@ -28,7 +29,7 @@ func (oR *OrdersRepository) InsertOrder(order *models.Order) error {
 		return err
 	}
 
-	if err := oR.insertOrderProducts(order.ID, order.Products); err != nil {
+	if err := oR.insertOrderProducts(order.ID, ordProducts); err != nil {
 		return err
 	}
 
@@ -57,8 +58,9 @@ func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*mode
 func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
 	var ordersList []*models.Order
 
-	rows, err := oR.db.Query("SELECT id, address, phone, price, comment, personnum FROM orders WHERE userId = $1 "+
-		"LIMIT $2 OFFSET $3", userID, count, (page-1)*count)
+	rows, err := oR.db.Query("select id, userId, address, price, phone, comment, personnum, datetime from orders where userId = $1" +
+		" LIMIT $2 OFFSET $3",
+		userID, count, (page - 1) * count)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -71,12 +73,19 @@ func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uin
 	defer rows.Close()
 	for rows.Next() {
 		order := &models.Order{}
-		err = rows.Scan(&order.ID, &order.Address, &order.Phone, &order.Price, &order.Comment, &order.PersonNum)
+		err = rows.Scan(&order.ID, &order.UserID, &order.Address, &order.Price, &order.Phone, &order.Comment, &order.PersonNum, &order.CreatedAt)
 
 		if err != nil {
 			return nil, 0, err
 		}
 
+		products, err := oR.getOrderProducts(order.ID)
+
+		if err != nil {
+			return nil, 0, err
+		}
+
+		order.Products = products
 		ordersList = append(ordersList, order)
 	}
 
@@ -85,9 +94,9 @@ func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uin
 
 func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Order, error) {
 	order := &models.Order{}
-	err := oR.db.QueryRow("SELECT id, address, phone, price, comment, personnum FROM orders WHERE id = $1 AND userid = $2",
+	err := oR.db.QueryRow("SELECT id, address, phone, price, comment, personnum, datetime FROM orders WHERE id = $1 AND userid = $2",
 		orderID,
-		userID).Scan(&order.ID, &order.Address, &order.Phone, &order.Price, &order.Comment, &order.PersonNum)
+		userID).Scan(&order.ID, &order.Address, &order.Phone, &order.Price, &order.Comment, &order.PersonNum, &order.CreatedAt)
 
 	if err != nil {
 		return nil, err
@@ -104,10 +113,10 @@ func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Orde
 	return order, nil
 }
 
-func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.OrderProduct, error) {
-	var ordersProductList []*models.OrderProduct
+func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.Product, error) {
+	var ProductsList []*models.Product
 
-	rows, err := oR.db.Query("SELECT id, orderid, productid, count FROM orderproducts WHERE orderid = $1",
+	rows, err := oR.db.Query("select id, rest_id, name, price, image from products where id in (select id from orderproducts where orderId = $1)",
 		orderID)
 	if err != nil {
 		return nil, err
@@ -115,17 +124,17 @@ func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.OrderPro
 
 	defer rows.Close()
 	for rows.Next() {
-		order := &models.OrderProduct{}
-		err = rows.Scan(&order.ID, &order.OrderID, &order.ProductID, &order.Count)
+		order := &models.Product{}
+		err = rows.Scan(&order.ID, &order.RestId, &order.Name, &order.Price, &order.Image)
 
 		if err != nil {
 			return nil, err
 		}
 
-		ordersProductList = append(ordersProductList, order)
+		ProductsList = append(ProductsList, order)
 	}
 
-	return ordersProductList, nil
+	return ProductsList, nil
 }
 
 func (oR *OrdersRepository) DeleteOrder(orderID uint64, userID uint64) error {
