@@ -3,7 +3,7 @@ package restaurants
 import "github.com/2020_1_Skycode/internal/models"
 
 type UseCase interface {
-	GetRestaurants() ([]*models.Restaurant, error)
+	GetRestaurants(count uint64, page uint64) ([]*models.Restaurant, uint64, error)
 	GetRestaurantByID(id uint64) (*models.Restaurant, error)
 	CreateRestaurant(rest *models.Restaurant) error
 	UpdateRestaurant(rest *models.Restaurant) error

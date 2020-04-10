@@ -16,12 +16,18 @@ func NewRestaurantRepository(db *sql.DB) restaurants.Repository {
 	}
 }
 
-func (rr *RestaurantRepository) GetAll() ([]*models.Restaurant, error) {
+func (rr *RestaurantRepository) GetAll(count uint64, page uint64) ([]*models.Restaurant, uint64, error) {
 	var restaurantsList []*models.Restaurant
 
-	rows, err := rr.db.Query("SELECT id, name, rating, image FROM restaurants")
+	rows, err := rr.db.Query("SELECT id, name, rating, image FROM restaurants "+
+		"LIMIT $1 OFFSET $2", count, (page-1)*count)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	var total uint64
+	if err = rr.db.QueryRow("SELECT COUNT(*) FROM restaurants").Scan(&total); err != nil {
+		return nil, 0, err
 	}
 
 	defer rows.Close()
@@ -29,12 +35,12 @@ func (rr *RestaurantRepository) GetAll() ([]*models.Restaurant, error) {
 		restaurant := &models.Restaurant{}
 		err = rows.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Rating, &restaurant.Image)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		restaurantsList = append(restaurantsList, restaurant)
 	}
 
-	return restaurantsList, nil
+	return restaurantsList, total, nil
 }
 
 func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {

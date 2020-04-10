@@ -15,13 +15,13 @@ func NewRestaurantsUseCase(rr restaurants.Repository) *RestaurantUseCase {
 	}
 }
 
-func (rUC *RestaurantUseCase) GetRestaurants() ([]*models.Restaurant, error) {
-	restList, err := rUC.restaurantRepo.GetAll()
+func (rUC *RestaurantUseCase) GetRestaurants(count uint64, page uint64) ([]*models.Restaurant, uint64, error) {
+	restList, total, err := rUC.restaurantRepo.GetAll(count, page)
 	if err != nil {
-		return nil, err
+		return nil, total, err
 	}
 
-	return restList, nil
+	return restList, total, nil
 }
 
 func (rUC *RestaurantUseCase) GetRestaurantByID(id uint64) (*models.Restaurant, error) {

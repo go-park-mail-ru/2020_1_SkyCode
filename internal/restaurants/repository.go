@@ -3,7 +3,7 @@ package restaurants
 import "github.com/2020_1_Skycode/internal/models"
 
 type Repository interface {
-	GetAll() ([]*models.Restaurant, error)
+	GetAll(count uint64, page uint64) ([]*models.Restaurant, uint64, error)
 	GetByID(id uint64) (*models.Restaurant, error)
 	InsertInto(rest *models.Restaurant) error
 	Update(rest *models.Restaurant) error

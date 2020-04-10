@@ -23,14 +23,14 @@ func (oU *OrderUseCase) CheckoutOrder(order *models.Order) error {
 	return nil
 }
 
-func (oU *OrderUseCase) GetAllUserOrders(userID uint64) ([]*models.Order, error) {
-	orders, err := oU.orderRepo.GetAllByUserID(userID);
+func (oU *OrderUseCase) GetAllUserOrders(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
+	orders, total, err := oU.orderRepo.GetAllByUserID(userID, count, page)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return orders, nil
+	return orders, total, nil
 }
 
 func (oU *OrderUseCase) GetOrderByID(orderID uint64, userID uint64) (*models.Order, error) {

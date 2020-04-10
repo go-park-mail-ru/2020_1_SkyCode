@@ -51,14 +51,26 @@ type restaurantRequest struct {
 //@Description Returning list of all restaurants
 //@Accept json
 //@Produce json
+//@Param count query int true "Count of elements on page"
+//@Param page query int true "Number of page"
 //@Success 200 array models.Restaurant
 //@Failure 400 object tools.Error
 //@Router /restaurants [get]
 func (rh *RestaurantHandler) GetRestaurants() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		restList, err := rh.restUseCase.GetRestaurants()
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
 		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: "Bad params",
+			})
 
+			return
+		}
+
+		restList, total, err := rh.restUseCase.GetRestaurants(count, page)
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: "text",
@@ -68,7 +80,8 @@ func (rh *RestaurantHandler) GetRestaurants() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"Restaurants": restList,
+			"restaurants": restList,
+			"total":       total,
 		})
 	}
 }

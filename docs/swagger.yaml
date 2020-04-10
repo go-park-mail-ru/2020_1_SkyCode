@@ -646,6 +646,17 @@ paths:
       consumes:
       - application/json
       description: Returning list of all restaurants
+      parameters:
+      - description: Count of elements on page
+        in: query
+        name: count
+        required: true
+        type: integer
+      - description: Number of page
+        in: query
+        name: page
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -824,6 +835,16 @@ paths:
       - application/json
       description: Returning Products List of Restaurant
       parameters:
+      - description: Count of elements on page
+        in: query
+        name: count
+        required: true
+        type: integer
+      - description: Number of page
+        in: query
+        name: page
+        required: true
+        type: integer
       - description: Id of restaurant
         in: path
         name: rest_id

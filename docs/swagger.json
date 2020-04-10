@@ -713,6 +713,22 @@
                     "Restaurant"
                 ],
                 "summary": "Get Restaurants List Route",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Count of elements on page",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of page",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -980,6 +996,20 @@
                 ],
                 "summary": "Get Products Of Restaurant Route",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Count of elements on page",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of page",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "Id of restaurant",

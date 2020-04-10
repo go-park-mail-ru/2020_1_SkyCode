@@ -123,6 +123,8 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 //@Description Creating Order
 //@Accept json
 //@Produce json
+//@Param count query int true "Count of elements on page"
+//@Param page query int true "Number of page"
 //@Success 200 array models.Order
 //@Failure 400 object tools.Error
 //@Failure 500 object tools.Error
@@ -140,7 +142,18 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 			return
 		}
 
-		userOrders, err := oH.OrderUseCase.GetAllUserOrders(user.ID)
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: "Bad params",
+			})
+
+			return
+		}
+
+		userOrders, total, err := oH.OrderUseCase.GetAllUserOrders(user.ID, count, page)
 
 		if err != nil {
 			logrus.Info(err)
@@ -153,6 +166,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Body{
 			"orders": userOrders,
+			"total":  total,
 		})
 	}
 }

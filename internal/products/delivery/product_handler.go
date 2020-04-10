@@ -89,12 +89,25 @@ func (ph *ProductHandler) GetProduct() gin.HandlerFunc {
 //@Description Returning Products List of Restaurant
 //@Accept json
 //@Produce json
+//@Param count query int true "Count of elements on page"
+//@Param page query int true "Number of page"
 //@Param rest_id path int true "Id of restaurant"
 //@Success 200 array models.Product
 //@Failure 400 object tools.Error
 //@Router /restaurants/rest:id/product [get]
 func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: "Bad params",
+			})
+
+			return
+		}
+
 		id, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
 		if err != nil {
 			logrus.Info(err)
@@ -105,7 +118,7 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 			return
 		}
 
-		products, err := ph.productUseCase.GetProductsByRestaurantID(id)
+		products, total, err := ph.productUseCase.GetProductsByRestaurantID(id, count, page)
 		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusNotFound, tools.Error{
@@ -115,7 +128,10 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, products)
+		c.JSON(http.StatusOK, gin.H{
+			"products": products,
+			"total":    total,
+		})
 	}
 }
 
