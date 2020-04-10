@@ -111,7 +111,9 @@ func (rh *RestaurantHandler) GetRestaurantByID() gin.HandlerFunc {
 //@Description Add new restaurant
 //@Accept json
 //@Produce json
-//@Param RestReq body restaurantRequest true "New restaurant data"
+//@Param Name formData string true "New restaurant name"
+//@Param Description formData string true "New restaurant price"
+//@Param image formData file true "New restaurant image"
 //@Success 200 object tools.Message
 //@Failure 400 object tools.Error
 //@Router /restaurants [post]

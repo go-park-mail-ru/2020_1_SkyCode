@@ -118,6 +118,16 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 	}
 }
 
+//@Tags Order
+//@Summary Create Order Route
+//@Description Creating Order
+//@Accept json
+//@Produce json
+//@Success 200 array models.Order
+//@Failure 400 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /orders [get]
 func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := oH.MiddlewareC.GetUser(c)
@@ -147,6 +157,17 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 	}
 }
 
+//@Tags Order
+//@Summary Create Order Route
+//@Description Creating Order
+//@Accept json
+//@Produce json
+//@Param order_id path integer true "ID of order"
+//@Success 200 object models.Order
+//@Failure 400 object tools.Error
+//@Failure 404 object tools.Error
+//@Security basicAuth
+//@Router /orders/:order_id [get]
 func (oH *OrderHandler) GetOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := oH.MiddlewareC.GetUser(c)
@@ -184,6 +205,17 @@ func (oH *OrderHandler) GetOrder() gin.HandlerFunc {
 	}
 }
 
+//@Tags Order
+//@Summary Create Order Route
+//@Description Creating Order
+//@Accept json
+//@Produce json
+//@Param order_id path integer true "ID of order"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 404 object tools.Error
+//@Security basicAuth
+//@Router /orders/:order_id [delete]
 func (oH *OrderHandler) DeleteOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := oH.MiddlewareC.GetUser(c)

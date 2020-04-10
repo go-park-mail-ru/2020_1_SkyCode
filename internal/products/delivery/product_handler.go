@@ -125,7 +125,9 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 //@Accept json
 //@Produce json
 //@Param rest_id path int true "Restaurant ID"
-//@Param ProdReq body productRequest true "New product data"
+//@Param Name formData string true "New product name"
+//@Param Price formData number true "New product price"
+//@Param image formData file true "New product image"
 //@Success 200 object tools.Message
 //@Failure 400 object tools.Error
 //@Router /restaurants/rest:id/product [post]
