@@ -123,6 +123,9 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := oH.MiddlewareC.GetUser(c)
 
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+
 		if err != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
@@ -131,7 +134,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 			return
 		}
 
-		userOrders, err := oH.OrderUseCase.GetAllUserOrders(user.ID)
+		userOrders, total, err := oH.OrderUseCase.GetAllUserOrders(user.ID, count, page)
 
 		if err != nil {
 			logrus.Info(err)
@@ -144,6 +147,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Body{
 			"orders": userOrders,
+			"total": total,
 		})
 	}
 }
