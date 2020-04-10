@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"github.com/2020_1_Skycode/internal/middlewares"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/tools"
@@ -16,13 +17,16 @@ import (
 
 type RestaurantHandler struct {
 	restUseCase restaurants.UseCase
+	middlewareC *middlewares.MWController
 	v           *requestValidator.RequestValidator
 }
 
 func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
-	validator *requestValidator.RequestValidator, rUC restaurants.UseCase) *RestaurantHandler {
+	validator *requestValidator.RequestValidator, rUC restaurants.UseCase,
+	mw *middlewares.MWController) *RestaurantHandler {
 	rh := &RestaurantHandler{
 		restUseCase: rUC,
+		middlewareC: mw,
 		v:           validator,
 	}
 
@@ -112,9 +116,28 @@ func (rh *RestaurantHandler) GetRestaurantByID() gin.HandlerFunc {
 //@Failure 400 object tools.Error
 //@Router /restaurants [post]
 func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
-
+	rootDir, _ := os.Getwd()
 	return func(c *gin.Context) {
 		req := &restaurantRequest{}
+
+		user, err := rh.middlewareC.GetUser(c)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		if !user.IsManager() && !user.IsAdmin() {
+			c.JSON(http.StatusForbidden, tools.Error{
+				ErrorMessage: "User doesn't have permissions",
+			})
+
+			return
+		}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -136,9 +159,32 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 			return
 		}
 
+		file, err := c.FormFile("image")
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		filename := shortuuid.New()
+
+		if err := c.SaveUploadedFile(file, filepath.Join(rootDir, tools.RestaurantImagesPath, filename)); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
 		rest := &models.Restaurant{
 			Name:        req.Name,
 			Description: req.Description,
+			Image:       filename,
 		}
 
 		if err := rh.restUseCase.CreateRestaurant(rest); err != nil {
