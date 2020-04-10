@@ -58,7 +58,7 @@ func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*mode
 func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
 	var ordersList []*models.Order
 
-	rows, err := oR.db.Query("select id, userId, address, price, phone, comment, personnum, datetime from orders where userId = $1" +
+	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, datetime from orders where userId = $1" +
 		" LIMIT $2 OFFSET $3",
 		userID, count, (page - 1) * count)
 	if err != nil {
@@ -73,7 +73,7 @@ func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uin
 	defer rows.Close()
 	for rows.Next() {
 		order := &models.Order{}
-		err = rows.Scan(&order.ID, &order.UserID, &order.Address, &order.Price, &order.Phone, &order.Comment, &order.PersonNum, &order.CreatedAt)
+		err = rows.Scan(&order.ID, &order.UserID, &order.RestID, &order.Address, &order.Price, &order.Phone, &order.Comment, &order.PersonNum, &order.CreatedAt)
 
 		if err != nil {
 			return nil, 0, err
