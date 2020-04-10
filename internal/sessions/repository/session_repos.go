@@ -16,9 +16,9 @@ func NewSessionRepository(db *sql.DB) *Repository {
 }
 
 func (sR *Repository) InsertInto(session *models.Session) error {
-	if err := sR.db.QueryRow("INSERT INTO sessions(userId, token) VALUES ($1, $2) RETURNING id",
+	if err := sR.db.QueryRow("INSERT INTO sessions(userId, token) VALUES ($1, $2) RETURNING id, expiration",
 		session.UserId,
-		session.Token).Scan(&session.ID); err != nil {
+		session.Token).Scan(&session.ID, &session.Expiration); err != nil {
 		return err
 	}
 

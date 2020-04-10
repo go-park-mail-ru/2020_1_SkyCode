@@ -15,8 +15,8 @@ func NewOrderUseCase(orderRepo orders.Repository) *OrderUseCase {
 	}
 }
 
-func (oU *OrderUseCase) CheckoutOrder(order *models.Order) error {
-	if err := oU.orderRepo.InsertOrder(order); err != nil {
+func (oU *OrderUseCase) CheckoutOrder(order *models.Order, ordProducts []*models.OrderProduct) error {
+	if err := oU.orderRepo.InsertOrder(order, ordProducts); err != nil {
 		return err
 	}
 
@@ -24,13 +24,13 @@ func (oU *OrderUseCase) CheckoutOrder(order *models.Order) error {
 }
 
 func (oU *OrderUseCase) GetAllUserOrders(userID uint64) ([]*models.Order, error) {
-	orders, err := oU.orderRepo.GetAllByUserID(userID);
+	userOrders, err := oU.orderRepo.GetAllByUserID(userID);
 
 	if err != nil {
 		return nil, err
 	}
 
-	return orders, nil
+	return userOrders, nil
 }
 
 func (oU *OrderUseCase) GetOrderByID(orderID uint64, userID uint64) (*models.Order, error) {
