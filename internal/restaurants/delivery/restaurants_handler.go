@@ -197,6 +197,7 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 		}
 
 		rest := &models.Restaurant{
+			ManagerID: user.ID,
 			Name:        req.Name,
 			Description: req.Description,
 			Image:       filename,
