@@ -190,7 +190,7 @@ func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request, chatID 
 
 	joinMessage.ChatID = chatID
 
-	return ws, joinMessage, errors.New("chat id not found")
+	return ws, joinMessage, nil
 }
 
 func (cs *ChatServer) JoinUser(conn *websocket.Conn, jM *JoinStatus) error {
