@@ -1,17 +1,22 @@
 package usecase
 
 import (
+	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurants"
+	"github.com/2020_1_Skycode/internal/reviews"
+	"github.com/2020_1_Skycode/internal/tools"
 )
 
 type RestaurantUseCase struct {
 	restaurantRepo restaurants.Repository
+	reviewsRepo    reviews.Repository
 }
 
-func NewRestaurantsUseCase(rr restaurants.Repository) *RestaurantUseCase {
+func NewRestaurantsUseCase(rr restaurants.Repository, rvr reviews.Repository) *RestaurantUseCase {
 	return &RestaurantUseCase{
 		restaurantRepo: rr,
+		reviewsRepo:    rvr,
 	}
 }
 
@@ -74,4 +79,47 @@ func (rUC *RestaurantUseCase) Delete(restID uint64) error {
 	}
 
 	return nil
+}
+
+func (rUC *RestaurantUseCase) AddReview(review *models.Review) error {
+	if _, err := rUC.restaurantRepo.GetByID(review.RestID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestaurantNotFoundError
+		}
+	}
+
+	if check, err := rUC.reviewsRepo.CheckRestaurantReviewByUser(
+		review.RestID, review.Author); err != nil || check {
+		if check {
+			return tools.ReviewAlreadyExists
+		}
+
+		return err
+	}
+
+	if err := rUC.reviewsRepo.CreateReview(review); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantUseCase) GetReviews(id, count, page uint64) ([]*models.Review, uint64, error) {
+	if _, err := rUC.restaurantRepo.GetByID(id); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, 0, tools.RestaurantNotFoundError
+		}
+	}
+
+	returnReviews, err := rUC.reviewsRepo.GetReviewsByRestID(id, count, page)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err := rUC.reviewsRepo.GetReviewsCountByRestID(id)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return returnReviews, total, nil
 }

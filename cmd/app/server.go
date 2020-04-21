@@ -14,6 +14,9 @@ import (
 	_restDelivery "github.com/2020_1_Skycode/internal/restaurants/delivery"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	_restUcase "github.com/2020_1_Skycode/internal/restaurants/usecase"
+	_reviewsDelivery "github.com/2020_1_Skycode/internal/reviews/delivery"
+	_reviewsRepository "github.com/2020_1_Skycode/internal/reviews/repository"
+	_reviewsUseCase "github.com/2020_1_Skycode/internal/reviews/usecase"
 	_sessionsDelivery "github.com/2020_1_Skycode/internal/sessions/delivery"
 	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
@@ -69,8 +72,11 @@ func main() {
 	prodRepo := _productRepo.NewProductRepository(dbConn)
 	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
 
+	reviewRepo := _reviewsRepository.NewReviewsRepository(dbConn)
+	reviewUcase := _reviewsUseCase.NewReviewsUseCase(reviewRepo)
+
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsUseCase(restRepo)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, reviewRepo)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
@@ -97,6 +103,7 @@ func main() {
 	_ = _restDelivery.NewRestaurantHandler(privateGroup, publicGroup, reqValidator, restUcase, mwareC)
 	_ = _productDelivery.NewProductHandler(privateGroup, publicGroup, prodUcase, reqValidator, restUcase, mwareC)
 	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, reqValidator, mwareC)
+	_ = _reviewsDelivery.NewReviewsHandler(privateGroup, publicGroup, reviewUcase, reqValidator, mwareC)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

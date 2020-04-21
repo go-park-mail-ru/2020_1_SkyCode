@@ -74,3 +74,15 @@ create table orderProducts
     foreign key (orderId) references orders (id) on delete cascade,
     foreign key (productId) references products (id) on delete cascade
 );
+
+create table reviews
+(
+    id              serial      not null primary key,
+    restId          int         not null,
+    userId          int         not null,
+    message         text        not null,
+    creationDate    timestamp   not null,
+    rate            real        not null,
+    foreign key (restId) references restaurants (id) on delete cascade,
+    foreign key (userId) references users (id) on delete cascade,
+)

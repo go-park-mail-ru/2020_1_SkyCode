@@ -9,4 +9,7 @@ type UseCase interface {
 	UpdateRestaurant(rest *models.Restaurant) error
 	UpdateImage(restID uint64, filename string) error
 	Delete(restID uint64) error
+
+	AddReview(review *models.Review) error
+	GetReviews(id, count, page uint64) ([]*models.Review, uint64, error)
 }
