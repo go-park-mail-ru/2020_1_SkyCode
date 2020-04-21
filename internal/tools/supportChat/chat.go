@@ -167,7 +167,7 @@ func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*webso
 	return ws, joinMessage, nil
 }
 
-func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *JoinStatus, error) {
+func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request, chatID string) (*websocket.Conn, *JoinStatus, error) {
 	ws, err := cs.upd.Upgrade(w, r, nil)
 
 	if err != nil {
@@ -180,13 +180,10 @@ func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request) (*webso
 		return ws, nil, err
 	}
 
-	values, ok := r.URL.Query()["chatID"]
-
-	if !ok {
+	if chatID == "" {
 		return ws, nil, errors.New("chat id not presented")
 	}
 
-	chatID := values[0]
 	if cs.supportChats[chatID] == nil {
 		return ws, joinMessage, errors.New("chat not found")
 	}

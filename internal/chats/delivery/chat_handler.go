@@ -23,7 +23,7 @@ func NewChatsHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 
 	public.GET("/chat", cH.StartUserChat())
 	private.GET("/chats", cH.GetSupChatList())
-	private.POST("/chats/:chatID/join", cH.JoinSupport())
+	private.GET("/chats/:chatID/join", cH.JoinSupport())
 
 	return cH
 }
@@ -104,7 +104,16 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 			return
 		}
 
-		conn, joinMsg, err := cH.cU.FindChat(c.Writer, c.Request)
+		chatID := c.Param("chatID")
+
+		if chatID == "" {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+		}
+
+		conn, joinMsg, err := cH.cU.FindChat(c.Writer, c.Request, chatID)
 
 		if err != nil {
 			logrus.Error(err)

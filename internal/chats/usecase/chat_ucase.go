@@ -22,8 +22,8 @@ func (cU *ChatUseCase) StartChat(w http.ResponseWriter, r *http.Request) (*webso
 	return cU.sC.CreateChat(w, r)
 }
 
-func (cU *ChatUseCase) FindChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *supportChat.JoinStatus, error) {
-	return cU.sC.SearchChat(w, r)
+func (cU *ChatUseCase) FindChat(w http.ResponseWriter, r *http.Request, chatID string) (*websocket.Conn, *supportChat.JoinStatus, error) {
+	return cU.sC.SearchChat(w, r, chatID)
 }
 
 func (cU *ChatUseCase) ReadMessageFromUSer(ws *websocket.Conn) (supportChat.InputMessage, error) {

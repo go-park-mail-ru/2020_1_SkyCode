@@ -9,7 +9,7 @@ import (
 
 type UseCase interface {
 	StartChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *supportChat.JoinStatus, error)
-	FindChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *supportChat.JoinStatus, error)
+	FindChat(w http.ResponseWriter, r *http.Request, chatID string) (*websocket.Conn, *supportChat.JoinStatus, error)
 	JoinUserToChat(conn *websocket.Conn, fullName string, chatID string) error
 	LeaveUserChat(chatID string) error
 	JoinSupportToChat(conn *websocket.Conn, fullName string, chatID string) error
