@@ -1,9 +1,9 @@
-drop table if exists users;
-drop table if exists sessions;
-drop table if exists restaurants;
-drop table if exists products;
-drop table if exists orders;
-drop table if exists orderproducts;
+drop table if exists users cascade;
+drop table if exists sessions cascade;
+drop table if exists restaurants cascade;
+drop table if exists products cascade;
+drop table if exists orders cascade;
+drop table if exists orderproducts cascade;
 
 create table users
 (
@@ -15,7 +15,7 @@ create table users
     password  varchar(20) not null,
     avatar    varchar(50),
     role      varchar(30) not null
-        constraint checkRoleInsert CHECK (role IN ('Admin', 'User', 'Moderator'))
+        constraint checkRoleInsert CHECK (role IN ('Admin', 'User', 'Moderator', 'Support'))
 );
 
 create table sessions
@@ -24,7 +24,7 @@ create table sessions
     userId     int         not null,
     token      varchar(50) not null,
     expiration timestamp   not null default current_timestamp,
-    foreign key (userId) references users (id)
+    foreign key (userId) references users (id) on delete cascade
 );
 
 create table restaurants
@@ -35,7 +35,7 @@ create table restaurants
     description text        not null,
     rating      real        not null,
     image       varchar(50) not null,
-    foreign key (moderId) references users (id)
+    foreign key (moderId) references users (id) on delete cascade
 );
 
 create table products
@@ -45,7 +45,7 @@ create table products
     name    varchar(30) not null,
     price   real        not null,
     image   varchar(50) not null,
-    foreign key (rest_id) references restaurants (id)
+    foreign key (rest_id) references restaurants (id) on delete cascade
 );
 
 create table orders
@@ -61,8 +61,8 @@ create table orders
     datetime  timestamp    not null default current_timestamp,
     role      varchar(30)  not null
         constraint checkRoleInsert CHECK (role IN ('Accepted', 'Delivering', 'Done')),
-    foreign key (userId) references users (id),
-    foreign key (restId) references restaurants (id)
+    foreign key (userId) references users (id) on delete cascade,
+    foreign key (restId) references restaurants (id) on delete cascade
 );
 
 create table orderProducts

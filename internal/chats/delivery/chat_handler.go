@@ -22,7 +22,7 @@ func NewChatsHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	}
 
 	public.GET("/chat", cH.StartUserChat())
-	private.GET("/chats")
+	private.GET("/chats", cH.GetSupChatList())
 	private.POST("/chats/:chatID/join", cH.JoinSupport())
 
 	return cH
