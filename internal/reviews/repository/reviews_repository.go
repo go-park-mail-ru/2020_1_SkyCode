@@ -129,8 +129,8 @@ func (rr *ReviewsRepository) CreateReview(r *models.Review) error {
 }
 
 func (rr *ReviewsRepository) UpdateReview(r *models.Review) error {
-	if _, err := rr.db.Exec("UPDATE reviews SET message = $1, rate = $2",
-		r.Text, r.Rate); err != nil {
+	if _, err := rr.db.Exec("UPDATE reviews SET message = $2, rate = $3 WHERE id = $1",
+		r.ID, r.Text, r.Rate); err != nil {
 		return err
 	}
 
