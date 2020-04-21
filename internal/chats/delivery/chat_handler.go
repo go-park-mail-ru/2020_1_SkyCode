@@ -39,7 +39,7 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 			})
 		}
 
-		err = cH.cU.JoinUserToChat(conn, joinMsg.ChatID, joinMsg.FullName)
+		err = cH.cU.JoinUserToChat(conn, joinMsg.FullName, joinMsg.ChatID)
 
 		if err != nil {
 			logrus.Error(err)

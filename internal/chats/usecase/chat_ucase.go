@@ -4,6 +4,7 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/tools/supportChat"
 	"github.com/gorilla/websocket"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -85,6 +86,7 @@ func (cU *ChatUseCase) GetChats() []*models.Chat {
 	chats := []*models.Chat{}
 
 	for ind, val := range cU.sC.GetSupportChats() {
+		logrus.Error(ind, val)
 		chat := &models.Chat{
 			UserName: val.User.FullName,
 			ChatID: ind,
