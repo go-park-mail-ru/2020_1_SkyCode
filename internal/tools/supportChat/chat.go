@@ -75,9 +75,9 @@ type ChatServer struct {
 func NewChatServer() *ChatServer {
 	cS := &ChatServer{
 		supportChats: make(map[string]*supportChat),
-		inputCh: make(chan InputMessage),
-		joinCh: make(chan JoinStatus),
-		leaveCh: make(chan LeaveStatus),
+		inputCh:      make(chan InputMessage),
+		joinCh:       make(chan JoinStatus),
+		leaveCh:      make(chan LeaveStatus),
 		upd: &websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
@@ -160,6 +160,8 @@ func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*webso
 	chatID := uuid.New().String()
 	cs.supportChats[chatID] = &supportChat{}
 
+	joinMessage.ChatID = chatID
+
 	return ws, joinMessage, nil
 }
 
@@ -176,13 +178,18 @@ func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request) (*webso
 		return ws, nil, err
 	}
 
-	if joinMessage.ChatID != "" {
-		if cs.supportChats[joinMessage.ChatID] == nil {
-			return ws, joinMessage, errors.New("chat not found")
-		}
+	values, ok := r.URL.Query()["chatID"]
 
-		return ws, joinMessage, nil
+	if !ok {
+		return ws, nil, errors.New("chat id not presented")
 	}
+
+	chatID := values[0]
+	if cs.supportChats[chatID] == nil {
+		return ws, joinMessage, errors.New("chat not found")
+	}
+
+	joinMessage.ChatID = chatID
 
 	return ws, joinMessage, errors.New("chat id not found")
 }

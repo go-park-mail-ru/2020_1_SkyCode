@@ -2,8 +2,8 @@ drop table if exists users cascade;
 drop table if exists sessions cascade;
 drop table if exists restaurants cascade;
 drop table if exists products cascade;
-drop table if exists orders cascade;
 drop table if exists orderproducts cascade;
+drop table if exists orders cascade;
 
 create table users
 (
@@ -59,8 +59,8 @@ create table orders
     comment   varchar(255),
     personNum int          not null,
     datetime  timestamp    not null default current_timestamp,
-    role      varchar(30)  not null
-        constraint checkRoleInsert CHECK (role IN ('Accepted', 'Delivering', 'Done')),
+    status      varchar(30)  not null default 'Accepted'
+        constraint checkRoleInsert CHECK (status IN ('Accepted', 'Delivering', 'Done')),
     foreign key (userId) references users (id) on delete cascade,
     foreign key (restId) references restaurants (id) on delete cascade
 );
@@ -71,6 +71,6 @@ create table orderProducts
     orderId   int    not null,
     productId int    not null,
     count     int    not null,
-    foreign key (orderId) references orders (id) on delete cascade,
+    foreign key (orderId) references orders (id) on delete cascade on delete cascade,
     foreign key (productId) references products (id) on delete cascade
 );
