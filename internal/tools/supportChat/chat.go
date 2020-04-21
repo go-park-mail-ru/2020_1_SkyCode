@@ -136,45 +136,76 @@ func (cs *ChatServer) handleMessages() {
 	}
 }
 
-func (cs *ChatServer) CreateChat() string {
-	chatID := uuid.New().String()
-	cs.supportChats[chatID] = &supportChat{}
-
-	return chatID
-}
-
-func (cs *ChatServer) JoinUser(w http.ResponseWriter, r *http.Request,
-	chatID string) (*websocket.Conn, error) {
+func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *JoinStatus, error) {
 	ws, err := cs.upd.Upgrade(w, r, nil)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	joinMessage := &JoinStatus{}
 
 	if err := ws.ReadJSON(&joinMessage); err != nil {
-		return nil, err
+		return ws, nil, err
 	}
 
-	if chat := cs.supportChats[chatID]; chat == nil {
-		return nil, errors.New("chat not found")
+	if joinMessage.ChatID != "" {
+		if cs.supportChats[joinMessage.ChatID] == nil {
+			return ws, joinMessage, errors.New("chat not found")
+		}
+
+		return ws, joinMessage, nil
 	}
 
-	cs.supportChats[chatID].User = &chatMember{
-		FullName: joinMessage.FullName,
-		ws:       ws,
+	chatID := uuid.New().String()
+	cs.supportChats[chatID] = &supportChat{}
+
+	return ws, joinMessage, nil
+}
+
+func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *JoinStatus, error) {
+	ws, err := cs.upd.Upgrade(w, r, nil)
+
+	if err != nil {
+		return nil, nil, err
 	}
 
-	if err := cs.supportChats[chatID].NotifyMembers(&JoinStatus{
-		ChatID:   chatID,
-		FullName: joinMessage.FullName,
+	joinMessage := &JoinStatus{}
+
+	if err := ws.ReadJSON(&joinMessage); err != nil {
+		return ws, nil, err
+	}
+
+	if joinMessage.ChatID != "" {
+		if cs.supportChats[joinMessage.ChatID] == nil {
+			return ws, joinMessage, errors.New("chat not found")
+		}
+
+		return ws, joinMessage, nil
+	}
+
+	return ws, joinMessage, errors.New("chat id not found")
+}
+
+func (cs *ChatServer) JoinUser(conn *websocket.Conn, jM *JoinStatus) error {
+	if chat := cs.supportChats[jM.ChatID]; chat == nil {
+		return errors.New("chat not found")
+	}
+
+	cs.supportChats[jM.ChatID].User = &chatMember{
+		FullName: jM.FullName,
+		ws:       conn,
+	}
+
+	if err := cs.supportChats[jM.ChatID].NotifyMembers(&JoinStatus{
+		ChatID:   jM.ChatID,
+		FullName: jM.FullName,
 		Joined:   true,
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
-	return ws, nil
+	return nil
 }
 
 func (cs *ChatServer) LeaveUser(chatID string) error {
@@ -195,39 +226,29 @@ func (cs *ChatServer) LeaveUser(chatID string) error {
 	return nil
 }
 
-func (cs *ChatServer) JoinSupport(w http.ResponseWriter, r *http.Request,
-	chatID string) (*websocket.Conn, error) {
-	var chat supportChat
-	ws, err := cs.upd.Upgrade(w, r, nil)
-
-	if err != nil {
-		return nil, err
+func (cs *ChatServer) JoinSupport(conn *websocket.Conn, jM *JoinStatus) error {
+	if chat := cs.supportChats[jM.ChatID]; chat == nil {
+		return errors.New("chat not found")
 	}
 
-	joinMessage := &JoinStatus{}
-
-	if err := ws.ReadJSON(&joinMessage); err != nil {
-		return nil, err
+	if cs.supportChats[jM.ChatID].Support != nil {
+		return errors.New("support already joined")
 	}
 
-	if chat := cs.supportChats[chatID]; chat == nil {
-		return nil, errors.New("chat not found")
+	cs.supportChats[jM.ChatID].Support = &chatMember{
+		FullName: jM.FullName,
+		ws:       conn,
 	}
 
-	chat.Support = &chatMember{
-		FullName: joinMessage.FullName,
-		ws:       ws,
-	}
-
-	if err := chat.NotifyMembers(&JoinStatus{
-		ChatID:   chatID,
-		FullName: joinMessage.FullName,
+	if err := cs.supportChats[jM.ChatID].NotifyMembers(&JoinStatus{
+		ChatID:   jM.ChatID,
+		FullName: jM.FullName,
 		Joined:   true,
 	}); err != nil {
-		return nil, err
+		return err
 	}
 
-	return ws, nil
+	return nil
 }
 
 func (cs *ChatServer) LeaveSupport(chatID string) error {
@@ -246,4 +267,8 @@ func (cs *ChatServer) LeaveSupport(chatID string) error {
 	}
 
 	return nil
+}
+
+func (cs *ChatServer) GetSupportChats() map[string]*supportChat {
+	return cs.supportChats
 }

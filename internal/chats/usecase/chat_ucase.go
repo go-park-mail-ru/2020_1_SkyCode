@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/tools/supportChat"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -16,8 +17,12 @@ func NewChatUseCase() *ChatUseCase {
 	}
 }
 
-func (cU *ChatUseCase) StartChat() string {
-	return cU.sC.CreateChat()
+func (cU *ChatUseCase) StartChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *supportChat.JoinStatus, error) {
+	return cU.sC.CreateChat(w, r)
+}
+
+func (cU *ChatUseCase) FindChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *supportChat.JoinStatus, error) {
+	return cU.sC.SearchChat(w, r)
 }
 
 func (cU *ChatUseCase) ReadMessageFromUSer(ws *websocket.Conn) (supportChat.InputMessage, error) {
@@ -34,15 +39,17 @@ func (cU *ChatUseCase) WriteFromUserMessage(message supportChat.InputMessage) {
 	cU.sC.WriteInputCh(message)
 }
 
-func (cU *ChatUseCase) JoinUserToChat(w http.ResponseWriter, r *http.Request,
-	chatID string) (*websocket.Conn, error) {
-	ws, err := cU.sC.JoinUser(w, r, chatID)
+func (cU *ChatUseCase) JoinUserToChat(conn *websocket.Conn, fullName string, chatID string) error {
+	err := cU.sC.JoinUser(conn, &supportChat.JoinStatus{
+		FullName: fullName,
+		ChatID: chatID,
+	})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return ws, err
+	return nil
 }
 
 func (cU *ChatUseCase) LeaveUserChat(chatID string) error {
@@ -53,15 +60,17 @@ func (cU *ChatUseCase) LeaveUserChat(chatID string) error {
 	return nil
 }
 
-func (cU *ChatUseCase) JoinSupportToChat(w http.ResponseWriter, r *http.Request,
-	chatID string) (*websocket.Conn, error) {
-	ws, err := cU.sC.JoinSupport(w, r, chatID)
+func (cU *ChatUseCase) JoinSupportToChat(conn *websocket.Conn, fullName string, chatID string) error {
+	err := cU.sC.JoinUser(conn, &supportChat.JoinStatus{
+		FullName: fullName,
+		ChatID: chatID,
+	})
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return ws, err
+	return nil
 }
 
 func (cU *ChatUseCase) LeaveSupportChat(chatID string) error {
@@ -70,4 +79,18 @@ func (cU *ChatUseCase) LeaveSupportChat(chatID string) error {
 	}
 
 	return nil
+}
+
+func (cU *ChatUseCase) GetChats() []*models.Chat {
+	chats := []*models.Chat{}
+
+	for ind, val := range cU.sC.GetSupportChats() {
+		chat := &models.Chat{
+			UserName: val.User.FullName,
+			ChatID: ind,
+		}
+		chats = append(chats, chat)
+	}
+
+	return chats
 }
