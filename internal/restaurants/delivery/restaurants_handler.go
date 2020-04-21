@@ -51,7 +51,7 @@ type restaurantRequest struct {
 }
 
 type reviewRequest struct {
-	Text string  `json:"text, omitempty" binding:"required" validate:"min=2"`
+	Text string  `json:"text, omitempty" binding:"required"`
 	Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
