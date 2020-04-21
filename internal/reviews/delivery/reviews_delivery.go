@@ -29,7 +29,7 @@ func NewReviewsHandler(private *gin.RouterGroup, public *gin.RouterGroup, rUC re
 	public.GET("/reviews", rh.GetUserReviews())
 	public.GET("/reviews/:rev_id", rh.GetReview())
 
-	private.POST("/reviews/:rev_id", rh.UpdateReview())
+	private.PUT("/reviews/:rev_id", rh.UpdateReview())
 	private.DELETE("/reviews/:rev_id", rh.DeleteReview())
 
 	return rh
@@ -37,7 +37,7 @@ func NewReviewsHandler(private *gin.RouterGroup, public *gin.RouterGroup, rUC re
 
 type reviewUpdateRequest struct {
 	Text string  `json:"text, omitempty" binding:"required" validate:"min=2"`
-	Rate float64 `json:"rate" binding:"required" validate:"min=0, max=5"`
+	Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
 func (rh *ReviewsHandler) GetUserReviews() gin.HandlerFunc {
@@ -98,6 +98,8 @@ func (rh *ReviewsHandler) GetReview() gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, tools.Error{
 					ErrorMessage: tools.ReviewNotFoundError.Error(),
 				})
+
+				return
 			}
 
 			logrus.Info(err)
@@ -167,11 +169,15 @@ func (rh *ReviewsHandler) UpdateReview() gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, tools.Error{
 					ErrorMessage: tools.ReviewNotFoundError.Error(),
 				})
+
+				return
 			}
 			if err == tools.DontEnoughRights {
 				c.JSON(http.StatusForbidden, tools.Error{
 					ErrorMessage: tools.DontEnoughRights.Error(),
 				})
+
+				return
 			}
 
 			logrus.Info(err)
@@ -212,11 +218,15 @@ func (rh *ReviewsHandler) DeleteReview() gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, tools.Error{
 					ErrorMessage: tools.ReviewNotFoundError.Error(),
 				})
+
+				return
 			}
 			if err == tools.DontEnoughRights {
 				c.JSON(http.StatusForbidden, tools.Error{
 					ErrorMessage: tools.DontEnoughRights.Error(),
 				})
+
+				return
 			}
 
 			logrus.Info(err)
@@ -227,6 +237,6 @@ func (rh *ReviewsHandler) DeleteReview() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, tools.Message{"Updated"})
+		c.JSON(http.StatusOK, tools.Message{"Deleted"})
 	}
 }

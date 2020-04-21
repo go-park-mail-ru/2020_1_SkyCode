@@ -6,10 +6,12 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"log"
+	"reflect"
+	"strconv"
 )
 
 type RequestValidator struct {
-	validate *validator.Validate
+	validate   *validator.Validate
 	translator *ut.Translator
 }
 
@@ -36,7 +38,7 @@ func NewRequestValidator() *RequestValidator {
 	})
 
 	return &RequestValidator{
-		validate: v,
+		validate:   v,
 		translator: &trans,
 	}
 }
@@ -48,7 +50,13 @@ func (v *RequestValidator) ValidateRequest(data interface{}) *map[string]string 
 	if err != nil {
 		fmt.Println(err)
 		for _, err := range err.(validator.ValidationErrors) {
+			if err.Type() == reflect.TypeOf(0.1) {
+				if err.Param() != strconv.FormatFloat(err.Value().(float64), 'f', -1, 64) {
+					errorsMap[err.Field()] = err.Translate(*v.translator)
+				}
 
+				continue
+			}
 			if err.Param() != err.Value().(string) {
 				errorsMap[err.Field()] = err.Translate(*v.translator)
 			}

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/reviews"
+	"math"
 )
 
 type ReviewsRepository struct {
@@ -24,7 +25,7 @@ func (rr *ReviewsRepository) GetRatingByRestID(restID uint64) (float64, error) {
 		return 0, err
 	}
 
-	return rating, nil
+	return math.Round(rating*100) / 100, nil
 }
 
 func (rr *ReviewsRepository) GetReviewsByRestID(restID, count, page uint64) ([]*models.Review, error) {
@@ -62,7 +63,7 @@ func (rr *ReviewsRepository) GetReviewsCountByRestID(restID uint64) (uint64, err
 
 func (rr *ReviewsRepository) GetReviewsByUserID(userID, count, page uint64) ([]*models.Review, error) {
 	rows, err := rr.db.Query("SELECT id, restId, userId, message, creationDate, rate FROM reviews "+
-		"WHERE userId = $1 WHERE message <> '' ORDER BY creationDate LIMIT $2 OFFSET $3", userID, count, (page-1)*count)
+		"WHERE userId = $1 AND message <> '' ORDER BY creationDate LIMIT $2 OFFSET $3", userID, count, (page-1)*count)
 	if err != nil {
 		return nil, err
 	}

@@ -85,4 +85,5 @@ create table reviews
     rate            real        not null,
     foreign key (restId) references restaurants (id) on delete cascade,
     foreign key (userId) references users (id) on delete cascade,
-)
+        constraint uq_rest_user_reviews unique (restId, userId)
+);

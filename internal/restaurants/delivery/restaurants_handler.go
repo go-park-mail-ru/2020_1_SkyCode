@@ -52,7 +52,7 @@ type restaurantRequest struct {
 
 type reviewRequest struct {
 	Text string  `json:"text, omitempty" binding:"required" validate:"min=2"`
-	Rate float64 `json:"rate" binding:"required" validate:"min=0, max=5"`
+	Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
 //@Tags Restaurant
@@ -445,7 +445,7 @@ func (rh *RestaurantHandler) AddReview() gin.HandlerFunc {
 			return
 		}
 
-		req := reviewRequest{}
+		req := &reviewRequest{}
 
 		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
@@ -460,7 +460,7 @@ func (rh *RestaurantHandler) AddReview() gin.HandlerFunc {
 		if len(*errorsList) > 0 {
 			logrus.Info(tools.NotRequiredFields)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.NotRequiredFields.Error(),
+				ErrorMessage: tools.ErrorRequestValidation.Error(),
 			})
 
 			return
@@ -488,18 +488,24 @@ func (rh *RestaurantHandler) AddReview() gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, tools.Error{
 					ErrorMessage: tools.RestaurantNotFoundError.Error(),
 				})
+
+				return
 			}
 
 			if err == tools.ReviewAlreadyExists {
 				c.JSON(http.StatusConflict, tools.Error{
 					ErrorMessage: tools.ReviewAlreadyExists.Error(),
 				})
+
+				return
 			}
 
 			logrus.Error(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
 			})
+
+			return
 		}
 
 		c.JSON(http.StatusOK, tools.Message{"Created"})
@@ -535,12 +541,16 @@ func (rh *RestaurantHandler) GetReviews() gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, tools.Error{
 					ErrorMessage: tools.RestaurantNotFoundError.Error(),
 				})
+
+				return
 			}
 
 			logrus.Error(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
 			})
+
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{

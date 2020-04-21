@@ -6,6 +6,7 @@ import (
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/reviews"
 	"github.com/2020_1_Skycode/internal/tools"
+	"math"
 )
 
 type RestaurantUseCase struct {
@@ -97,6 +98,7 @@ func (rUC *RestaurantUseCase) AddReview(review *models.Review) error {
 		return err
 	}
 
+	review.Rate = math.Round(review.Rate*100) / 100
 	if err := rUC.reviewsRepo.CreateReview(review); err != nil {
 		return err
 	}

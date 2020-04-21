@@ -5,6 +5,7 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/reviews"
 	"github.com/2020_1_Skycode/internal/tools"
+	"math"
 )
 
 type ReviewsUseCase struct {
@@ -58,6 +59,7 @@ func (rUC *ReviewsUseCase) UpdateReview(r *models.Review, u *models.User) error 
 		return tools.DontEnoughRights
 	}
 
+	r.Rate = math.Round(r.Rate*100) / 100
 	err = rUC.reviewsRepo.UpdateReview(r)
 	if err != nil {
 		return err
