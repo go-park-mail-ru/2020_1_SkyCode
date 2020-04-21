@@ -148,7 +148,8 @@ func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*webso
 	if err := ws.ReadJSON(&joinMessage); err != nil {
 		return ws, nil, err
 	}
-
+	
+	logrus.Error(joinMessage)
 	if joinMessage.ChatID != "" {
 		if cs.supportChats[joinMessage.ChatID] == nil {
 			return ws, joinMessage, errors.New("chat not found")
@@ -162,6 +163,7 @@ func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*webso
 
 	joinMessage.ChatID = chatID
 
+	logrus.Error(joinMessage)
 	return ws, joinMessage, nil
 }
 
