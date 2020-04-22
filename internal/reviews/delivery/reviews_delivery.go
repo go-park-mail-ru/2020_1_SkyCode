@@ -158,10 +158,12 @@ func (rh *ReviewsHandler) UpdateReview() gin.HandlerFunc {
 		}
 
 		reviewReq := &models.Review{
-			ID:     reviewID,
-			Text:   req.Text,
-			Author: user.ID,
-			Rate:   req.Rate,
+			ID:   reviewID,
+			Text: req.Text,
+			Author: &models.User{
+				ID: user.ID,
+			},
+			Rate: req.Rate,
 		}
 
 		if err := rh.reviewsUseCase.UpdateReview(reviewReq, user); err != nil {

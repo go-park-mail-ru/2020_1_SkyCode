@@ -90,7 +90,7 @@ func (rUC *RestaurantUseCase) AddReview(review *models.Review) error {
 	}
 
 	if curReview, err := rUC.reviewsRepo.GetRestaurantReviewByUser(
-		review.RestID, review.Author); err != nil || curReview != nil {
+		review.RestID, review.Author.ID); err != nil || curReview != nil {
 		if curReview != nil {
 			return tools.ReviewAlreadyExists
 		}

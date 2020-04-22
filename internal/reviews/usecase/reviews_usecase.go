@@ -55,7 +55,7 @@ func (rUC *ReviewsUseCase) UpdateReview(r *models.Review, u *models.User) error 
 		return err
 	}
 
-	if u.ID != returnReview.Author {
+	if u.ID != returnReview.Author.ID {
 		return tools.DontEnoughRights
 	}
 
@@ -78,7 +78,7 @@ func (rUC *ReviewsUseCase) DeleteReview(id uint64, u *models.User) error {
 		return err
 	}
 
-	if u.ID != returnReview.Author {
+	if u.ID != returnReview.Author.ID {
 		return tools.DontEnoughRights
 	}
 

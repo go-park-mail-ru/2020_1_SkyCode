@@ -476,9 +476,11 @@ func (rh *RestaurantHandler) AddReview() gin.HandlerFunc {
 		}
 
 		newReview := &models.Review{
-			RestID:       restID,
-			Text:         req.Text,
-			Author:       user.ID,
+			RestID: restID,
+			Text:   req.Text,
+			Author: &models.User{
+				ID: user.ID,
+			},
 			CreationDate: time.Now(),
 			Rate:         req.Rate,
 		}
@@ -536,7 +538,7 @@ func (rh *RestaurantHandler) GetReviews() gin.HandlerFunc {
 		}
 
 		user, err := rh.middlewareC.GetUser(c)
-		if err != nil {
+		if err != nil && err != tools.Unauthorized {
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
 			})

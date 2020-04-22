@@ -29,8 +29,12 @@ func (rr *ReviewsRepository) GetRatingByRestID(restID uint64) (float64, error) {
 }
 
 func (rr *ReviewsRepository) GetReviewsByRestID(restID, count, page uint64) ([]*models.Review, error) {
-	rows, err := rr.db.Query("SELECT id, restId, userId, message, creationDate, rate FROM reviews "+
-		"WHERE restID = $1 ORDER BY rate LIMIT $2 OFFSET $3", restID, count, (page-1)*count)
+	rows, err := rr.db.Query(
+		"SELECT r.id, r.restId, u.id, u.firstname, u.lastname, r.message, r.creationDate, r.rate "+
+			"FROM reviews AS r "+
+			"JOIN users AS u ON (r.userid = u.id) "+
+			"WHERE r.restID = $1 AND r.message <> '' ORDER BY r.rate DESC, r.creationDate DESC LIMIT $2 OFFSET $3",
+		restID, count, (page-1)*count)
 	if err != nil {
 		return nil, err
 	}
@@ -39,9 +43,9 @@ func (rr *ReviewsRepository) GetReviewsByRestID(restID, count, page uint64) ([]*
 
 	returnReviews := []*models.Review{}
 	for rows.Next() {
-		r := &models.Review{}
-
-		if err := rows.Scan(&r.ID, &r.RestID, &r.Author, &r.Text, &r.CreationDate, &r.Rate); err != nil {
+		r := &models.Review{Author: &models.User{}}
+		if err := rows.Scan(&r.ID, &r.RestID, &r.Author.ID, &r.Author.FirstName,
+			&r.Author.LastName, &r.Text, &r.CreationDate, &r.Rate); err != nil {
 			return nil, err
 		}
 
@@ -62,8 +66,11 @@ func (rr *ReviewsRepository) GetReviewsCountByRestID(restID uint64) (uint64, err
 }
 
 func (rr *ReviewsRepository) GetReviewsByUserID(userID, count, page uint64) ([]*models.Review, error) {
-	rows, err := rr.db.Query("SELECT id, restId, userId, message, creationDate, rate FROM reviews "+
-		"WHERE userId = $1 AND message <> '' ORDER BY creationDate LIMIT $2 OFFSET $3", userID, count, (page-1)*count)
+	rows, err := rr.db.Query(
+		"SELECT r.id, r.restId, u.id, u.firstname, u.lastname, r.message, r.creationDate, r.rate "+
+			"FROM reviews AS r "+
+			"JOIN users AS u ON (r.userid = u.id) "+
+			"WHERE r.userId = $1 ORDER BY r.creationDate DESC LIMIT $2 OFFSET $3", userID, count, (page-1)*count)
 	if err != nil {
 		return nil, err
 	}
@@ -72,9 +79,10 @@ func (rr *ReviewsRepository) GetReviewsByUserID(userID, count, page uint64) ([]*
 
 	returnReviews := []*models.Review{}
 	for rows.Next() {
-		r := &models.Review{}
+		r := &models.Review{Author: &models.User{}}
 
-		if err := rows.Scan(&r.ID, &r.RestID, &r.Author, &r.Text, &r.CreationDate, &r.Rate); err != nil {
+		if err := rows.Scan(&r.ID, &r.RestID, &r.Author.ID, &r.Author.FirstName,
+			&r.Author.LastName, &r.Text, &r.CreationDate, &r.Rate); err != nil {
 			return nil, err
 		}
 
@@ -95,10 +103,13 @@ func (rr *ReviewsRepository) GetReviewsCountByUserID(userID uint64) (uint64, err
 }
 
 func (rr *ReviewsRepository) GetRestaurantReviewByUser(restID, userID uint64) (*models.Review, error) {
-	r := &models.Review{}
-	if err := rr.db.QueryRow("SELECT id, restId, userId, message, creationDate, rate FROM reviews "+
-		"WHERE restId = $1 AND userId = $2",
-		restID, userID).Scan(&r.ID, &r.RestID, &r.Author, &r.Text, &r.CreationDate, &r.Rate); err != nil {
+	r := &models.Review{Author: &models.User{}}
+	if err := rr.db.QueryRow("SELECT r.id, r.restId, u.id, u.firstname, u.lastname, r.message, r.creationDate, r.rate "+
+		"FROM reviews AS r "+
+		"JOIN users AS u ON (r.userid = u.id) "+
+		"WHERE r.restId = $1 AND r.userId = $2",
+		restID, userID).Scan(&r.ID, &r.RestID, &r.Author.ID, &r.Author.FirstName,
+		&r.Author.LastName, &r.Text, &r.CreationDate, &r.Rate); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -109,10 +120,14 @@ func (rr *ReviewsRepository) GetRestaurantReviewByUser(restID, userID uint64) (*
 }
 
 func (rr *ReviewsRepository) GetReviewByID(id uint64) (*models.Review, error) {
-	r := &models.Review{}
+	r := &models.Review{Author: &models.User{}}
 
-	if err := rr.db.QueryRow("SELECT id, restId, userId, message, creationDate, rate FROM reviews "+
-		"WHERE id = $1", id).Scan(&r.ID, &r.RestID, &r.Author, &r.Text, &r.CreationDate, &r.Rate); err != nil {
+	if err := rr.db.QueryRow(
+		"SELECT r.id, r.restId, u.id, u.firstname, u.lastname, r.message, r.creationDate, r.rate "+
+			"FROM reviews AS r "+
+			"JOIN users AS u ON (r.userid = u.id) "+
+			"WHERE r.id = $1", id).Scan(&r.ID, &r.RestID, &r.Author.ID, &r.Author.FirstName,
+		&r.Author.LastName, &r.Text, &r.CreationDate, &r.Rate); err != nil {
 		return nil, err
 	}
 
@@ -121,7 +136,7 @@ func (rr *ReviewsRepository) GetReviewByID(id uint64) (*models.Review, error) {
 
 func (rr *ReviewsRepository) CreateReview(r *models.Review) error {
 	if err := rr.db.QueryRow("INSERT INTO reviews (restId, userId, message, creationDate, rate) "+
-		"VALUES ($1, $2, $3, $4, $5) RETURNING id", r.RestID, r.Author, r.Text, r.CreationDate, r.Rate).
+		"VALUES ($1, $2, $3, $4, $5) RETURNING id", r.RestID, r.Author.ID, r.Text, r.CreationDate, r.Rate).
 		Scan(&r.ID); err != nil {
 		return err
 	}
