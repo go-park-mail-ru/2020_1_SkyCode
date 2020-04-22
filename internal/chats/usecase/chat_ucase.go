@@ -65,7 +65,7 @@ func (cU *ChatUseCase) LeaveUserChat(chatID string) error {
 }
 
 func (cU *ChatUseCase) JoinSupportToChat(conn *websocket.Conn, fullName string, chatID string) error {
-	err := cU.sC.JoinUser(conn, &supportChat.JoinStatus{
+	err := cU.sC.JoinSupport(conn, &supportChat.JoinStatus{
 		FullName: fullName,
 		ChatID: chatID,
 	})
