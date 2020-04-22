@@ -3,6 +3,7 @@ package delivery
 import (
 	"github.com/2020_1_Skycode/internal/chats"
 	"github.com/2020_1_Skycode/internal/middlewares"
+	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -30,6 +31,17 @@ func NewChatsHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 
 func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 	return func (c *gin.Context) {
+		user, err := cH.mw.GetUser(c)
+
+		if user == nil {
+			logrus.Info(err)
+			c.JSON(http.StatusUnauthorized, tools.Error{
+				ErrorMessage: tools.Unauthorized.Error(),
+			})
+
+			return
+		}
+
 		conn, joinMsg, err := cH.cU.StartChat(c.Writer, c.Request)
 
 		if err != nil {
@@ -43,10 +55,6 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 
 		if err != nil {
 			logrus.Error(err)
-			c.JSON(http.StatusInternalServerError, tools.Error{
-				ErrorMessage: err.Error(),
-			})
-
 			return
 		}
 
@@ -62,12 +70,16 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 				break
 			}
 
+			if err := cH.cU.StoreMessage(&models.ChatMessage{
+				UserID: user.ID,
+				ChatID: message.ChatID,
+				Message: message.Message,
+			}); err != nil {
+				logrus.Error(err)
+			}
+
 			cH.cU.WriteFromUserMessage(message)
 		}
-
-		c.JSON(http.StatusOK, tools.Message{
-			Message: err.Error(),
-		})
 
 		return
 	}
@@ -117,18 +129,12 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 
 		if err != nil {
 			logrus.Error(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: err.Error(),
-			})
 		}
 
-		err = cH.cU.JoinSupportToChat(conn, joinMsg.ChatID, joinMsg.FullName)
+		err = cH.cU.JoinSupportToChat(conn, joinMsg.FullName, joinMsg.ChatID)
 
 		if err != nil {
 			logrus.Error(err)
-			c.JSON(http.StatusInternalServerError, tools.Error{
-				ErrorMessage: err.Error(),
-			})
 
 			return
 		}
@@ -145,12 +151,16 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 				break
 			}
 
+			if err := cH.cU.StoreMessage(&models.ChatMessage{
+				UserID: user.ID,
+				ChatID: message.ChatID,
+				Message: message.Message,
+			}); err != nil {
+				logrus.Error(err)
+			}
+
 			cH.cU.WriteFromUserMessage(message)
 		}
-
-		c.JSON(http.StatusOK, tools.Message{
-			Message: err.Error(),
-		})
 
 		return
 	}

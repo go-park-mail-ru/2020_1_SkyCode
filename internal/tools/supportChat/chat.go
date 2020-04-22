@@ -14,7 +14,15 @@ type chatMember struct {
 }
 
 func (cm *chatMember) CloseConn() error {
-	return cm.ws.Close()
+	if cm.ws != nil {
+		err := cm.ws.Close()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type supportChat struct {
@@ -161,6 +169,8 @@ func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*webso
 	chatID := uuid.New().String()
 	cs.supportChats[chatID] = &supportChat{}
 
+	logrus.Error(cs.supportChats[chatID])
+
 	joinMessage.ChatID = chatID
 
 	logrus.Error(joinMessage)
@@ -194,7 +204,9 @@ func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request, chatID 
 }
 
 func (cs *ChatServer) JoinUser(conn *websocket.Conn, jM *JoinStatus) error {
-	if chat := cs.supportChats[jM.ChatID]; chat == nil {
+	var chat *supportChat
+
+	if chat = cs.supportChats[jM.ChatID]; chat == nil {
 		return errors.New("chat not found")
 	}
 
@@ -215,9 +227,9 @@ func (cs *ChatServer) JoinUser(conn *websocket.Conn, jM *JoinStatus) error {
 }
 
 func (cs *ChatServer) LeaveUser(chatID string) error {
-	var chat supportChat
+	var chat *supportChat
 
-	if chat := cs.supportChats[chatID]; chat == nil {
+	if chat = cs.supportChats[chatID]; chat == nil {
 		return errors.New("chat not found")
 	}
 
@@ -258,9 +270,9 @@ func (cs *ChatServer) JoinSupport(conn *websocket.Conn, jM *JoinStatus) error {
 }
 
 func (cs *ChatServer) LeaveSupport(chatID string) error {
-	var chat supportChat
+	var chat *supportChat
 
-	if chat := cs.supportChats[chatID]; chat == nil {
+	if chat = cs.supportChats[chatID]; chat == nil {
 		return errors.New("chat not found")
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/2020_1_Skycode/docs"
 	_chatsDelivery "github.com/2020_1_Skycode/internal/chats/delivery"
+	_chatsRepository "github.com/2020_1_Skycode/internal/chats/repository"
 	_chatsUseCase "github.com/2020_1_Skycode/internal/chats/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
@@ -83,7 +84,8 @@ func main() {
 	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
 	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
 
-	chatsUcase := _chatsUseCase.NewChatUseCase()
+	chatsRepo := _chatsRepository.NewChatsRepository(dbConn)
+	chatsUcase := _chatsUseCase.NewChatUseCase(chatsRepo)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 

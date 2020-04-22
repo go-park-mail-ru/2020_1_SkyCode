@@ -4,6 +4,7 @@ drop table if exists restaurants cascade;
 drop table if exists products cascade;
 drop table if exists orderproducts cascade;
 drop table if exists orders cascade;
+drop table if exists chat_messages cascade;
 
 create table users
 (
@@ -74,3 +75,11 @@ create table orderProducts
     foreign key (orderId) references orders (id) on delete cascade on delete cascade,
     foreign key (productId) references products (id) on delete cascade
 );
+
+create table chat_messages
+(
+    user_id int references users (id) on delete cascade,
+    chat varchar not null,
+    message text not null,
+    created timestamptz default current_timestamp
+)

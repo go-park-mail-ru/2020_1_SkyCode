@@ -27,4 +27,5 @@ var (
 	ErrorRequestValidation = errors.New("Request validation failed")
 	UserExists = errors.New("Phone number already exists")
 	GetOrdersError = errors.New("Get orders error")
+	ClosedChat = errors.New("chat was closed")
 )

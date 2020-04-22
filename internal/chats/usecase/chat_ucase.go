@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/2020_1_Skycode/internal/chats"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/tools/supportChat"
 	"github.com/gorilla/websocket"
@@ -10,11 +11,13 @@ import (
 
 type ChatUseCase struct {
 	sC *supportChat.ChatServer
+	sR chats.Repository
 }
 
-func NewChatUseCase() *ChatUseCase {
+func NewChatUseCase(sR chats.Repository) *ChatUseCase {
 	return &ChatUseCase{
 		sC: supportChat.NewChatServer(),
+		sR: sR,
 	}
 }
 
@@ -95,4 +98,12 @@ func (cU *ChatUseCase) GetChats() []*models.Chat {
 	}
 
 	return chats
+}
+
+func (cU *ChatUseCase) StoreMessage(message *models.ChatMessage) error {
+	if err := cU.sR.InsertChatMessage(message); err != nil {
+		return err
+	}
+
+	return nil
 }

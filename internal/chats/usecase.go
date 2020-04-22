@@ -17,4 +17,5 @@ type UseCase interface {
 	ReadMessageFromUSer(ws *websocket.Conn) (supportChat.InputMessage, error)
 	WriteFromUserMessage(message supportChat.InputMessage)
 	GetChats() []*models.Chat
+	StoreMessage(message *models.ChatMessage) error
 }
