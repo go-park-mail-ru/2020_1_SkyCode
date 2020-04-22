@@ -46,9 +46,6 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 
 		if err != nil {
 			logrus.Error(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: err.Error(),
-			})
 		}
 
 		err = cH.cU.JoinUserToChat(conn, joinMsg.FullName, joinMsg.ChatID)
@@ -120,15 +117,14 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 
 		if chatID == "" {
 			logrus.Info(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
-			})
+			return
 		}
 
 		conn, joinMsg, err := cH.cU.FindChat(c.Writer, c.Request, chatID)
 
 		if err != nil {
 			logrus.Error(err)
+			return
 		}
 
 		err = cH.cU.JoinSupportToChat(conn, joinMsg.FullName, joinMsg.ChatID)

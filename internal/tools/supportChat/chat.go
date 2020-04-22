@@ -237,6 +237,8 @@ func (cs *ChatServer) LeaveUser(chatID string) error {
 		return err
 	}
 
+	chat.User = nil
+
 	if chat.Dead() {
 		delete(cs.supportChats, chatID)
 	}
@@ -247,10 +249,6 @@ func (cs *ChatServer) LeaveUser(chatID string) error {
 func (cs *ChatServer) JoinSupport(conn *websocket.Conn, jM *JoinStatus) error {
 	if chat := cs.supportChats[jM.ChatID]; chat == nil {
 		return errors.New("chat not found")
-	}
-
-	if cs.supportChats[jM.ChatID].Support != nil {
-		return errors.New("support already joined")
 	}
 
 	cs.supportChats[jM.ChatID].Support = &chatMember{
@@ -279,6 +277,8 @@ func (cs *ChatServer) LeaveSupport(chatID string) error {
 	if err := chat.Support.CloseConn(); err != nil {
 		return err
 	}
+
+	chat.Support = nil
 
 	if chat.Dead() {
 		delete(cs.supportChats, chatID)
