@@ -159,11 +159,9 @@ func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*webso
 	
 	logrus.Error(joinMessage)
 	if joinMessage.ChatID != "" {
-		if cs.supportChats[joinMessage.ChatID] == nil {
-			return ws, joinMessage, errors.New("chat not found")
+		if cs.supportChats[joinMessage.ChatID] != nil {
+			return ws, joinMessage, nil
 		}
-
-		return ws, joinMessage, nil
 	}
 
 	chatID := uuid.New().String()
