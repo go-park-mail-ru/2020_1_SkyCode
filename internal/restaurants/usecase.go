@@ -11,5 +11,5 @@ type UseCase interface {
 	Delete(restID uint64) error
 
 	AddReview(review *models.Review) error
-	GetReviews(id, count, page uint64) ([]*models.Review, uint64, error)
+	GetReviews(restID, userID, count, page uint64) ([]*models.Review, *models.Review, uint64, error)
 }

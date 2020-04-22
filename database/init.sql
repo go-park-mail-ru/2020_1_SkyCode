@@ -4,6 +4,7 @@ drop table if exists restaurants;
 drop table if exists products;
 drop table if exists orders;
 drop table if exists orderproducts;
+drop table if exists reviews;
 
 create table users
 (
@@ -92,9 +93,9 @@ create or replace function calculate_rating()
 returns trigger as $calculate_rating$
 begin
     update restaurants
-    set rating = (  select avg(rate) from reviews
+    set rating =   (select avg(rate) from reviews
                     where reviews.restid = restaurants.id)
-    where restaurants.id = coalesce (new.restid, old.restid) ;
+    where restaurants.id = coalesce (new.restid, old.restid);
     return new;
 end;
 $calculate_rating$ LANGUAGE plpgsql;

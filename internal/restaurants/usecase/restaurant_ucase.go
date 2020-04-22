@@ -89,9 +89,9 @@ func (rUC *RestaurantUseCase) AddReview(review *models.Review) error {
 		}
 	}
 
-	if check, err := rUC.reviewsRepo.CheckRestaurantReviewByUser(
-		review.RestID, review.Author); err != nil || check {
-		if check {
+	if curReview, err := rUC.reviewsRepo.GetRestaurantReviewByUser(
+		review.RestID, review.Author); err != nil || curReview != nil {
+		if curReview != nil {
 			return tools.ReviewAlreadyExists
 		}
 
@@ -106,22 +106,28 @@ func (rUC *RestaurantUseCase) AddReview(review *models.Review) error {
 	return nil
 }
 
-func (rUC *RestaurantUseCase) GetReviews(id, count, page uint64) ([]*models.Review, uint64, error) {
-	if _, err := rUC.restaurantRepo.GetByID(id); err != nil {
+func (rUC *RestaurantUseCase) GetReviews(restID, userID, count, page uint64) (
+	[]*models.Review, *models.Review, uint64, error) {
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
 		if err == sql.ErrNoRows {
-			return nil, 0, tools.RestaurantNotFoundError
+			return nil, nil, 0, tools.RestaurantNotFoundError
 		}
 	}
 
-	returnReviews, err := rUC.reviewsRepo.GetReviewsByRestID(id, count, page)
+	returnReviews, err := rUC.reviewsRepo.GetReviewsByRestID(restID, count, page)
 	if err != nil {
-		return nil, 0, err
+		return nil, nil, 0, err
 	}
 
-	total, err := rUC.reviewsRepo.GetReviewsCountByRestID(id)
-	if err != nil {
-		return nil, 0, err
+	curReview, err := rUC.reviewsRepo.GetRestaurantReviewByUser(restID, userID)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, nil, 0, err
 	}
 
-	return returnReviews, total, nil
+	total, err := rUC.reviewsRepo.GetReviewsCountByRestID(restID)
+	if err != nil {
+		return nil, nil, 0, err
+	}
+
+	return returnReviews, curReview, total, nil
 }

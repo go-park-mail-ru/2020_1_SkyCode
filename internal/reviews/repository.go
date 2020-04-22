@@ -8,7 +8,7 @@ type Repository interface {
 	GetReviewsCountByRestID(uint64) (uint64, error)
 	GetReviewsByUserID(uint64, uint64, uint64) ([]*models.Review, error)
 	GetReviewsCountByUserID(uint64) (uint64, error)
-	CheckRestaurantReviewByUser(uint64, uint64) (bool, error)
+	GetRestaurantReviewByUser(uint64, uint64) (*models.Review, error)
 	GetReviewByID(uint64) (*models.Review, error)
 	CreateReview(*models.Review) error
 	UpdateReview(*models.Review) error

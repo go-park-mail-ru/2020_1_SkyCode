@@ -535,7 +535,23 @@ func (rh *RestaurantHandler) GetReviews() gin.HandlerFunc {
 			return
 		}
 
-		reviews, total, err := rh.restUseCase.GetReviews(restID, count, page)
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		var userID uint64
+		if user == nil {
+			userID = 0
+		} else {
+			userID = user.ID
+		}
+
+		reviews, current, total, err := rh.restUseCase.GetReviews(restID, userID, count, page)
 		if err != nil {
 			if err == tools.RestaurantNotFoundError {
 				c.JSON(http.StatusNotFound, tools.Error{
@@ -555,6 +571,7 @@ func (rh *RestaurantHandler) GetReviews() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{
 			"reviews": reviews,
+			"current": current,
 			"total":   total,
 		})
 	}

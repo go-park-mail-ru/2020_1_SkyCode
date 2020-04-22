@@ -94,17 +94,18 @@ func (rr *ReviewsRepository) GetReviewsCountByUserID(userID uint64) (uint64, err
 	return count, nil
 }
 
-func (rr *ReviewsRepository) CheckRestaurantReviewByUser(restID, userID uint64) (bool, error) {
-	var id uint64
-	if err := rr.db.QueryRow("SELECT id FROM reviews WHERE restId = $1 AND userId = $2",
-		restID, userID).Scan(&id); err != nil {
+func (rr *ReviewsRepository) GetRestaurantReviewByUser(restID, userID uint64) (*models.Review, error) {
+	r := &models.Review{}
+	if err := rr.db.QueryRow("SELECT id, restId, userId, message, creationDate, rate FROM reviews "+
+		"WHERE restId = $1 AND userId = $2",
+		restID, userID).Scan(&r.ID, &r.RestID, &r.Author, &r.Text, &r.CreationDate, &r.Rate); err != nil {
 		if err == sql.ErrNoRows {
-			return false, nil
+			return nil, nil
 		}
-		return false, err
+		return nil, err
 	}
 
-	return true, nil
+	return r, nil
 }
 
 func (rr *ReviewsRepository) GetReviewByID(id uint64) (*models.Review, error) {
