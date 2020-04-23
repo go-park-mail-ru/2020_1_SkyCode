@@ -90,7 +90,13 @@ func (cU *ChatUseCase) LeaveSupportChat(chatID string) error {
 func (cU *ChatUseCase) GetChats() []*models.Chat {
 	chats := []*models.Chat{}
 
-	for ind, val := range cU.sC.GetSupportChats() {
+	supChats := cU.sC.GetSupportChats()
+
+	if len(supChats) == 0 {
+		return chats
+	}
+
+	for ind, val := range supChats {
 		logrus.Error(ind, val)
 		chat := &models.Chat{
 			UserName: val.User.UserName,
