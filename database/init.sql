@@ -4,6 +4,7 @@ drop table if exists restaurants;
 drop table if exists products;
 drop table if exists orders;
 drop table if exists orderproducts;
+drop table if exists reviews;
 
 create table users
 (
@@ -74,3 +75,34 @@ create table orderProducts
     foreign key (orderId) references orders (id) on delete cascade,
     foreign key (productId) references products (id) on delete cascade
 );
+
+create table reviews
+(
+    id              serial      not null primary key,
+    restId          int         not null,
+    userId          int         not null,
+    message         text        not null,
+    creationDate    timestamp   not null,
+    rate            real        not null,
+    foreign key (restId) references restaurants (id) on delete cascade,
+    foreign key (userId) references users (id) on delete cascade,
+        constraint uq_rest_user_reviews unique (restId, userId)
+);
+
+create or replace function calculate_rating()
+returns trigger as $calculate_rating$
+begin
+    update restaurants
+    set rating =   (select avg(rate) from reviews
+                    where reviews.restid = restaurants.id)
+    where restaurants.id = coalesce (new.restid, old.restid);
+    return new;
+end;
+$calculate_rating$ LANGUAGE plpgsql;
+
+drop trigger if exists calc_rating on reviews;
+
+create trigger calc_rating
+after insert or delete or update of rate on reviews
+for each row
+execute procedure calculate_rating();

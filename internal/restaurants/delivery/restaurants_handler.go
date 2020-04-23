@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 type RestaurantHandler struct {
@@ -38,12 +39,20 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	private.PUT("/restaurants/:rest_id/image", rh.UpdateImage())
 	private.DELETE("/restaurants/:rest_id", rh.DeleteRestaurant())
 
+	private.POST("/restaurants/:rest_id/reviews", rh.AddReview())
+	public.GET("/restaurants/:rest_id/reviews", rh.GetReviews())
+
 	return rh
 }
 
 type restaurantRequest struct {
 	Name        string `json:"name, omitempty" binding:"required" validate:"min=3"`
 	Description string `json:"description, omitempty" binding:"required" validate:"min=10"`
+}
+
+type reviewRequest struct {
+	Text string  `json:"text, omitempty" binding:"required"`
+	Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
 //@Tags Restaurant
@@ -63,7 +72,7 @@ func (rh *RestaurantHandler) GetRestaurants() gin.HandlerFunc {
 		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: "Bad params",
+				ErrorMessage: tools.BadQueryParams.Error(),
 			})
 
 			return
@@ -197,7 +206,7 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 		}
 
 		rest := &models.Restaurant{
-			ManagerID: user.ID,
+			ManagerID:   user.ID,
 			Name:        req.Name,
 			Description: req.Description,
 			Image:       filename,
@@ -420,6 +429,152 @@ func (rh *RestaurantHandler) DeleteRestaurant() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Message{
 			Message: "success",
+		})
+	}
+}
+
+func (rh *RestaurantHandler) AddReview() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		req := &reviewRequest{}
+
+		if err := c.Bind(req); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := rh.v.ValidateRequest(req)
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.ErrorRequestValidation.Error(),
+			})
+
+			return
+		}
+
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		newReview := &models.Review{
+			RestID: restID,
+			Text:   req.Text,
+			Author: &models.User{
+				ID: user.ID,
+			},
+			CreationDate: time.Now(),
+			Rate:         req.Rate,
+		}
+
+		if err := rh.restUseCase.AddReview(newReview); err != nil {
+			if err == tools.RestaurantNotFoundError {
+				c.JSON(http.StatusNotFound, tools.Error{
+					ErrorMessage: tools.RestaurantNotFoundError.Error(),
+				})
+
+				return
+			}
+
+			if err == tools.ReviewAlreadyExists {
+				c.JSON(http.StatusConflict, tools.Error{
+					ErrorMessage: tools.ReviewAlreadyExists.Error(),
+				})
+
+				return
+			}
+
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Message{"Created"})
+	}
+}
+
+func (rh *RestaurantHandler) GetReviews() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil && err != tools.Unauthorized {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		var userID uint64
+		if user == nil {
+			userID = 0
+		} else {
+			userID = user.ID
+		}
+
+		reviews, current, total, err := rh.restUseCase.GetReviews(restID, userID, count, page)
+		if err != nil {
+			if err == tools.RestaurantNotFoundError {
+				c.JSON(http.StatusNotFound, tools.Error{
+					ErrorMessage: tools.RestaurantNotFoundError.Error(),
+				})
+
+				return
+			}
+
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"reviews": reviews,
+			"current": current,
+			"total":   total,
 		})
 	}
 }

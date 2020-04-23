@@ -148,7 +148,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: err.Error(),
+				ErrorMessage: tools.BadQueryParams.Error(),
 			})
 
 			return
@@ -167,7 +167,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Body{
 			"orders": userOrders,
-			"total": total,
+			"total":  total,
 		})
 	}
 }
