@@ -16,7 +16,7 @@ func NewChatsRepository(db *sql.DB) *ChatsRepository {
 }
 
 func (cR *ChatsRepository) InsertChatMessage(message *models.ChatMessage) error {
-	if _, err := cR.db.Exec("insert into chat_messages (user_id, username, chat, message) values($1, $2, $3, %4)",
+	if _, err := cR.db.Exec("insert into chat_messages (user_id, username, chat, message) values($1, $2, $3, $4)",
 		message.UserID,
 		message.UserName,
 		message.ChatID,
