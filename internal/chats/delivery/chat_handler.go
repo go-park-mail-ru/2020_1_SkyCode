@@ -25,6 +25,7 @@ func NewChatsHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	public.GET("/chat", cH.StartUserChat())
 	private.GET("/chats", cH.GetSupChatList())
 	public.GET("/chats/:chatID/join", cH.JoinSupport())
+	private.GET("/chat/:chatID/details", cH.GetChatMessages())
 
 	return cH
 }
