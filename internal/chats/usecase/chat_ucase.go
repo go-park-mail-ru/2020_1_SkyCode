@@ -92,6 +92,7 @@ func (cU *ChatUseCase) GetChats() []*models.Chat {
 
 	supChats := cU.sC.GetSupportChats()
 
+	logrus.Error(supChats)
 	if len(supChats) == 0 {
 		return chats
 	}
