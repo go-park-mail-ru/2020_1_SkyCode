@@ -10,12 +10,14 @@ import (
 type UseCase interface {
 	StartChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *supportChat.JoinStatus, error)
 	FindChat(w http.ResponseWriter, r *http.Request, chatID string) (*websocket.Conn, *supportChat.JoinStatus, error)
-	JoinUserToChat(conn *websocket.Conn, fullName string, chatID string) error
+	JoinUserToChat(conn *websocket.Conn, userID uint64, userName string, chatID string) error
 	LeaveUserChat(chatID string) error
-	JoinSupportToChat(conn *websocket.Conn, fullName string, chatID string) error
+	JoinSupportToChat(conn *websocket.Conn, userID uint64, userName string, chatID string) error
 	LeaveSupportChat(chatID string) error
 	ReadMessageFromUSer(ws *websocket.Conn) (supportChat.InputMessage, error)
 	WriteFromUserMessage(message supportChat.InputMessage)
 	GetChats() []*models.Chat
 	StoreMessage(message *models.ChatMessage) error
+	GetChatMessages(chatID string) ([]*models.ChatMessage, error)
+	GetChat(chatID string) *supportChat.SupportChat
 }

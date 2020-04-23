@@ -9,8 +9,9 @@ import (
 )
 
 type chatMember struct {
-	FullName string
-	ws       *websocket.Conn
+	UserID uint64
+	UserName string
+	ws     *websocket.Conn
 }
 
 func (cm *chatMember) CloseConn() error {
@@ -25,12 +26,12 @@ func (cm *chatMember) CloseConn() error {
 	return nil
 }
 
-type supportChat struct {
+type SupportChat struct {
 	User    *chatMember
 	Support *chatMember
 }
 
-func (sc *supportChat) NotifyMembers(message interface{}) error {
+func (sc *SupportChat) NotifyMembers(message interface{}) error {
 	if user := sc.User; user != nil {
 		if err := user.ws.WriteJSON(message); err != nil {
 			return err
@@ -46,7 +47,7 @@ func (sc *supportChat) NotifyMembers(message interface{}) error {
 	return nil
 }
 
-func (sc *supportChat) Dead() bool {
+func (sc *SupportChat) Dead() bool {
 	if sc.Support == nil && sc.User == nil {
 		return true
 	}
@@ -56,24 +57,27 @@ func (sc *supportChat) Dead() bool {
 
 type InputMessage struct {
 	ChatID   string `json:"chat_id"`
-	FullName string `json:"full_name"`
+	UserID uint64 `json:"user_id"`
+	UserName string `json:"user_name"`
 	Message  string `json:"message"`
 }
 
 type JoinStatus struct {
 	ChatID   string `json:"chat_id, omitempty"`
-	FullName string `json:"full_name"`
+	UserID uint64 `json:"user_id"`
+	UserName string `json:"user_name"`
 	Joined   bool   `json:"joined"`
 }
 
 type LeaveStatus struct {
 	ChatID   string `json:"chat_id"`
-	FullName string `json:"full_name"`
+	UserID uint64 `json:"user_id"`
+	UserName string `json:"user_name"`
 	Leaved   bool   `json:"leaved"`
 }
 
 type ChatServer struct {
-	supportChats map[string]*supportChat
+	supportChats map[string]*SupportChat
 	inputCh      chan InputMessage
 	joinCh       chan JoinStatus
 	leaveCh      chan LeaveStatus
@@ -82,7 +86,7 @@ type ChatServer struct {
 
 func NewChatServer() *ChatServer {
 	cS := &ChatServer{
-		supportChats: make(map[string]*supportChat),
+		supportChats: make(map[string]*SupportChat),
 		inputCh:      make(chan InputMessage),
 		joinCh:       make(chan JoinStatus),
 		leaveCh:      make(chan LeaveStatus),
@@ -96,6 +100,10 @@ func NewChatServer() *ChatServer {
 	go cS.handleMessages()
 
 	return cS
+}
+
+func (cs *ChatServer) GetChat(chatID string) *SupportChat {
+	return cs.supportChats[chatID]
 }
 
 func (cs *ChatServer) WriteInputCh(message InputMessage) {
@@ -156,8 +164,7 @@ func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*webso
 	if err := ws.ReadJSON(&joinMessage); err != nil {
 		return ws, nil, err
 	}
-	
-	logrus.Error(joinMessage)
+
 	if joinMessage.ChatID != "" {
 		if cs.supportChats[joinMessage.ChatID] != nil {
 			return ws, joinMessage, nil
@@ -165,13 +172,9 @@ func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*webso
 	}
 
 	chatID := uuid.New().String()
-	cs.supportChats[chatID] = &supportChat{}
-
-	logrus.Error(cs.supportChats[chatID])
+	cs.supportChats[chatID] = &SupportChat{}
 
 	joinMessage.ChatID = chatID
-
-	logrus.Error(joinMessage)
 	return ws, joinMessage, nil
 }
 
@@ -202,20 +205,22 @@ func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request, chatID 
 }
 
 func (cs *ChatServer) JoinUser(conn *websocket.Conn, jM *JoinStatus) error {
-	var chat *supportChat
+	var chat *SupportChat
 
 	if chat = cs.supportChats[jM.ChatID]; chat == nil {
 		return errors.New("chat not found")
 	}
 
 	cs.supportChats[jM.ChatID].User = &chatMember{
-		FullName: jM.FullName,
+		UserID: jM.UserID,
+		UserName: jM.UserName,
 		ws:       conn,
 	}
 
 	if err := cs.supportChats[jM.ChatID].NotifyMembers(&JoinStatus{
 		ChatID:   jM.ChatID,
-		FullName: jM.FullName,
+		UserID: jM.UserID,
+		UserName: jM.UserName,
 		Joined:   true,
 	}); err != nil {
 		return err
@@ -225,7 +230,7 @@ func (cs *ChatServer) JoinUser(conn *websocket.Conn, jM *JoinStatus) error {
 }
 
 func (cs *ChatServer) LeaveUser(chatID string) error {
-	var chat *supportChat
+	var chat *SupportChat
 
 	if chat = cs.supportChats[chatID]; chat == nil {
 		return errors.New("chat not found")
@@ -250,13 +255,15 @@ func (cs *ChatServer) JoinSupport(conn *websocket.Conn, jM *JoinStatus) error {
 	}
 
 	cs.supportChats[jM.ChatID].Support = &chatMember{
-		FullName: jM.FullName,
+		UserID: jM.UserID,
+		UserName: jM.UserName,
 		ws:       conn,
 	}
 
 	if err := cs.supportChats[jM.ChatID].NotifyMembers(&JoinStatus{
 		ChatID:   jM.ChatID,
-		FullName: jM.FullName,
+		UserID: jM.UserID,
+		UserName: jM.UserName,
 		Joined:   true,
 	}); err != nil {
 		return err
@@ -266,7 +273,7 @@ func (cs *ChatServer) JoinSupport(conn *websocket.Conn, jM *JoinStatus) error {
 }
 
 func (cs *ChatServer) LeaveSupport(chatID string) error {
-	var chat *supportChat
+	var chat *SupportChat
 
 	if chat = cs.supportChats[chatID]; chat == nil {
 		return errors.New("chat not found")
@@ -285,6 +292,6 @@ func (cs *ChatServer) LeaveSupport(chatID string) error {
 	return nil
 }
 
-func (cs *ChatServer) GetSupportChats() map[string]*supportChat {
+func (cs *ChatServer) GetSupportChats() map[string]*SupportChat {
 	return cs.supportChats
 }

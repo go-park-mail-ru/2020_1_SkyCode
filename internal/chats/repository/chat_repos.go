@@ -16,8 +16,9 @@ func NewChatsRepository(db *sql.DB) *ChatsRepository {
 }
 
 func (cR *ChatsRepository) InsertChatMessage(message *models.ChatMessage) error {
-	if _, err := cR.db.Exec("insert into chat_messages (user_id, chat, message) values($1, $2, $3)",
+	if _, err := cR.db.Exec("insert into chat_messages (user_id, username, chat, message) values($1, $2, $3, %4)",
 		message.UserID,
+		message.UserName,
 		message.ChatID,
 		message.Message); err != nil {
 		return err
@@ -38,7 +39,7 @@ func (cR *ChatsRepository) SelectMessagesByChatID(chatID string) ([]*models.Chat
 	for rows.Next() {
 		message := &models.ChatMessage{}
 
-		if err := rows.Scan(&message.UserID, &message.ChatID, &message.Message, &message.Created); err != nil {
+		if err := rows.Scan(&message.UserID, &message.UserName, &message.ChatID, &message.Message, &message.Created); err != nil {
 			return nil, err
 		}
 

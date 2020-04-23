@@ -43,9 +43,10 @@ func (cU *ChatUseCase) WriteFromUserMessage(message supportChat.InputMessage) {
 	cU.sC.WriteInputCh(message)
 }
 
-func (cU *ChatUseCase) JoinUserToChat(conn *websocket.Conn, fullName string, chatID string) error {
+func (cU *ChatUseCase) JoinUserToChat(conn *websocket.Conn, userID uint64, userName string, chatID string) error {
 	err := cU.sC.JoinUser(conn, &supportChat.JoinStatus{
-		FullName: fullName,
+		UserID: userID,
+		UserName: userName,
 		ChatID: chatID,
 	})
 
@@ -64,9 +65,10 @@ func (cU *ChatUseCase) LeaveUserChat(chatID string) error {
 	return nil
 }
 
-func (cU *ChatUseCase) JoinSupportToChat(conn *websocket.Conn, fullName string, chatID string) error {
+func (cU *ChatUseCase) JoinSupportToChat(conn *websocket.Conn, userID uint64, userName string, chatID string) error {
 	err := cU.sC.JoinSupport(conn, &supportChat.JoinStatus{
-		FullName: fullName,
+		UserID: userID,
+		UserName: userName,
 		ChatID: chatID,
 	})
 
@@ -91,7 +93,8 @@ func (cU *ChatUseCase) GetChats() []*models.Chat {
 	for ind, val := range cU.sC.GetSupportChats() {
 		logrus.Error(ind, val)
 		chat := &models.Chat{
-			UserName: val.User.FullName,
+			UserName: val.User.UserName,
+			UserID: val.User.UserID,
 			ChatID: ind,
 		}
 		chats = append(chats, chat)
@@ -106,4 +109,19 @@ func (cU *ChatUseCase) StoreMessage(message *models.ChatMessage) error {
 	}
 
 	return nil
+}
+
+func (cU *ChatUseCase) GetChatMessages(chatID string) ([]*models.ChatMessage, error) {
+	messages := []*models.ChatMessage{}
+	messages, err := cU.sR.SelectMessagesByChatID(chatID)
+
+	if err != nil {
+		return messages, err
+	}
+
+	return messages, nil
+}
+
+func (cU *ChatUseCase) GetChat(chatID string) *supportChat.SupportChat {
+	return cU.sC.GetChat(chatID)
 }

@@ -79,6 +79,7 @@ create table orderProducts
 create table chat_messages
 (
     user_id int references users (id) on delete cascade,
+    username varchar,
     chat varchar not null,
     message text not null,
     created timestamptz default current_timestamp

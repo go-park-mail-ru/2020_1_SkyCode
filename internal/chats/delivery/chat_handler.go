@@ -48,7 +48,10 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 			logrus.Error(err)
 		}
 
-		err = cH.cU.JoinUserToChat(conn, joinMsg.FullName, joinMsg.ChatID)
+		joinMsg.UserID = user.ID
+		joinMsg.UserName = user.FirstName
+
+		err = cH.cU.JoinUserToChat(conn, joinMsg.UserID, joinMsg.UserName, joinMsg.ChatID)
 
 		if err != nil {
 			logrus.Error(err)
@@ -127,7 +130,10 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 			return
 		}
 
-		err = cH.cU.JoinSupportToChat(conn, joinMsg.FullName, joinMsg.ChatID)
+		joinMsg.UserID = user.ID
+		joinMsg.UserName = user.FirstName
+
+		err = cH.cU.JoinSupportToChat(conn, joinMsg.UserID, joinMsg.UserName, joinMsg.ChatID)
 
 		if err != nil {
 			logrus.Error(err)
@@ -159,6 +165,53 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 		}
 
 		return
+	}
+}
+
+func (cH *ChatHandler) GetChatMessages() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := cH.mw.GetUser(c)
+
+		if user == nil || !user.IsSupport() {
+			logrus.Info(err)
+			c.JSON(http.StatusUnauthorized, tools.Error{
+				ErrorMessage: tools.Unauthorized.Error(),
+			})
+
+			return
+		}
+
+		chatID := c.Param("chatID")
+
+		if chatID == "" {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+			return
+		}
+
+		chat := cH.cU.GetChat(chatID)
+
+		if chat == nil {
+			logrus.Info("no such chat")
+			c.JSON(http.StatusNotFound, tools.Error{
+				ErrorMessage: tools.NotFound.Error(),
+			})
+			return
+		}
+
+		messages, err := cH.cU.GetChatMessages(chatID)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusInternalServerError, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, messages)
 	}
 }
 
