@@ -73,6 +73,7 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 
 			if err := cH.cU.StoreMessage(&models.ChatMessage{
 				UserID: user.ID,
+				UserName: user.FirstName,
 				ChatID: message.ChatID,
 				Message: message.Message,
 			}); err != nil {
@@ -155,6 +156,7 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 			}
 
 			if err := cH.cU.StoreMessage(&models.ChatMessage{
+				UserName: user.FirstName,
 				UserID: user.ID,
 				ChatID: message.ChatID,
 				Message: message.Message,
@@ -173,7 +175,7 @@ func (cH *ChatHandler) GetChatMessages() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user, err := cH.mw.GetUser(c)
 
-		if user == nil || !user.IsSupport() {
+		if user == nil {
 			logrus.Info(err)
 			c.JSON(http.StatusUnauthorized, tools.Error{
 				ErrorMessage: tools.Unauthorized.Error(),
