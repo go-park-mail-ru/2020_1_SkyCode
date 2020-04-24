@@ -5,6 +5,7 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/CSRFManager"
 	"github.com/2020_1_Skycode/internal/tools/requestValidator"
 	"github.com/2020_1_Skycode/internal/users"
 	"github.com/gin-gonic/gin"
@@ -17,19 +18,21 @@ import (
 )
 
 type UserHandler struct {
-	userUseCase users.UseCase
+	userUseCase    users.UseCase
 	sessionUseCase sessions.UseCase
-	middlewareC *middlewares.MWController
-	v *requestValidator.RequestValidator
+	middlewareC    *middlewares.MWController
+	v              *requestValidator.RequestValidator
+	tM             *CSRFManager.CSRFManager
 }
 
 func NewUserHandler(private *gin.RouterGroup, public *gin.RouterGroup, uUC users.UseCase, sUC sessions.UseCase,
-	validator *requestValidator.RequestValidator, middlewareC *middlewares.MWController) *UserHandler {
+	validator *requestValidator.RequestValidator, tM *CSRFManager.CSRFManager,
+	middlewareC *middlewares.MWController) *UserHandler {
 	uh := &UserHandler{
-		userUseCase: uUC,
+		userUseCase:    uUC,
 		sessionUseCase: sUC,
-		middlewareC: middlewareC,
-		v: validator,
+		middlewareC:    middlewareC,
+		v:              validator,
 	}
 
 	public.POST("/signup", uh.SignUp())
@@ -108,7 +111,6 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 			return
 		}
 
-
 		u := &models.User{
 			FirstName: req.FirstName,
 			LastName:  req.LastName,
@@ -135,6 +137,19 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 
 			return
 		}
+
+		csrfToken, err := uh.tM.GenerateCSRF(session.UserId, session.Token)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusInternalServerError, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		c.Writer.Header().Set("X-Csrf-Token", csrfToken)
 
 		c.SetCookie(cookie.Name,
 			cookie.Value,

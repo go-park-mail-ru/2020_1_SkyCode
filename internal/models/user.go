@@ -23,6 +23,10 @@ func (u *User) IsUser() bool {
 	return u.Role == "User"
 }
 
+func (u *User) IsSupport() bool {
+	return u.Role == "Support"
+}
+
 func (u *User) SetAdmin() {
 	u.Role = "Admin"
 }

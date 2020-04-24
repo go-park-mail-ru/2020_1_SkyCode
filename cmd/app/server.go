@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/2020_1_Skycode/docs"
+	_chatsDelivery "github.com/2020_1_Skycode/internal/chats/delivery"
+	_chatsRepository "github.com/2020_1_Skycode/internal/chats/repository"
+	_chatsUseCase "github.com/2020_1_Skycode/internal/chats/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
 	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
@@ -87,6 +90,9 @@ func main() {
 	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
 	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
 
+	chatsRepo := _chatsRepository.NewChatsRepository(dbConn)
+	chatsUcase := _chatsUseCase.NewChatUseCase(chatsRepo)
+
 	csrfManager := _csrfManager.NewCSRFManager()
 
 	reqValidator := _rValidator.NewRequestValidator()
@@ -99,11 +105,12 @@ func main() {
 	privateGroup.Use(mwareC.CSRFControl())
 
 	_ = _sessionsDelivery.NewSessionHandler(privateGroup, publicGroup, sessionsUcase, userUcase, reqValidator, csrfManager, mwareC)
-	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, reqValidator, mwareC)
+	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, reqValidator, csrfManager, mwareC)
 	_ = _restDelivery.NewRestaurantHandler(privateGroup, publicGroup, reqValidator, restUcase, mwareC)
 	_ = _productDelivery.NewProductHandler(privateGroup, publicGroup, prodUcase, reqValidator, restUcase, mwareC)
 	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, reqValidator, mwareC)
 	_ = _reviewsDelivery.NewReviewsHandler(privateGroup, publicGroup, reviewUcase, reqValidator, mwareC)
+	_ = _chatsDelivery.NewChatsHandler(privateGroup, publicGroup, chatsUcase, mwareC)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
