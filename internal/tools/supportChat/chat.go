@@ -250,7 +250,9 @@ func (cs *ChatServer) LeaveUser(chatID string) error {
 }
 
 func (cs *ChatServer) JoinSupport(conn *websocket.Conn, jM *JoinStatus) error {
-	if chat := cs.supportChats[jM.ChatID]; chat == nil {
+	var chat *SupportChat
+
+	if chat = cs.supportChats[jM.ChatID]; chat == nil {
 		return errors.New("chat not found")
 	}
 
