@@ -31,4 +31,7 @@ var (
 	BadQueryParams             = errors.New("Bad query params")
 	ReviewNotFoundError        = errors.New("Review not found")
 	DontEnoughRights           = errors.New("You don't have rights for it")
+	ApiResponseStatusNotOK     = errors.New("Api answer error")
+	ApiAnswerEmptyResult       = errors.New("Api return empty result")
+	RestPointNotFound          = errors.New("Restaurant point not found")
 )
