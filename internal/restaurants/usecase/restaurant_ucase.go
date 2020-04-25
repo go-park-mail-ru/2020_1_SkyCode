@@ -121,6 +121,9 @@ func (rUC *RestaurantUseCase) GetRestaurantsInServiceRadius(
 
 	returnRests, total, err := rUC.restaurantRepo.GetAllInServiceRadius(pos, count, page)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return []*models.Restaurant{}, 0, nil
+		}
 		return nil, 0, err
 	}
 	for _, rest := range returnRests {
