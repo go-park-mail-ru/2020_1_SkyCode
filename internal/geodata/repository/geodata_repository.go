@@ -57,6 +57,7 @@ func (gr *GeoDataRepository) GetGeoPosByAddress(addr string) (*models.GeoPos, er
 						Point struct {
 							Pos string `json:"pos"`
 						} `json:"Point"`
+						Kind string
 					} `json:"GeoObject"`
 				} `json:"featureMember"`
 			} `json:"GeoObjectCollection"`
@@ -74,8 +75,16 @@ func (gr *GeoDataRepository) GetGeoPosByAddress(addr string) (*models.GeoPos, er
 		return nil, tools.ApiAnswerEmptyResult
 	}
 
+	if len(p.Resp.GeoObjColl.FeatMem) > 1 {
+		return nil, tools.ApiMultiAnswerError
+	}
+
 	if p.Resp.GeoObjColl.FeatMem[0].GeoObj.Point.Pos == "" {
 		return nil, tools.ApiAnswerEmptyResult
+	}
+
+	if p.Resp.GeoObjColl.FeatMem[0].GeoObj.Kind != "house" {
+		return nil, tools.ApiNotHouseAnswerError
 	}
 
 	data := strings.Split(p.Resp.GeoObjColl.FeatMem[0].GeoObj.Point.Pos, " ")

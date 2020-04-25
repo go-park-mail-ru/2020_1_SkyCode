@@ -34,4 +34,6 @@ var (
 	ApiResponseStatusNotOK     = errors.New("Api answer error")
 	ApiAnswerEmptyResult       = errors.New("Api return empty result")
 	RestPointNotFound          = errors.New("Restaurant point not found")
+	ApiMultiAnswerError        = errors.New("Cant correctly identufy address")
+	ApiNotHouseAnswerError     = errors.New("Object not a house")
 )
