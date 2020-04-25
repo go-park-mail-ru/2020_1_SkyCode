@@ -37,7 +37,7 @@ create table restaurants
     moderId     int         not null,
     name        varchar(30) not null,
     description text        not null,
-    rating      real        not null,
+    rating      real        not null default 0,
     image       varchar(50) not null,
     foreign key (moderId) references users (id)
 );
@@ -86,8 +86,9 @@ create table rest_points
     latitude    real        not null,
     longitude   real        not null,
     address     varchar(80) not null,
+    radius      real        not null,
     foreign key (restid) references restaurants (id) on delete cascade
-)
+);
 
 create table reviews
 (

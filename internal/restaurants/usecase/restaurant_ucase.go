@@ -8,6 +8,7 @@ import (
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/reviews"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/sirupsen/logrus"
 	"math"
 )
 
@@ -18,12 +19,13 @@ type RestaurantUseCase struct {
 	restPointsRepo restaurant_points.Repository
 }
 
-func NewRestaurantsUseCase(rr restaurants.Repository,
+func NewRestaurantsUseCase(rr restaurants.Repository, rpr restaurant_points.Repository,
 	rvr reviews.Repository, gdr geodata.Repository) *RestaurantUseCase {
 	return &RestaurantUseCase{
 		restaurantRepo: rr,
 		reviewsRepo:    rvr,
 		geoDataRepo:    gdr,
+		restPointsRepo: rpr,
 	}
 }
 
@@ -108,6 +110,31 @@ func (rUC *RestaurantUseCase) AddPoint(p *models.RestaurantPoint) error {
 	}
 
 	return nil
+}
+
+func (rUC *RestaurantUseCase) GetRestaurantsInServiceRadius(
+	address string, count, page uint64) ([]*models.Restaurant, uint64, error) {
+	pos, err := rUC.geoDataRepo.GetGeoPosByAddress(address)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	returnRests, total, err := rUC.restaurantRepo.GetAllInServiceRadius(pos, count, page)
+	if err != nil {
+		return nil, 0, err
+	}
+	for _, rest := range returnRests {
+		logrus.Info(rest)
+		rest.Points = []*models.RestaurantPoint{}
+		closerPoint, err := rUC.restPointsRepo.GetCloserPointByRestID(rest.ID, pos)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		rest.Points = append(rest.Points, closerPoint)
+	}
+
+	return returnRests, total, nil
 }
 
 func (rUC *RestaurantUseCase) GetPoints(restID, count, page uint64) ([]*models.RestaurantPoint, uint64, error) {

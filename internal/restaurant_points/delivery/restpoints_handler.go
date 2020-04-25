@@ -23,10 +23,29 @@ func NewRestPointsHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	}
 
 	public.GET("/points/:id", rph.GetPoint())
+	public.GET("/points", rph.GetAllPoints())
 
 	private.DELETE("/points/:id", rph.DeletePoint())
 
 	return rph
+}
+
+func (rph *RestPointsHandler) GetAllPoints() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		returnPoints, err := rph.restPointsUseCase.GetAllPoints()
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"points": returnPoints,
+		})
+	}
 }
 
 func (rph *RestPointsHandler) GetPoint() gin.HandlerFunc {
@@ -59,7 +78,9 @@ func (rph *RestPointsHandler) GetPoint() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, returnPoint)
+		c.JSON(http.StatusOK, gin.H{
+			"point": returnPoint,
+		})
 	}
 }
 

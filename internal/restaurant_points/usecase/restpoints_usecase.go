@@ -30,6 +30,15 @@ func (rpUC *RestPointsUseCase) GetPoint(id uint64) (*models.RestaurantPoint, err
 	return returnPoint, nil
 }
 
+func (rpUC *RestPointsUseCase) GetAllPoints() ([]*models.RestaurantPoint, error) {
+	returnPoints, err := rpUC.RestPointsRepo.GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return returnPoints, err
+}
+
 func (rpUC *RestPointsUseCase) Delete(id uint64) error {
 
 	if _, err := rpUC.RestPointsRepo.GetPointByID(id); err != nil {

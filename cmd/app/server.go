@@ -83,8 +83,11 @@ func main() {
 
 	geoDataRepo := _geodataRepository.NewGeoDataRepository(geoCoderKey)
 
+	restPointsRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
+	restPointsUCase := _restPointsUseCase.NewRestPointsUseCase(restPointsRepo)
+
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, reviewRepo, geoDataRepo)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, restPointsRepo, reviewRepo, geoDataRepo)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
@@ -94,9 +97,6 @@ func main() {
 
 	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
 	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
-
-	restPointsRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
-	restPointsUCase := _restPointsUseCase.NewRestPointsUseCase(restPointsRepo)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 

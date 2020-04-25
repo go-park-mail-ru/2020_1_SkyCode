@@ -12,6 +12,7 @@ type UseCase interface {
 
 	AddPoint(p *models.RestaurantPoint) error
 	GetPoints(restID, count, page uint64) ([]*models.RestaurantPoint, uint64, error)
+	GetRestaurantsInServiceRadius(address string, count, page uint64) ([]*models.Restaurant, uint64, error)
 
 	AddReview(review *models.Review) error
 	GetReviews(restID, userID, count, page uint64) ([]*models.Review, *models.Review, uint64, error)

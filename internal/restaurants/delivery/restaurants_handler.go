@@ -32,6 +32,7 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	}
 
 	public.GET("/restaurants", rh.GetRestaurants())
+	public.GET("/restaurants_point", rh.GetRestaurantsWithCloserPoint())
 	public.GET("/restaurants/:rest_id", rh.GetRestaurantByID())
 
 	private.POST("/restaurants", rh.CreateRestaurant())
@@ -517,6 +518,53 @@ func (rh *RestaurantHandler) AddPoint() gin.HandlerFunc {
 	}
 }
 
+func (rh *RestaurantHandler) GetRestaurantsWithCloserPoint() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		address := c.Query("address")
+		if address == "" {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		returnRestaurants, total, err := rh.restUseCase.GetRestaurantsInServiceRadius(address, count, page)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"restaurants": returnRestaurants,
+			"total":       total,
+		})
+	}
+}
+
 func (rh *RestaurantHandler) GetPoints() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
@@ -557,9 +605,12 @@ func (rh *RestaurantHandler) GetPoints() gin.HandlerFunc {
 				return
 			}
 
+			logrus.Error(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
 			})
+
+			return
 		}
 
 		c.JSON(http.StatusOK, gin.H{
