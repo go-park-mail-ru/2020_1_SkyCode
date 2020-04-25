@@ -1,6 +1,9 @@
 package usecase
 
-import "github.com/2020_1_Skycode/internal/geodata"
+import (
+	"github.com/2020_1_Skycode/internal/geodata"
+	"github.com/2020_1_Skycode/internal/models"
+)
 
 type GeoDataUseCase struct {
 	GeoDataRepo geodata.Repository
@@ -12,10 +15,11 @@ func NewGeoDataUseCase(gdr geodata.Repository) geodata.UseCase {
 	}
 }
 
-func (gdUC *GeoDataUseCase) CheckGeoPos(address string) (bool, error) {
-	if _, err := gdUC.GeoDataRepo.GetGeoPosByAddress(address); err != nil {
-		return false, err
+func (gdUC *GeoDataUseCase) CheckGeoPos(address string) (*models.GeoPos, error) {
+	pos, err := gdUC.GeoDataRepo.GetGeoPosByAddress(address)
+	if err != nil {
+		return nil, err
 	}
 
-	return true, nil
+	return pos, nil
 }

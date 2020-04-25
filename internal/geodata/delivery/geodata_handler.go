@@ -30,8 +30,8 @@ func (gdh *GeoDataHandler) CheckAddress() gin.HandlerFunc {
 			return
 		}
 
-		check, err := gdh.geoDataUseCase.CheckGeoPos(address)
-		if err != nil || !check {
+		pos, err := gdh.geoDataUseCase.CheckGeoPos(address)
+		if err != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
 			})
@@ -39,6 +39,8 @@ func (gdh *GeoDataHandler) CheckAddress() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, tools.Message{"OK"})
+		c.JSON(http.StatusOK, gin.H{
+			"geopos": pos,
+		})
 	}
 }
