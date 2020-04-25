@@ -57,7 +57,11 @@ func (gr *GeoDataRepository) GetGeoPosByAddress(addr string) (*models.GeoPos, er
 						Point struct {
 							Pos string `json:"pos"`
 						} `json:"Point"`
-						Kind string
+						MetaDataProp struct {
+							GeocoderMeta struct {
+								Kind string `json:"kind"`
+							} `json:"GeocoderMetaData"`
+						} `json:"metaDataProperty"`
 					} `json:"GeoObject"`
 				} `json:"featureMember"`
 			} `json:"GeoObjectCollection"`
@@ -83,7 +87,7 @@ func (gr *GeoDataRepository) GetGeoPosByAddress(addr string) (*models.GeoPos, er
 		return nil, tools.ApiAnswerEmptyResult
 	}
 
-	if p.Resp.GeoObjColl.FeatMem[0].GeoObj.Kind != "house" {
+	if p.Resp.GeoObjColl.FeatMem[0].GeoObj.MetaDataProp.GeocoderMeta.Kind != "house" {
 		return nil, tools.ApiNotHouseAnswerError
 	}
 
