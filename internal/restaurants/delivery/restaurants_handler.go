@@ -32,12 +32,16 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	}
 
 	public.GET("/restaurants", rh.GetRestaurants())
+	public.GET("/restaurants_point", rh.GetRestaurantsWithCloserPoint())
 	public.GET("/restaurants/:rest_id", rh.GetRestaurantByID())
 
 	private.POST("/restaurants", rh.CreateRestaurant())
 	private.PUT("/restaurants/:rest_id/update", rh.UpdateRestaurant())
 	private.PUT("/restaurants/:rest_id/image", rh.UpdateImage())
 	private.DELETE("/restaurants/:rest_id", rh.DeleteRestaurant())
+
+	private.POST("/restaurants/:rest_id/points", rh.AddPoint())
+	public.GET("/restaurants/:rest_id/points", rh.GetPoints())
 
 	private.POST("/restaurants/:rest_id/reviews", rh.AddReview())
 	public.GET("/restaurants/:rest_id/reviews", rh.GetReviews())
@@ -55,6 +59,11 @@ type reviewRequest struct {
 	Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
+type pointRequest struct {
+	Address string  `json:"address" binding:"required"`
+	Radius  float64 `json:"radius" binding:"required"`
+}
+
 //@Tags Restaurant
 //@Summary Get Restaurants List Route
 //@Description Returning list of all restaurants
@@ -68,6 +77,14 @@ type reviewRequest struct {
 func (rh *RestaurantHandler) GetRestaurants() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
 		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
 		if err != nil {
 			logrus.Info(err)
@@ -157,7 +174,7 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 
 		if !user.IsManager() && !user.IsAdmin() {
 			c.JSON(http.StatusForbidden, tools.Error{
-				ErrorMessage: "User doesn't have permissions",
+				ErrorMessage: tools.DontEnoughRights.Error(),
 			})
 
 			return
@@ -429,6 +446,176 @@ func (rh *RestaurantHandler) DeleteRestaurant() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Message{
 			Message: "success",
+		})
+	}
+}
+
+func (rh *RestaurantHandler) AddPoint() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		if !user.IsManager() && !user.IsAdmin() {
+			c.JSON(http.StatusForbidden, tools.Error{
+				ErrorMessage: tools.DontEnoughRights.Error(),
+			})
+
+			return
+		}
+
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		req := &pointRequest{}
+		if err := c.Bind(req); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		p := &models.RestaurantPoint{
+			Address:       req.Address,
+			ServiceRadius: req.Radius,
+			RestID:        restID,
+		}
+
+		err = rh.restUseCase.AddPoint(p)
+		if err != nil {
+			if err == tools.ApiAnswerEmptyResult || err == tools.RestaurantNotFoundError {
+				c.JSON(http.StatusNotFound, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Message{"Created"})
+	}
+}
+
+func (rh *RestaurantHandler) GetRestaurantsWithCloserPoint() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		address := c.Query("address")
+		if address == "" {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		returnRestaurants, total, err := rh.restUseCase.GetRestaurantsInServiceRadius(address, count, page)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"restaurants": returnRestaurants,
+			"total":       total,
+		})
+	}
+}
+
+func (rh *RestaurantHandler) GetPoints() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		returnPoints, total, err := rh.restUseCase.GetPoints(restID, count, page)
+		if err != nil {
+			if err == tools.RestaurantNotFoundError {
+				c.JSON(http.StatusNotFound, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"points": returnPoints,
+			"total":  total,
 		})
 	}
 }

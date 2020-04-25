@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/2020_1_Skycode/docs"
+	_geodataDelivery "github.com/2020_1_Skycode/internal/geodata/delivery"
+	_geodataRepository "github.com/2020_1_Skycode/internal/geodata/repository"
+	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
 	_chatsDelivery "github.com/2020_1_Skycode/internal/chats/delivery"
 	_chatsRepository "github.com/2020_1_Skycode/internal/chats/repository"
 	_chatsUseCase "github.com/2020_1_Skycode/internal/chats/usecase"
@@ -14,6 +17,9 @@ import (
 	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
 	_productUseCase "github.com/2020_1_Skycode/internal/products/usecase"
+	_restPointsDelivery "github.com/2020_1_Skycode/internal/restaurant_points/delivery"
+	_restPointsRepository "github.com/2020_1_Skycode/internal/restaurant_points/repository"
+	_restPointsUseCase "github.com/2020_1_Skycode/internal/restaurant_points/usecase"
 	_restDelivery "github.com/2020_1_Skycode/internal/restaurants/delivery"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	_restUcase "github.com/2020_1_Skycode/internal/restaurants/usecase"
@@ -72,14 +78,22 @@ func main() {
 
 	e := gin.New()
 
+	geoCoderKey := config.ApiKeys.YandexGeoCoder
+
 	prodRepo := _productRepo.NewProductRepository(dbConn)
 	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
 
 	reviewRepo := _reviewsRepository.NewReviewsRepository(dbConn)
 	reviewUcase := _reviewsUseCase.NewReviewsUseCase(reviewRepo)
 
+	geoDataRepo := _geodataRepository.NewGeoDataRepository(geoCoderKey)
+	geoDataUcase := _geodataUseCase.NewGeoDataUseCase(geoDataRepo)
+
+	restPointsRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
+	restPointsUCase := _restPointsUseCase.NewRestPointsUseCase(restPointsRepo)
+
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, reviewRepo)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, restPointsRepo, reviewRepo, geoDataRepo)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
@@ -110,6 +124,8 @@ func main() {
 	_ = _productDelivery.NewProductHandler(privateGroup, publicGroup, prodUcase, reqValidator, restUcase, mwareC)
 	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, reqValidator, mwareC)
 	_ = _reviewsDelivery.NewReviewsHandler(privateGroup, publicGroup, reviewUcase, reqValidator, mwareC)
+	_ = _restPointsDelivery.NewRestPointsHandler(privateGroup, publicGroup, restPointsUCase, mwareC)
+	_ = _geodataDelivery.NewGeoDataHandler(privateGroup, publicGroup, geoDataUcase)
 	_ = _chatsDelivery.NewChatsHandler(privateGroup, publicGroup, chatsUcase, mwareC)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

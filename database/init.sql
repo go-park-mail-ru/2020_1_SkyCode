@@ -6,6 +6,9 @@ drop table if exists orderproducts cascade;
 drop table if exists orders cascade;
 drop table if exists chat_messages cascade;
 
+create extension if not exists postgis;
+create extension if not exists postgis_topology;
+
 create table users
 (
     id        serial      not null primary key,
@@ -34,7 +37,7 @@ create table restaurants
     moderId     int         not null,
     name        varchar(30) not null,
     description text        not null,
-    rating      real        not null,
+    rating      real        not null default 0,
     image       varchar(50) not null,
     foreign key (moderId) references users (id) on delete cascade
 );
@@ -74,6 +77,17 @@ create table orderProducts
     count     int    not null,
     foreign key (orderId) references orders (id) on delete cascade,
     foreign key (productId) references products (id) on delete cascade
+);
+
+create table rest_points
+(
+    id          serial      not null primary key,
+    restid      int         not null,
+    latitude    real        not null,
+    longitude   real        not null,
+    address     varchar(80) not null,
+    radius      real        not null,
+    foreign key (restid) references restaurants (id) on delete cascade
 );
 
 create table reviews
