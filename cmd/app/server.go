@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/2020_1_Skycode/docs"
+	_geodataDelivery "github.com/2020_1_Skycode/internal/geodata/delivery"
 	_geodataRepository "github.com/2020_1_Skycode/internal/geodata/repository"
+	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
 	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
@@ -82,6 +84,7 @@ func main() {
 	reviewUcase := _reviewsUseCase.NewReviewsUseCase(reviewRepo)
 
 	geoDataRepo := _geodataRepository.NewGeoDataRepository(geoCoderKey)
+	geoDataUcase := _geodataUseCase.NewGeoDataUseCase(geoDataRepo)
 
 	restPointsRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
 	restPointsUCase := _restPointsUseCase.NewRestPointsUseCase(restPointsRepo)
@@ -116,6 +119,7 @@ func main() {
 	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, reqValidator, mwareC)
 	_ = _reviewsDelivery.NewReviewsHandler(privateGroup, publicGroup, reviewUcase, reqValidator, mwareC)
 	_ = _restPointsDelivery.NewRestPointsHandler(privateGroup, publicGroup, restPointsUCase, mwareC)
+	_ = _geodataDelivery.NewGeoDataHandler(privateGroup, publicGroup, geoDataUcase)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

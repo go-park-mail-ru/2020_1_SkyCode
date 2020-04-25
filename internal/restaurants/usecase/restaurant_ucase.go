@@ -8,7 +8,6 @@ import (
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/reviews"
 	"github.com/2020_1_Skycode/internal/tools"
-	"github.com/sirupsen/logrus"
 	"math"
 )
 
@@ -127,7 +126,6 @@ func (rUC *RestaurantUseCase) GetRestaurantsInServiceRadius(
 		return nil, 0, err
 	}
 	for _, rest := range returnRests {
-		logrus.Info(rest)
 		rest.Points = []*models.RestaurantPoint{}
 		closerPoint, err := rUC.restPointsRepo.GetCloserPointByRestID(rest.ID, pos)
 		if err != nil {
