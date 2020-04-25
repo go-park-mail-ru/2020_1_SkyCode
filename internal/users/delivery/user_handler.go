@@ -33,6 +33,7 @@ func NewUserHandler(private *gin.RouterGroup, public *gin.RouterGroup, uUC users
 		sessionUseCase: sUC,
 		middlewareC:    middlewareC,
 		v:              validator,
+		tM:             tM,
 	}
 
 	public.POST("/signup", uh.SignUp())
