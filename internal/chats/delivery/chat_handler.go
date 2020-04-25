@@ -65,9 +65,6 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 
 			if err != nil {
 				logrus.Error(err)
-				if err := cH.cU.LeaveUserChat(joinMsg.ChatID); err != nil {
-					logrus.Error(err)
-				}
 				break
 			}
 
