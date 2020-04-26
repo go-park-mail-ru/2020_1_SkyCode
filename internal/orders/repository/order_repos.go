@@ -10,13 +10,13 @@ import (
 
 type OrdersRepository struct {
 	RestRepository restaurants.Repository
-	db *sql.DB
+	db             *sql.DB
 }
 
 func NewOrdersRepository(db *sql.DB, rR restaurants.Repository) *OrdersRepository {
 	return &OrdersRepository{
 		RestRepository: rR,
-		db: db,
+		db:             db,
 	}
 }
 
@@ -62,9 +62,9 @@ func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*mode
 func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
 	var ordersList []*models.Order
 
-	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, datetime, status from orders where userId = $1" +
+	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, datetime, status from orders where userId = $1"+
 		" LIMIT $2 OFFSET $3",
-		userID, count, (page - 1) * count)
+		userID, count, (page-1)*count)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -110,7 +110,8 @@ func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uin
 
 func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Order, error) {
 	order := &models.Order{}
-	err := oR.db.QueryRow("SELECT id, address, phone, price, comment, personnum, datetime FROM orders WHERE id = $1 AND userid = $2",
+	err := oR.db.QueryRow("SELECT id, address, phone, price, comment, personnum, datetime "+
+		"FROM orders WHERE id = $1 AND userid = $2",
 		orderID,
 		userID).Scan(&order.ID, &order.Address, &order.Phone, &order.Price, &order.Comment, &order.PersonNum, &order.CreatedAt)
 
@@ -132,7 +133,9 @@ func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Orde
 func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.Product, error) {
 	var ProductsList []*models.Product
 
-	rows, err := oR.db.Query("select p.id, p.rest_id, p.name, p.price, p.image, orderProducts.count from products p join (select productId, count from orderproducts where orderId = $1) as orderProducts on p.id = orderProducts.productId;",
+	rows, err := oR.db.Query("select p.id, p.rest_id, p.name, p.price, p.image, orderProducts.count "+
+		"from products p join (select productId, count from orderproducts where orderId = $1) as orderProducts "+
+		"on p.id = orderProducts.productId;",
 		orderID)
 	if err != nil {
 		return nil, err

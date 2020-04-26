@@ -34,32 +34,33 @@ func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 }
 
 // CheckoutOrder mocks base method
-func (m *MockUseCase) CheckoutOrder(order *models.Order) error {
+func (m *MockUseCase) CheckoutOrder(order *models.Order, ordProducts []*models.OrderProduct) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckoutOrder", order)
+	ret := m.ctrl.Call(m, "CheckoutOrder", order, ordProducts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CheckoutOrder indicates an expected call of CheckoutOrder
-func (mr *MockUseCaseMockRecorder) CheckoutOrder(order interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) CheckoutOrder(order, ordProducts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutOrder", reflect.TypeOf((*MockUseCase)(nil).CheckoutOrder), order)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutOrder", reflect.TypeOf((*MockUseCase)(nil).CheckoutOrder), order, ordProducts)
 }
 
 // GetAllUserOrders mocks base method
-func (m *MockUseCase) GetAllUserOrders(userID uint64) ([]*models.Order, error) {
+func (m *MockUseCase) GetAllUserOrders(userID, count, page uint64) ([]*models.Order, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllUserOrders", userID)
+	ret := m.ctrl.Call(m, "GetAllUserOrders", userID, count, page)
 	ret0, _ := ret[0].([]*models.Order)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetAllUserOrders indicates an expected call of GetAllUserOrders
-func (mr *MockUseCaseMockRecorder) GetAllUserOrders(userID interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetAllUserOrders(userID, count, page interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUserOrders", reflect.TypeOf((*MockUseCase)(nil).GetAllUserOrders), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUserOrders", reflect.TypeOf((*MockUseCase)(nil).GetAllUserOrders), userID, count, page)
 }
 
 // GetOrderByID mocks base method

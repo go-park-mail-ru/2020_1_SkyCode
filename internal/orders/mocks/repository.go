@@ -34,18 +34,19 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // GetAllByUserID mocks base method
-func (m *MockRepository) GetAllByUserID(userID uint64) ([]*models.Order, error) {
+func (m *MockRepository) GetAllByUserID(userID, count, page uint64) ([]*models.Order, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllByUserID", userID)
+	ret := m.ctrl.Call(m, "GetAllByUserID", userID, count, page)
 	ret0, _ := ret[0].([]*models.Order)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetAllByUserID indicates an expected call of GetAllByUserID
-func (mr *MockRepositoryMockRecorder) GetAllByUserID(userID interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetAllByUserID(userID, count, page interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByUserID", reflect.TypeOf((*MockRepository)(nil).GetAllByUserID), userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByUserID", reflect.TypeOf((*MockRepository)(nil).GetAllByUserID), userID, count, page)
 }
 
 // GetByID mocks base method
@@ -64,17 +65,17 @@ func (mr *MockRepositoryMockRecorder) GetByID(orderID, userID interface{}) *gomo
 }
 
 // InsertOrder mocks base method
-func (m *MockRepository) InsertOrder(order *models.Order) error {
+func (m *MockRepository) InsertOrder(order *models.Order, ordProducts []*models.OrderProduct) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InsertOrder", order)
+	ret := m.ctrl.Call(m, "InsertOrder", order, ordProducts)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // InsertOrder indicates an expected call of InsertOrder
-func (mr *MockRepositoryMockRecorder) InsertOrder(order interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) InsertOrder(order, ordProducts interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertOrder", reflect.TypeOf((*MockRepository)(nil).InsertOrder), order)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertOrder", reflect.TypeOf((*MockRepository)(nil).InsertOrder), order, ordProducts)
 }
 
 // DeleteOrder mocks base method

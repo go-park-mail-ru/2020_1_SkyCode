@@ -24,7 +24,7 @@ func (oU *OrderUseCase) CheckoutOrder(order *models.Order, ordProducts []*models
 }
 
 func (oU *OrderUseCase) GetAllUserOrders(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
-	userOrders, total, err := oU.orderRepo.GetAllByUserID(userID, count, page);
+	userOrders, total, err := oU.orderRepo.GetAllByUserID(userID, count, page)
 
 	if err != nil {
 		return nil, 0, err
