@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/2020_1_Skycode/docs"
-	_geodataDelivery "github.com/2020_1_Skycode/internal/geodata/delivery"
-	_geodataRepository "github.com/2020_1_Skycode/internal/geodata/repository"
-	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
 	_chatsDelivery "github.com/2020_1_Skycode/internal/chats/delivery"
 	_chatsRepository "github.com/2020_1_Skycode/internal/chats/repository"
 	_chatsUseCase "github.com/2020_1_Skycode/internal/chats/usecase"
+	_geodataDelivery "github.com/2020_1_Skycode/internal/geodata/delivery"
+	_geodataRepository "github.com/2020_1_Skycode/internal/geodata/repository"
+	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
 	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
@@ -27,7 +27,6 @@ import (
 	_reviewsRepository "github.com/2020_1_Skycode/internal/reviews/repository"
 	_reviewsUseCase "github.com/2020_1_Skycode/internal/reviews/usecase"
 	_sessionsDelivery "github.com/2020_1_Skycode/internal/sessions/delivery"
-	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
 	"github.com/2020_1_Skycode/internal/tools"
 	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
@@ -39,6 +38,7 @@ import (
 	_ "github.com/lib/pq"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc"
 	"log"
 )
 
@@ -78,6 +78,12 @@ func main() {
 
 	e := gin.New()
 
+	grpcSessionConn, err := grpc.Dial("localhost:5001", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcSessionConn.Close()
+
 	geoCoderKey := config.ApiKeys.YandexGeoCoder
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
@@ -98,8 +104,7 @@ func main() {
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
 
-	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
-	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
+	sessionsUcase := _sessionsUseCase.NewSessionProtoUseCase(grpcSessionConn)
 
 	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
 	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)

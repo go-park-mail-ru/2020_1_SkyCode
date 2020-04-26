@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package protobuf_session;
+
+import "google/protobuf/timestamp.proto";
+
+message ProtoSessionID {
+  uint64 ID = 1;
+}
+
+message ProtoSessionToken {
+  string token = 1;
+}
+
+message ProtoSession {
+  uint64 ID = 1;
+  uint64 userID = 2;
+  string Token = 3;
+  google.protobuf.Timestamp Expiration = 4;
+}
+
+message Answer {
+  bool Success = 1;
+}
+
+service SessionWorker {
+  rpc Create(ProtoSession) returns (Answer);
+  rpc Get(ProtoSessionToken) returns (ProtoSession);
+  rpc Delete(ProtoSessionID) returns (Answer);
+}
