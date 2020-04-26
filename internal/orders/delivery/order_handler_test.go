@@ -12,6 +12,7 @@ import (
 	mock_users "github.com/2020_1_Skycode/internal/users/mocks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
@@ -67,6 +68,8 @@ func TestOrderHandler_Checkout(t *testing.T) {
 	mockOrderUC.EXPECT().CheckoutOrder(order, orderProd).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -141,6 +144,8 @@ func TestOrderHandler_GetUserOrder(t *testing.T) {
 	mockOrderUC.EXPECT().GetOrderByID(order.ID, order.UserID).Return(order, nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -224,6 +229,8 @@ func TestOrderHandler_GetUserOrders(t *testing.T) {
 	mockOrderUC.EXPECT().GetAllUserOrders(sessRes.UserId, uint64(1), uint64(1)).Return(orders, total, nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -284,6 +291,8 @@ func TestOrderHandler_DeleteOrder(t *testing.T) {
 	mockOrderUC.EXPECT().DeleteOrder(sessRes.UserId, uint64(1)).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)

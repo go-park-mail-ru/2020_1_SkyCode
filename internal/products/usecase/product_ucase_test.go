@@ -90,16 +90,17 @@ func TestProductUseCase_GetProductsByRestaurantID(t *testing.T) {
 	}
 	restID := uint64(1)
 
-	mockProductRepo.EXPECT().GetProductsByRestID(restID).Return(testProdList, nil)
+	mockProductRepo.EXPECT().GetProductsByRestID(restID, uint64(1), uint64(1)).Return(testProdList, uint64(1), nil)
 	prodUCase := NewProductUseCase(mockProductRepo)
 
-	resultList, err := prodUCase.GetProductsByRestaurantID(restID)
+	resultList, total, err := prodUCase.GetProductsByRestaurantID(restID, uint64(1), uint64(1))
 	if err != nil {
 		t.Errorf("Unexpected err: %s", err)
 		return
 	}
 
 	require.EqualValues(t, testProdList, resultList)
+	require.EqualValues(t, uint64(1), total)
 }
 
 func TestProductUseCase_UpdateProduct(t *testing.T) {
