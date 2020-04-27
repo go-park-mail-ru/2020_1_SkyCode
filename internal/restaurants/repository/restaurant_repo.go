@@ -59,14 +59,17 @@ func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {
 
 func (rr *RestaurantRepository) GetAllInServiceRadius(
 	pos *models.GeoPos, count, page uint64) ([]*models.Restaurant, uint64, error) {
-	rows, err := rr.db.Query("SELECT r.id, r.name, r.description, r.rating, r.image "+
+	rows, err := rr.db.Query("SELECT r.id, r.name, r.description, r.rating, r.image, "+
+		"min(st_distance("+
+		"st_makepoint(rp.latitude, rp.longitude)::geography, "+
+		"st_makepoint(37.646130, 55.766015)::geography)) as dst "+
 		"FROM restaurants r "+
 		"JOIN rest_points rp ON (r.id = rp.restid) "+
 		"WHERE ST_DWithin("+
 		"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
 		"ST_MakePoint($1, $2)::geography, rp.radius * 1000) "+
 		"GROUP BY r.id, r.rating "+
-		"ORDER BY r.rating DESC "+
+		"ORDER BY r.rating DESC, dst ASC "+
 		"LIMIT $3 OFFSET $4", pos.Latitude, pos.Longitude, count, count*(page-1))
 	if err != nil {
 		return nil, 0, err
@@ -77,9 +80,9 @@ func (rr *RestaurantRepository) GetAllInServiceRadius(
 	returnRests := []*models.Restaurant{}
 	for rows.Next() {
 		rest := &models.Restaurant{}
-
+		var dist float64
 		if err := rows.Scan(&rest.ID, &rest.Name,
-			&rest.Description, &rest.Rating, &rest.Image); err != nil {
+			&rest.Description, &rest.Rating, &rest.Image, &dist); err != nil {
 			return nil, 0, err
 		}
 
