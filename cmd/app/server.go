@@ -84,10 +84,16 @@ func main() {
 	}
 	defer grpcSessionConn.Close()
 
+	grpcAdminConn, err := grpc.Dial("localhost:5002", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcAdminConn.Close()
+
 	geoCoderKey := config.ApiKeys.YandexGeoCoder
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
-	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
+	prodUcase := _productUseCase.NewProductWithProtoUseCase(prodRepo, grpcAdminConn)
 
 	reviewRepo := _reviewsRepository.NewReviewsRepository(dbConn)
 	reviewUcase := _reviewsUseCase.NewReviewsUseCase(reviewRepo)
@@ -96,10 +102,11 @@ func main() {
 	geoDataUcase := _geodataUseCase.NewGeoDataUseCase(geoDataRepo)
 
 	restPointsRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
-	restPointsUCase := _restPointsUseCase.NewRestPointsUseCase(restPointsRepo)
+	restPointsUCase := _restPointsUseCase.NewRestPointsWithProtoUseCase(restPointsRepo, grpcAdminConn)
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, restPointsRepo, reviewRepo, geoDataRepo)
+	restUcase := _restUcase.NewRestaurantsWithProtoUseCase(restRepo, restPointsRepo,
+		reviewRepo, geoDataRepo, grpcAdminConn)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
