@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package protobuf_admin_rest;
+
+message ProtoID {
+  uint64 ID = 1;
+}
+
+message ProtoImage {
+  uint64 ID = 1;
+  string ImagePath = 2;
+}
+
+message ProtoRestaurant {
+  uint64 ID = 1;
+  uint64 ManagerID = 2;
+  string Name = 3;
+  string Description = 4;
+  float Rating = 5;
+  string ImagePath = 6;
+}
+
+message ProtoProduct {
+  uint64 ID = 1;
+  string Name = 2;
+  float Price = 3;
+  string ImagePath = 4;
+  uint64 RestID = 5;
+}
+
+message ProtoPoint {
+  uint64 ID = 1;
+  string Address = 2;
+  float Radius = 3;
+  uint64 RestID = 4;
+}
+
+message ErrorCode {
+  uint64 ID = 1;
+}
+
+service RestaurantAdminWorker {
+  rpc CreateRestaurant(ProtoRestaurant) returns (ErrorCode);
+  rpc UpdateRestaurant(ProtoRestaurant) returns (ErrorCode);
+  rpc UpdateRestaurantImage(ProtoImage) returns (ErrorCode);
+  rpc DeleteRestaurant(ProtoID) returns (ErrorCode);
+
+  rpc CreateProduct(ProtoProduct) returns (ErrorCode);
+  rpc UpdateProduct(ProtoProduct) returns (ErrorCode);
+  rpc UpdateProductImage(ProtoImage) returns (ErrorCode);
+  rpc DeleteProduct(ProtoID) returns (ErrorCode);
+
+  rpc CreatePoint(ProtoPoint) returns (ErrorCode);
+  rpc DeletePoint(ProtoID) returns (ErrorCode);
+}

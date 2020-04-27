@@ -37,4 +37,5 @@ var (
 	ApiMultiAnswerError        = errors.New("Cant correctly identufy address")
 	ApiNotHouseAnswerError     = errors.New("Object not a house")
 	GRPCOpertionNotSuccess     = errors.New("GRPC answer not true, operation not success")
+	ProductNotFoundError       = errors.New("Product not found")
 )
