@@ -12,7 +12,6 @@ import (
 	_chatsUseCase "github.com/2020_1_Skycode/internal/chats/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
-	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
 	_ordersUseCase "github.com/2020_1_Skycode/internal/orders/usecase"
 	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
@@ -39,6 +38,7 @@ import (
 	_ "github.com/lib/pq"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc"
 	"log"
 )
 
@@ -78,6 +78,24 @@ func main() {
 
 	e := gin.New()
 
+	grpcSessionConn, err := grpc.Dial("localhost:5001", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcSessionConn.Close()
+
+	grpcAdminConn, err := grpc.Dial("localhost:5002", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcAdminConn.Close()
+
+	grpcOrdersConn, err := grpc.Dial("localhost:5003", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcOrdersConn.Close()
+
 	geoCoderKey := config.ApiKeys.YandexGeoCoder
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
@@ -101,8 +119,7 @@ func main() {
 	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
 	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
 
-	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
-	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
+	ordersUcase := _ordersUseCase.NewOrderProtoUseCase(grpcOrdersConn)
 
 	chatsRepo := _chatsRepository.NewChatsRepository(dbConn)
 	chatsUcase := _chatsUseCase.NewChatUseCase(chatsRepo)

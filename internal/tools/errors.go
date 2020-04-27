@@ -36,4 +36,7 @@ var (
 	RestPointNotFound          = errors.New("Restaurant point not found")
 	ApiMultiAnswerError        = errors.New("Cant correctly identufy address")
 	ApiNotHouseAnswerError     = errors.New("Object not a house")
+	GRPCOpertionNotSuccess     = errors.New("GRPC answer not true, operation not success")
+	ProductNotFoundError       = errors.New("Product not found")
+	BindingError               = errors.New("Error while binding request")
 )
