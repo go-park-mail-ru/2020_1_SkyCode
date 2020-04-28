@@ -25,3 +25,13 @@ jobs:
     # Runs a single command using the runners shell
     - name: build
       run: go build cmd/app/server.go
+  tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: tests
+        run: go test -coverpkg=./... ./... -coverprofile cover.out
+      
+      
