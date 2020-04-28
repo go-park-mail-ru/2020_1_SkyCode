@@ -12,7 +12,6 @@ import (
 	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
-	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
 	_ordersUseCase "github.com/2020_1_Skycode/internal/orders/usecase"
 	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
@@ -90,6 +89,12 @@ func main() {
 	}
 	defer grpcAdminConn.Close()
 
+	grpcOrdersConn, err := grpc.Dial("localhost:5003", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcOrdersConn.Close()
+
 	geoCoderKey := config.ApiKeys.YandexGeoCoder
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
@@ -113,8 +118,7 @@ func main() {
 
 	sessionsUcase := _sessionsUseCase.NewSessionProtoUseCase(grpcSessionConn)
 
-	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
-	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
+	ordersUcase := _ordersUseCase.NewOrderProtoUseCase(grpcOrdersConn)
 
 	chatsRepo := _chatsRepository.NewChatsRepository(dbConn)
 	chatsUcase := _chatsUseCase.NewChatUseCase(chatsRepo)

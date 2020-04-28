@@ -41,7 +41,7 @@ type orderRequest struct {
 	Address   string                 `json:"address" binding:"required" validate:"min=5"`
 	Comment   string                 `json:"comment"`
 	Phone     string                 `json:"phone" binding:"required" validate:"min=11,max=15"`
-	PersonNum uint16                 `json:"personNum" binding:"required"`
+	PersonNum uint32                 `json:"personNum" binding:"required"`
 	Products  []*models.OrderProduct `json:"products" binding:"required" required:"dive,required"`
 	Price     float32                `json:"price" binding:"required"`
 }

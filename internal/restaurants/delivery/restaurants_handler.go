@@ -55,8 +55,8 @@ type restaurantRequest struct {
 }
 
 type reviewRequest struct {
-	Text string  `json:"text, omitempty" binding:"required"`
-	Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
+	Text string   `json:"text, omitempty" binding:"required"`
+	Rate *float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
 type pointRequest struct {
@@ -669,7 +669,7 @@ func (rh *RestaurantHandler) AddReview() gin.HandlerFunc {
 				ID: user.ID,
 			},
 			CreationDate: time.Now(),
-			Rate:         req.Rate,
+			Rate:         *req.Rate,
 		}
 
 		if err := rh.restUseCase.AddReview(newReview); err != nil {
