@@ -16,16 +16,16 @@ import (
 
 type MWController struct {
 	sessionUC sessions.UseCase
-	userUC users.UseCase
-	cM *CSRFManager.CSRFManager
+	userUC    users.UseCase
+	cM        *CSRFManager.CSRFManager
 }
 
 func NewMiddleWareController(router *gin.Engine, sessionUC sessions.UseCase,
 	userUC users.UseCase, cM *CSRFManager.CSRFManager) *MWController {
 	mw := &MWController{
 		sessionUC: sessionUC,
-		userUC: userUC,
-		cM: cM,
+		userUC:    userUC,
+		cM:        cM,
 	}
 
 	router.Use(mw.AccessLogging())
@@ -62,7 +62,7 @@ func (mw *MWController) CORS() gin.HandlerFunc {
 func (mw *MWController) CheckAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logrus.Info("Check auth")
-		cookie, err := c.Cookie("SkyDelivery");
+		cookie, err := c.Cookie("SkyDelivery")
 
 		if err != nil {
 			logrus.Info(err)
@@ -74,6 +74,11 @@ func (mw *MWController) CheckAuth() gin.HandlerFunc {
 
 		if err != nil {
 			logrus.Info(err)
+			c.Next()
+			return
+		}
+
+		if sess.ID == 0 {
 			c.Next()
 			return
 		}

@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package protobuf_order;
+
+message OrderProduct {
+  uint64 ID = 1;
+  uint64 OrderID = 2;
+  uint64 ProductID = 3;
+  uint32 Count = 4;
+}
+
+message Product {
+  uint64 ID = 1;
+  string Name = 2;
+  float Price = 3;
+  string Image = 4;
+  uint64 RestID = 5;
+  uint64 Count = 6;
+}
+
+message Order {
+  uint64 ID = 1;
+  uint64 UserID = 2;
+  uint64 RestID = 3;
+  string RestName = 4;
+  string Address = 5;
+  string Phone = 6;
+  string Comment = 7;
+  uint32 PersonNum = 8;
+  repeated Product Products = 9;
+  float Price = 10;
+  string CreatedAt = 11;
+  string status = 12;
+}
+
+message Checkout {
+  Order order = 1;
+  repeated OrderProduct products = 2;
+}
+
+message GetAllResponse {
+  repeated Order order = 1;
+  uint64 total = 2;
+}
+
+message UserOrders {
+  uint64 UserID = 1;
+  uint64 Count = 2;
+  uint64 Page = 3;
+}
+
+message GetByID {
+  uint64 OrderID = 1;
+  uint64 UserID = 2;
+}
+
+message GetByIDResponse {
+  Order order = 1;
+}
+
+message DelOrder {
+  uint64 OrderID = 1;
+  uint64 UserID = 2;
+}
+
+
+message Error {
+  string Err = 1;
+}
+
+service OrderWorker {
+  rpc CheckOutOrder(Checkout) returns (Error);
+  rpc GetAllUserOrders(UserOrders) returns (GetAllResponse);
+  rpc GetOrderByID(GetByID) returns (GetByIDResponse);
+  rpc DeleteOrder(DelOrder) returns (Error);
+}

@@ -81,7 +81,18 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &signUpRequest{}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.NotRequiredFields.Error(),
@@ -89,6 +100,8 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 
 			return
 		}
+
+
 
 		errorsList := uh.v.ValidateRequest(req)
 
@@ -101,7 +114,7 @@ func (uh *UserHandler) SignUp() gin.HandlerFunc {
 			return
 		}
 
-		_, err := uh.userUseCase.GetUserByPhone(req.Phone)
+		_, err = uh.userUseCase.GetUserByPhone(req.Phone)
 
 		if err == nil {
 			logrus.Info(tools.UserExists)
