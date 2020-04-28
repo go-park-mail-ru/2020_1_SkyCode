@@ -47,7 +47,7 @@ func (oU *OrderManager) CheckOutOrder(ctx context.Context, c *Checkout) (*Error,
 		return &Error{Err: tools.CheckoutOrderError.Error()}, err
 	}
 
-	return nil, nil
+	return &Error{}, nil
 }
 
 func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *UserOrders) (*GetAllResponse, error) {
@@ -101,7 +101,7 @@ func (oU *OrderManager) GetOrderByID(ctx context.Context, u *GetByID) (*GetByIDR
 	order, err := oU.orderRepo.GetByID(u.OrderID, u.UserID)
 
 	if err != nil {
-		return nil, err
+		return &GetByIDResponse{}, err
 	}
 
 	products := []*Product{}
@@ -144,5 +144,5 @@ func (oU *OrderManager) DeleteOrder(ctx context.Context, d *DelOrder) (*Error, e
 		return &Error{Err: err.Error()}, err
 	}
 
-	return nil, nil
+	return &Error{}, nil
 }
