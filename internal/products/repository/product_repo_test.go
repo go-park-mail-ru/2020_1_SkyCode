@@ -28,12 +28,18 @@ func TestProductRepository_GetProductsByRestID(t *testing.T) {
 		rows = rows.AddRow(item.ID, item.Name, item.Price, item.Image)
 	}
 
+	rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(1)
+
 	mock.
 		ExpectQuery("SELECT id, name, price, image FROM products WHERE").
-		WithArgs(restId).
+		WithArgs(restId, uint64(1), uint64(0)).
 		WillReturnRows(rows)
 
-	prodList, err := repo.GetProductsByRestID(restId)
+	mock.ExpectQuery("SELECT COUNT").
+		WithArgs(uint64(1)).
+		WillReturnRows(rowsCount)
+
+	prodList, total, err := repo.GetProductsByRestID(restId, uint64(1), uint64(1))
 	if err != nil {
 		t.Errorf("Unexpected err: %s", err)
 		return
@@ -43,6 +49,7 @@ func TestProductRepository_GetProductsByRestID(t *testing.T) {
 		return
 	}
 	require.EqualValues(t, expect, prodList)
+	require.EqualValues(t, uint64(1), total)
 }
 
 func TestProductRepository_GetProductByID(t *testing.T) {

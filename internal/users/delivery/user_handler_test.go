@@ -13,6 +13,7 @@ import (
 	mock_users "github.com/2020_1_Skycode/internal/users/mocks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"mime/multipart"
 	"net/http"
@@ -61,6 +62,8 @@ func TestUserHandler_SignUp(t *testing.T) {
 	mockSessUC.EXPECT().StoreSession(gomock.Any()).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -69,7 +72,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, mwareC)
+	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, csrfManager, mwareC)
 
 	target := "/api/v1/signup"
 	req, err := http.NewRequest("POST", target, strings.NewReader(string(reqJson)))
@@ -124,6 +127,8 @@ func TestUserHandler_ChangePassword(t *testing.T) {
 	mockUserUC.EXPECT().UpdatePassword(userReq.ID, userReq.Password).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -132,7 +137,7 @@ func TestUserHandler_ChangePassword(t *testing.T) {
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, mwareC)
+	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, csrfManager, mwareC)
 
 	target := "/api/v1/profile/password"
 	req, err := http.NewRequest("PUT", target, strings.NewReader(string(reqJson)))
@@ -187,6 +192,8 @@ func TestUserHandler_ChangePhoneNumber(t *testing.T) {
 	mockUserUC.EXPECT().UpdatePhoneNumber(userReq.ID, userReq.Phone).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -195,7 +202,7 @@ func TestUserHandler_ChangePhoneNumber(t *testing.T) {
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, mwareC)
+	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, csrfManager, mwareC)
 
 	target := "/api/v1/profile/phone"
 	req, err := http.NewRequest("PUT", target, strings.NewReader(string(reqJson)))
@@ -244,6 +251,8 @@ func TestUserHandler_GetProfile(t *testing.T) {
 	mockUserUC.EXPECT().GetUserById(userReq.ID).Return(userReq, nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -252,7 +261,7 @@ func TestUserHandler_GetProfile(t *testing.T) {
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, mwareC)
+	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, csrfManager, mwareC)
 
 	target := "/api/v1/profile"
 	req, err := http.NewRequest("GET", target, nil)
@@ -311,6 +320,8 @@ func TestUserHandler_EditBio(t *testing.T) {
 	mockUserUC.EXPECT().UpdateBio(userReq).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -319,7 +330,7 @@ func TestUserHandler_EditBio(t *testing.T) {
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, mwareC)
+	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, csrfManager, mwareC)
 
 	target := "/api/v1/profile/bio"
 	req, err := http.NewRequest("PUT", target, strings.NewReader(string(reqJson)))
@@ -386,6 +397,8 @@ func TestUserHandler_EditAvatar(t *testing.T) {
 	mockUserUC.EXPECT().UpdateAvatar(userReq.ID, gomock.Any()).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -394,7 +407,7 @@ func TestUserHandler_EditAvatar(t *testing.T) {
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, mwareC)
+	_ = NewUserHandler(privateGroup, publicGroup, mockUserUC, mockSessUC, reqValidator, csrfManager, mwareC)
 
 	target := "/api/v1/profile/avatar"
 	req, err := http.NewRequest("PUT", target, body)

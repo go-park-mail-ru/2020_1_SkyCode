@@ -3,13 +3,19 @@ package delivery
 import (
 	"bytes"
 	"encoding/json"
+	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	"github.com/2020_1_Skycode/internal/models"
 	mock_restaurants "github.com/2020_1_Skycode/internal/restaurants/mocks"
+	mock_sessions "github.com/2020_1_Skycode/internal/sessions/mocks"
 	"github.com/2020_1_Skycode/internal/tools"
+	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
 	_rValidator "github.com/2020_1_Skycode/internal/tools/requestValidator"
+	mock_users "github.com/2020_1_Skycode/internal/users/mocks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -24,22 +30,38 @@ func TestRestaurantHandler_GetRestaurants(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockRestUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockSessUC := mock_sessions.NewMockUseCase(ctrl)
+	mockUserUC := mock_users.NewMockUseCase(ctrl)
 
 	resultRests := []*models.Restaurant{
 		{ID: 1, Name: "test1", Rating: 4.2, Image: "./default.jpg"},
 	}
 
-	mockUC.EXPECT().GetRestaurants().Return(resultRests, nil)
+	expectResp := &tools.Body{
+		"restaurants": resultRests,
+		"total":       uint64(1)}
+
+	mockRestUC.EXPECT().GetRestaurants(uint64(1), uint64(1)).Return(resultRests, uint64(1), nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
+
+	csrfManager := _csrfManager.NewCSRFManager()
+	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
+
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockUC)
+	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockRestUC, mwareC)
 
 	req := httptest.NewRequest("GET", "/api/v1/restaurants", nil)
+	q := req.URL.Query()
+	q.Add("page", "1")
+	q.Add("count", "1")
+	req.URL.RawQuery = q.Encode()
 	w := httptest.NewRecorder()
 
 	g.ServeHTTP(w, req)
@@ -49,21 +71,21 @@ func TestRestaurantHandler_GetRestaurants(t *testing.T) {
 		return
 	}
 
-	type Result struct {
-		Restaurants []*models.Restaurant
-	}
+	result, err := ioutil.ReadAll(w.Result().Body)
+	require.NoError(t, err)
+	expect, err := json.Marshal(expectResp)
+	require.NoError(t, err)
 
-	var result Result
-	_ = json.NewDecoder(w.Result().Body).Decode(&result)
-
-	require.EqualValues(t, resultRests, result.Restaurants)
+	require.EqualValues(t, expect, result)
 }
 
 func TestRestaurantHandler_GetRestaurantByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockRestUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockSessUC := mock_sessions.NewMockUseCase(ctrl)
+	mockUserUC := mock_users.NewMockUseCase(ctrl)
 
 	resultRests := &models.Restaurant{
 		ID:     1,
@@ -76,14 +98,21 @@ func TestRestaurantHandler_GetRestaurantByID(t *testing.T) {
 	}
 
 	restID := uint64(1)
-	mockUC.EXPECT().GetRestaurantByID(restID).Return(resultRests, nil)
+
+	mockRestUC.EXPECT().GetRestaurantByID(restID).Return(resultRests, nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
+
+	csrfManager := _csrfManager.NewCSRFManager()
+	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
+
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockUC)
+	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockRestUC, mwareC)
 
 	target := "/api/v1/restaurants/" + strconv.Itoa(int(restID))
 	req := httptest.NewRequest("GET", target, nil)
@@ -106,41 +135,64 @@ func TestRestaurantHandler_CreateRestaurant(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockRestUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockSessUC := mock_sessions.NewMockUseCase(ctrl)
+	mockUserUC := mock_users.NewMockUseCase(ctrl)
 
 	reqRests := &models.Restaurant{
 		Name:        "test1",
 		Description: "asdasdqweasdqwe",
 	}
 
-	type restaurantRequest struct {
-		Name        string `json:"name, omitempty" binding:"required" validate:"min=3"`
-		Description string `json:"description, omitempty" binding:"required" validate:"min=10"`
+	if err := os.MkdirAll(tools.RestaurantImagesPath, 0777); err != nil {
+		t.Errorf("Error on image work: %s", err)
+		return
 	}
-
-	reqRest := &restaurantRequest{
-		Name:        reqRests.Name,
-		Description: reqRests.Description,
-	}
-
-	j, err := json.Marshal(reqRest)
-	require.NoError(t, err)
 
 	expectResult := &tools.Message{Message: "Restaurant has been created"}
 
-	mockUC.EXPECT().CreateRestaurant(reqRests).Return(nil)
+	userID := uint64(1)
+
+	sessRes := &models.Session{UserId: userID}
+	userRes := &models.User{ID: userID, Role: "Admin"}
+
+	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
+	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)
+	mockRestUC.EXPECT().CreateRestaurant(gomock.Any()).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
+
+	csrfManager := _csrfManager.NewCSRFManager()
+	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
+
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockUC)
+	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockRestUC, mwareC)
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	err := writer.WriteField("Name", reqRests.Name)
+	require.NoError(t, err)
+	err = writer.WriteField("Description", reqRests.Description)
+	require.NoError(t, err)
+	part, _ := writer.CreateFormFile("image", "testfile")
+
+	part.Write([]byte("SOME FILE CONTENT"))
+
+	writer.Close()
 
 	target := "/api/v1/restaurants"
-	req, err := http.NewRequest("POST", target, strings.NewReader(string(j)))
+	req, err := http.NewRequest("POST", target, body)
 	require.NoError(t, err)
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.AddCookie(&http.Cookie{
+		Name:  "SkyDelivery",
+		Value: "1234",
+	})
 	w := httptest.NewRecorder()
 
 	g.ServeHTTP(w, req)
@@ -154,13 +206,20 @@ func TestRestaurantHandler_CreateRestaurant(t *testing.T) {
 	_ = json.NewDecoder(w.Result().Body).Decode(&result)
 
 	require.EqualValues(t, expectResult, result)
+
+	if err = os.RemoveAll(tools.RestaurantImagesPath); err != nil {
+		t.Errorf("Error on image work: %s", err)
+		return
+	}
 }
 
 func TestRestaurantHandler_DeleteRestaurant(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockRestUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockSessUC := mock_sessions.NewMockUseCase(ctrl)
+	mockUserUC := mock_users.NewMockUseCase(ctrl)
 
 	restID := uint64(1)
 
@@ -172,17 +231,23 @@ func TestRestaurantHandler_DeleteRestaurant(t *testing.T) {
 		Products: nil,
 	}
 
-	mockUC.EXPECT().GetRestaurantByID(restID).Return(resultRests, nil)
-	mockUC.EXPECT().Delete(restID).Return(nil)
+	mockRestUC.EXPECT().GetRestaurantByID(restID).Return(resultRests, nil)
+	mockRestUC.EXPECT().Delete(restID).Return(nil)
 
 	expectResult := &tools.Message{Message: "success"}
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
+
+	csrfManager := _csrfManager.NewCSRFManager()
+	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
+
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockUC)
+	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockRestUC, mwareC)
 
 	target := "/api/v1/restaurants/" + strconv.Itoa(int(restID))
 	req, err := http.NewRequest("DELETE", target, nil)
@@ -206,7 +271,9 @@ func TestRestaurantHandler_UpdateImage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockRestUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockSessUC := mock_sessions.NewMockUseCase(ctrl)
+	mockUserUC := mock_users.NewMockUseCase(ctrl)
 
 	restID := uint64(1)
 
@@ -228,15 +295,21 @@ func TestRestaurantHandler_UpdateImage(t *testing.T) {
 
 	expectResult := &tools.Message{Message: "success"}
 
-	mockUC.EXPECT().GetRestaurantByID(restID).Return(resultRests, nil)
-	mockUC.EXPECT().UpdateImage(restID, gomock.Any()).Return(nil)
+	mockRestUC.EXPECT().GetRestaurantByID(restID).Return(resultRests, nil)
+	mockRestUC.EXPECT().UpdateImage(restID, gomock.Any()).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
+
+	csrfManager := _csrfManager.NewCSRFManager()
+	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
+
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockUC)
+	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockRestUC, mwareC)
 
 	bodyUpdate := &bytes.Buffer{}
 	writer := multipart.NewWriter(bodyUpdate)
@@ -274,7 +347,9 @@ func TestRestaurantHandler_UpdateRestaurant(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockRestUC := mock_restaurants.NewMockUseCase(ctrl)
+	mockSessUC := mock_sessions.NewMockUseCase(ctrl)
+	mockUserUC := mock_users.NewMockUseCase(ctrl)
 
 	reqRests := &models.Restaurant{
 		ID:          uint64(1),
@@ -299,14 +374,20 @@ func TestRestaurantHandler_UpdateRestaurant(t *testing.T) {
 
 	expectResult := &tools.Message{Message: "Restaurant has been updated"}
 
-	mockUC.EXPECT().UpdateRestaurant(reqRests).Return(nil)
+	mockRestUC.EXPECT().UpdateRestaurant(reqRests).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
+
+	csrfManager := _csrfManager.NewCSRFManager()
+	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
+
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
 
-	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockUC)
+	_ = NewRestaurantHandler(privateGroup, publicGroup, reqValidator, mockRestUC, mwareC)
 
 	target := "/api/v1/restaurants/" + strconv.Itoa(int(restID)) + "/update"
 	req, err := http.NewRequest("PUT", target, strings.NewReader(string(j)))

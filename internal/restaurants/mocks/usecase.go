@@ -34,18 +34,19 @@ func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 }
 
 // GetRestaurants mocks base method
-func (m *MockUseCase) GetRestaurants() ([]*models.Restaurant, error) {
+func (m *MockUseCase) GetRestaurants(count, page uint64) ([]*models.Restaurant, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRestaurants")
+	ret := m.ctrl.Call(m, "GetRestaurants", count, page)
 	ret0, _ := ret[0].([]*models.Restaurant)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetRestaurants indicates an expected call of GetRestaurants
-func (mr *MockUseCaseMockRecorder) GetRestaurants() *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetRestaurants(count, page interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurants", reflect.TypeOf((*MockUseCase)(nil).GetRestaurants))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurants", reflect.TypeOf((*MockUseCase)(nil).GetRestaurants), count, page)
 }
 
 // GetRestaurantByID mocks base method
@@ -117,4 +118,81 @@ func (m *MockUseCase) Delete(restID uint64) error {
 func (mr *MockUseCaseMockRecorder) Delete(restID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUseCase)(nil).Delete), restID)
+}
+
+// AddPoint mocks base method
+func (m *MockUseCase) AddPoint(p *models.RestaurantPoint) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddPoint", p)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddPoint indicates an expected call of AddPoint
+func (mr *MockUseCaseMockRecorder) AddPoint(p interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddPoint", reflect.TypeOf((*MockUseCase)(nil).AddPoint), p)
+}
+
+// GetPoints mocks base method
+func (m *MockUseCase) GetPoints(restID, count, page uint64) ([]*models.RestaurantPoint, uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPoints", restID, count, page)
+	ret0, _ := ret[0].([]*models.RestaurantPoint)
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetPoints indicates an expected call of GetPoints
+func (mr *MockUseCaseMockRecorder) GetPoints(restID, count, page interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPoints", reflect.TypeOf((*MockUseCase)(nil).GetPoints), restID, count, page)
+}
+
+// GetRestaurantsInServiceRadius mocks base method
+func (m *MockUseCase) GetRestaurantsInServiceRadius(address string, count, page uint64) ([]*models.Restaurant, uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRestaurantsInServiceRadius", address, count, page)
+	ret0, _ := ret[0].([]*models.Restaurant)
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetRestaurantsInServiceRadius indicates an expected call of GetRestaurantsInServiceRadius
+func (mr *MockUseCaseMockRecorder) GetRestaurantsInServiceRadius(address, count, page interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurantsInServiceRadius", reflect.TypeOf((*MockUseCase)(nil).GetRestaurantsInServiceRadius), address, count, page)
+}
+
+// AddReview mocks base method
+func (m *MockUseCase) AddReview(review *models.Review) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddReview", review)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddReview indicates an expected call of AddReview
+func (mr *MockUseCaseMockRecorder) AddReview(review interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddReview", reflect.TypeOf((*MockUseCase)(nil).AddReview), review)
+}
+
+// GetReviews mocks base method
+func (m *MockUseCase) GetReviews(restID, userID, count, page uint64) ([]*models.Review, *models.Review, uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReviews", restID, userID, count, page)
+	ret0, _ := ret[0].([]*models.Review)
+	ret1, _ := ret[1].(*models.Review)
+	ret2, _ := ret[2].(uint64)
+	ret3, _ := ret[3].(error)
+	return ret0, ret1, ret2, ret3
+}
+
+// GetReviews indicates an expected call of GetReviews
+func (mr *MockUseCaseMockRecorder) GetReviews(restID, userID, count, page interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReviews", reflect.TypeOf((*MockUseCase)(nil).GetReviews), restID, userID, count, page)
 }

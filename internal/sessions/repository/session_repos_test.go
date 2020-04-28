@@ -5,6 +5,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 func TestRepository_InsertInto(t *testing.T) {
@@ -21,7 +22,7 @@ func TestRepository_InsertInto(t *testing.T) {
 		Token:  "test-token",
 	}
 
-	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
+	rows := sqlmock.NewRows([]string{"id", "expiration"}).AddRow(1, time.Now())
 
 	mock.ExpectQuery("INSERT INTO sessions").
 		WithArgs(testSess.UserId, testSess.Token).

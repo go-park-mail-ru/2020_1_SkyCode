@@ -12,6 +12,7 @@ import (
 	mock_users "github.com/2020_1_Skycode/internal/users/mocks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
@@ -36,6 +37,8 @@ func TestSessionHandler_LogOut(t *testing.T) {
 	mockSessUC.EXPECT().DeleteSession(sessRes.ID).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -110,6 +113,8 @@ func TestSessionHandler_SignIn(t *testing.T) {
 	mockSessUC.EXPECT().StoreSession(gomock.Any()).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)

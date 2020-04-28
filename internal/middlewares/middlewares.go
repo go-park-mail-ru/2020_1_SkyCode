@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
 	"github.com/2020_1_Skycode/internal/tools"
@@ -192,8 +191,7 @@ func (mw *MWController) CSRFControl() gin.HandlerFunc {
 func (mw *MWController) AccessLogging() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		data := []string{c.Request.Method, c.Request.URL.String(), c.Request.RemoteAddr, time.Now().UTC().String()}
-		logrus.Info(strings.Join(data, " "))
-		fmt.Println(c.HandlerNames())
+		logrus.Info(strings.Join(data, " "), c.HandlerNames())
 		c.Next()
 	}
 }

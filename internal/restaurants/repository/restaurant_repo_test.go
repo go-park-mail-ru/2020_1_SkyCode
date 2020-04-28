@@ -20,19 +20,34 @@ func TestRestaurantRepository_GetAll(t *testing.T) {
 	rows := sqlmock.
 		NewRows([]string{"id", "name", "rating", "image"})
 	expect := []*models.Restaurant{
-		{uint64(1), 0, "rest1", "", 5.0, "./default.jpg", nil},
-		{uint64(2), 0, "rest2", "", 4.4, "./not_default.jpg", nil},
+		{
+			ID:     uint64(1),
+			Name:   "rest1",
+			Rating: 4.2,
+			Image:  "./default.jpg",
+		},
+		{
+			ID:     uint64(2),
+			Name:   "rest2",
+			Rating: 4.4,
+			Image:  "./not_default.jpg",
+		},
 	}
 
 	for _, item := range expect {
 		rows = rows.AddRow(item.ID, item.Name, item.Rating, item.Image)
 	}
 
+	rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(2)
+
 	mock.
-		ExpectQuery("SELECT").
+		ExpectQuery("SELECT id").
+		WithArgs(uint64(2), uint64(0)).
 		WillReturnRows(rows)
 
-	restList, err := repo.GetAll()
+	mock.ExpectQuery("SELECT COUNT").WillReturnRows(rowsCount)
+
+	restList, total, err := repo.GetAll(uint64(2), uint64(1))
 	if err != nil {
 		t.Errorf("Unexpected err: %s", err)
 		return
@@ -42,6 +57,7 @@ func TestRestaurantRepository_GetAll(t *testing.T) {
 		return
 	}
 	require.EqualValues(t, expect, restList)
+	require.EqualValues(t, uint64(2), total)
 }
 
 func TestRestaurantRepository_GetByID(t *testing.T) {
@@ -207,4 +223,65 @@ func TestRestaurantRepository_Delete(t *testing.T) {
 		t.Errorf("There was unfulfilled expectations %s", err)
 		return
 	}
+}
+
+func TestRestaurantRepository_GetAllInServiceRadius(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Can't create mock: %s", err)
+	}
+	defer db.Close()
+
+	repo := NewRestaurantRepository(db)
+
+	rows := sqlmock.
+		NewRows([]string{"id", "name", "description", "rating", "image"})
+	expect := []*models.Restaurant{
+		{
+			ID:          uint64(1),
+			Name:        "rest1",
+			Description: "",
+			Rating:      4.2,
+			Image:       "./default.jpg",
+		},
+		{
+			ID:          uint64(2),
+			Name:        "rest2",
+			Description: "I saw some shit",
+			Rating:      4.4,
+			Image:       "./not_default.jpg",
+		},
+	}
+
+	gp := &models.GeoPos{
+		Longitude: 55.753227,
+		Latitude:  37.619030,
+	}
+
+	for _, item := range expect {
+		rows = rows.AddRow(item.ID, item.Name, item.Description, item.Rating, item.Image)
+	}
+
+	rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(2)
+
+	mock.
+		ExpectQuery("SELECT r.id").
+		WithArgs(gp.Latitude, gp.Longitude, uint64(2), uint64(0)).
+		WillReturnRows(rows)
+
+	mock.ExpectQuery("SELECT COUNT").
+		WithArgs(gp.Latitude, gp.Longitude).
+		WillReturnRows(rowsCount)
+
+	restList, total, err := repo.GetAllInServiceRadius(gp, uint64(2), uint64(1))
+	if err != nil {
+		t.Errorf("Unexpected err: %s", err)
+		return
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("There was unfulfilled expectations %s", err)
+		return
+	}
+	require.EqualValues(t, expect, restList)
+	require.EqualValues(t, uint64(2), total)
 }
