@@ -10,8 +10,3 @@ type Restaurant struct {
 	Products    []*Product         `json:"products"`
 	Points      []*RestaurantPoint `json:"points"`
 }
-
-type ResStorage struct {
-	Restaurants map[uint]*Restaurant
-	nextID      uint
-}

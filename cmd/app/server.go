@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/2020_1_Skycode/docs"
-	_geodataDelivery "github.com/2020_1_Skycode/internal/geodata/delivery"
-	_geodataRepository "github.com/2020_1_Skycode/internal/geodata/repository"
-	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
 	_chatsDelivery "github.com/2020_1_Skycode/internal/chats/delivery"
 	_chatsRepository "github.com/2020_1_Skycode/internal/chats/repository"
 	_chatsUseCase "github.com/2020_1_Skycode/internal/chats/usecase"
+	_geodataDelivery "github.com/2020_1_Skycode/internal/geodata/delivery"
+	_geodataRepository "github.com/2020_1_Skycode/internal/geodata/repository"
+	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
 	_ordersUseCase "github.com/2020_1_Skycode/internal/orders/usecase"
@@ -26,7 +26,6 @@ import (
 	_reviewsRepository "github.com/2020_1_Skycode/internal/reviews/repository"
 	_reviewsUseCase "github.com/2020_1_Skycode/internal/reviews/usecase"
 	_sessionsDelivery "github.com/2020_1_Skycode/internal/sessions/delivery"
-	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
 	"github.com/2020_1_Skycode/internal/tools"
 	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
@@ -99,7 +98,7 @@ func main() {
 	geoCoderKey := config.ApiKeys.YandexGeoCoder
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
-	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
+	prodUcase := _productUseCase.NewProductWithProtoUseCase(prodRepo, grpcAdminConn)
 
 	reviewRepo := _reviewsRepository.NewReviewsRepository(dbConn)
 	reviewUcase := _reviewsUseCase.NewReviewsUseCase(reviewRepo)
@@ -108,16 +107,16 @@ func main() {
 	geoDataUcase := _geodataUseCase.NewGeoDataUseCase(geoDataRepo)
 
 	restPointsRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
-	restPointsUCase := _restPointsUseCase.NewRestPointsUseCase(restPointsRepo)
+	restPointsUCase := _restPointsUseCase.NewRestPointsWithProtoUseCase(restPointsRepo, grpcAdminConn)
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, restPointsRepo, reviewRepo, geoDataRepo)
+	restUcase := _restUcase.NewRestaurantsWithProtoUseCase(restRepo, restPointsRepo,
+		reviewRepo, geoDataRepo, grpcAdminConn)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
 
-	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
-	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
+	sessionsUcase := _sessionsUseCase.NewSessionProtoUseCase(grpcSessionConn)
 
 	ordersUcase := _ordersUseCase.NewOrderProtoUseCase(grpcOrdersConn)
 

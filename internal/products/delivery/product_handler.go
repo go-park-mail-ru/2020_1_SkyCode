@@ -428,6 +428,7 @@ func (ph *ProductHandler) UpdateImage() gin.HandlerFunc {
 //@Failure 500 object tools.Error
 //@Router /product/:prod_id [delete]
 func (ph *ProductHandler) DeleteProduct() gin.HandlerFunc {
+	rootDir, _ := os.Getwd()
 	return func(c *gin.Context) {
 		prodID, err := strconv.ParseUint(c.Param("prod_id"), 10, 64)
 		if err != nil {
@@ -449,7 +450,7 @@ func (ph *ProductHandler) DeleteProduct() gin.HandlerFunc {
 		}
 
 		if product.Image != "" {
-			if err := os.Remove(tools.ProductImagesPath + product.Image); err != nil {
+			if err := os.Remove(filepath.Join(rootDir, tools.ProductImagesPath, product.Image)); err != nil {
 				logrus.Info(err)
 				c.JSON(http.StatusInternalServerError, tools.Error{
 					ErrorMessage: tools.DeleteAvatarError.Error(),
