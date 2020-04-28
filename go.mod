@@ -27,9 +27,6 @@ require (
 	github.com/swaggo/gin-swagger v1.2.0
 	github.com/swaggo/swag v1.6.5
 	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0
-	golang.org/x/sys v0.0.0-20200331124033-c3d80250170d // indirect
-	golang.org/x/tools v0.0.0-20200403190813-44a64ad78b9b // indirect
-	golang.org/x/net v0.0.0-20200425230154-ff2c4b7c35a0 // indirect
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
 	golang.org/x/tools v0.0.0-20200403190813-44a64ad78b9b // indirect
 	google.golang.org/genproto v0.0.0-20200424135956-bca184e23272 // indirect

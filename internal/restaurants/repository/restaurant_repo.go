@@ -62,14 +62,14 @@ func (rr *RestaurantRepository) GetAllInServiceRadius(
 	rows, err := rr.db.Query("SELECT r.id, r.name, r.description, r.rating, r.image, "+
 		"min(st_distance("+
 		"st_makepoint(rp.latitude, rp.longitude)::geography, "+
-		"st_makepoint(37.646130, 55.766015)::geography)) as dst "+
+		"st_makepoint($1, $2)::geography)) as dst "+
 		"FROM restaurants r "+
 		"JOIN rest_points rp ON (r.id = rp.restid) "+
 		"WHERE ST_DWithin("+
 		"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
 		"ST_MakePoint($1, $2)::geography, rp.radius * 1000) "+
 		"GROUP BY r.id, r.rating "+
-		"ORDER BY r.rating DESC, dst ASC "+
+		"ORDER BY dst ASC, r.rating DESC"+
 		"LIMIT $3 OFFSET $4", pos.Latitude, pos.Longitude, count, count*(page-1))
 	if err != nil {
 		return nil, 0, err
