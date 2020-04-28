@@ -120,7 +120,7 @@ func TestUserHandler_ChangePassword(t *testing.T) {
 
 	expectResult := &tools.Message{Message: "success"}
 
-	sessRes := &models.Session{UserId: userReq.ID}
+	sessRes := &models.Session{ID: 1, UserId: userReq.ID}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userReq.ID).Return(userReq, nil)
@@ -185,7 +185,7 @@ func TestUserHandler_ChangePhoneNumber(t *testing.T) {
 
 	expectResult := &tools.Message{Message: "success"}
 
-	sessRes := &models.Session{UserId: userReq.ID}
+	sessRes := &models.Session{ID: 1, UserId: userReq.ID}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userReq.ID).Return(userReq, nil)
@@ -243,7 +243,7 @@ func TestUserHandler_GetProfile(t *testing.T) {
 		LastName:  "FG",
 	}
 
-	sessRes := &models.Session{UserId: userReq.ID}
+	sessRes := &models.Session{ID: 1, UserId: userReq.ID}
 
 	expectUser := &tools.UserMessage{User: userReq}
 
@@ -313,7 +313,7 @@ func TestUserHandler_EditBio(t *testing.T) {
 
 	expectResult := &tools.Message{Message: "success"}
 
-	sessRes := &models.Session{UserId: userReq.ID}
+	sessRes := &models.Session{ID: 1, UserId: userReq.ID}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userReq.ID).Return(userReq, nil)
@@ -390,7 +390,7 @@ func TestUserHandler_EditAvatar(t *testing.T) {
 
 	expectResult := &tools.Message{Message: "success"}
 
-	sessRes := &models.Session{UserId: userReq.ID}
+	sessRes := &models.Session{ID: 1, UserId: userReq.ID}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userReq.ID).Return(userReq, nil)

@@ -153,7 +153,7 @@ func TestRestaurantHandler_CreateRestaurant(t *testing.T) {
 
 	userID := uint64(1)
 
-	sessRes := &models.Session{UserId: userID}
+	sessRes := &models.Session{ID: 1, UserId: userID}
 	userRes := &models.User{ID: userID, Role: "Admin"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)

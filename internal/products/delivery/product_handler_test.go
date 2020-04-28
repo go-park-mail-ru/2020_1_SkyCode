@@ -50,8 +50,8 @@ func TestProductHandler_CreateProduct(t *testing.T) {
 	userID := uint64(1)
 
 	restRes := &models.Restaurant{ID: restID}
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "Admin"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: sessRes.UserId, Role: "Admin"}
 
 	expectResult := &tools.Message{Message: "Product has been created"}
 
@@ -133,8 +133,8 @@ func TestProductHandler_DeleteProduct(t *testing.T) {
 
 	resResp := &tools.Message{Message: "success"}
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "Admin"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: sessRes.UserId, Role: "Admin"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)
@@ -193,8 +193,8 @@ func TestProductHandler_GetProduct(t *testing.T) {
 
 	userID := uint64(1)
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "User"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: userID, Role: "User"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)
@@ -262,8 +262,8 @@ func TestProductHandler_GetProducts(t *testing.T) {
 	restID := uint64(1)
 	userID := uint64(1)
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "User"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: sessRes.UserId, Role: "User"}
 
 	total := uint64(2)
 
@@ -343,8 +343,8 @@ func TestProductHandler_UpdateImage(t *testing.T) {
 
 	userID := uint64(1)
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "Admin"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: userID, Role: "Admin"}
 
 	expectResult := &tools.Message{Message: "success"}
 
@@ -436,8 +436,8 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 
 	resResp := &tools.Message{Message: "Product has been updated"}
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "Admin"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: userID, Role: "Admin"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)

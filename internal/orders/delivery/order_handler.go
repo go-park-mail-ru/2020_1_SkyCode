@@ -65,6 +65,7 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 		_, err := oH.MiddlewareC.GetUser(c)
 
 		if err != nil {
+			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
 			})

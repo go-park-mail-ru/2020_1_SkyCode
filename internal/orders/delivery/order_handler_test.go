@@ -58,8 +58,8 @@ func TestOrderHandler_Checkout(t *testing.T) {
 	reqJson, err := json.Marshal(orderReq)
 	require.NoError(t, err)
 
-	sessRes := &models.Session{UserId: 1}
-	userRes := &models.User{Role: "User"}
+	sessRes := &models.Session{ID: 1, UserId: 1}
+	userRes := &models.User{ID: sessRes.UserId, Role: "User"}
 
 	expectRes := &tools.Message{Message: "success"}
 
@@ -136,7 +136,7 @@ func TestOrderHandler_GetUserOrder(t *testing.T) {
 
 	expectRes := &tools.Body{"order": order}
 
-	sessRes := &models.Session{UserId: 1}
+	sessRes := &models.Session{ID: 1, UserId: 1}
 	userRes := &models.User{ID: sessRes.UserId, Role: "User"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
@@ -221,7 +221,7 @@ func TestOrderHandler_GetUserOrders(t *testing.T) {
 		"total":  total,
 	}
 
-	sessRes := &models.Session{UserId: 1}
+	sessRes := &models.Session{ID: 1, UserId: 1}
 	userRes := &models.User{ID: sessRes.UserId, Role: "User"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
@@ -281,7 +281,7 @@ func TestOrderHandler_DeleteOrder(t *testing.T) {
 	mockSessUC := mock_sessions.NewMockUseCase(ctrl)
 	mockUserUC := mock_users.NewMockUseCase(ctrl)
 
-	sessRes := &models.Session{UserId: 1}
+	sessRes := &models.Session{ID: 1, UserId: 1}
 	userRes := &models.User{ID: 1, Role: "User"}
 
 	expectRes := &tools.Message{Message: "success"}
