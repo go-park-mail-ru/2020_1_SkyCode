@@ -4,14 +4,15 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/2020_1_Skycode/docs"
-	_chatsDelivery "github.com/2020_1_Skycode/internal/chats/delivery"
-	_chatsRepository "github.com/2020_1_Skycode/internal/chats/repository"
-	_chatsUseCase "github.com/2020_1_Skycode/internal/chats/usecase"
 	_geodataDelivery "github.com/2020_1_Skycode/internal/geodata/delivery"
 	_geodataRepository "github.com/2020_1_Skycode/internal/geodata/repository"
 	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
+	_chatsDelivery "github.com/2020_1_Skycode/internal/chats/delivery"
+	_chatsRepository "github.com/2020_1_Skycode/internal/chats/repository"
+	_chatsUseCase "github.com/2020_1_Skycode/internal/chats/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
+	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
 	_ordersUseCase "github.com/2020_1_Skycode/internal/orders/usecase"
 	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
@@ -26,6 +27,7 @@ import (
 	_reviewsRepository "github.com/2020_1_Skycode/internal/reviews/repository"
 	_reviewsUseCase "github.com/2020_1_Skycode/internal/reviews/usecase"
 	_sessionsDelivery "github.com/2020_1_Skycode/internal/sessions/delivery"
+	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
 	"github.com/2020_1_Skycode/internal/tools"
 	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
@@ -37,7 +39,6 @@ import (
 	_ "github.com/lib/pq"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"google.golang.org/grpc"
 	"log"
 )
 
@@ -77,28 +78,10 @@ func main() {
 
 	e := gin.New()
 
-	grpcSessionConn, err := grpc.Dial("localhost:5001", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer grpcSessionConn.Close()
-
-	grpcAdminConn, err := grpc.Dial("localhost:5002", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer grpcAdminConn.Close()
-
-	grpcOrdersConn, err := grpc.Dial("localhost:5003", grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer grpcOrdersConn.Close()
-
 	geoCoderKey := config.ApiKeys.YandexGeoCoder
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
-	prodUcase := _productUseCase.NewProductWithProtoUseCase(prodRepo, grpcAdminConn)
+	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
 
 	reviewRepo := _reviewsRepository.NewReviewsRepository(dbConn)
 	reviewUcase := _reviewsUseCase.NewReviewsUseCase(reviewRepo)
@@ -107,18 +90,19 @@ func main() {
 	geoDataUcase := _geodataUseCase.NewGeoDataUseCase(geoDataRepo)
 
 	restPointsRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
-	restPointsUCase := _restPointsUseCase.NewRestPointsWithProtoUseCase(restPointsRepo, grpcAdminConn)
+	restPointsUCase := _restPointsUseCase.NewRestPointsUseCase(restPointsRepo)
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsWithProtoUseCase(restRepo, restPointsRepo,
-		reviewRepo, geoDataRepo, grpcAdminConn)
+	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, restPointsRepo, reviewRepo, geoDataRepo)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
 
-	sessionsUcase := _sessionsUseCase.NewSessionProtoUseCase(grpcSessionConn)
+	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
+	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
 
-	ordersUcase := _ordersUseCase.NewOrderProtoUseCase(grpcOrdersConn)
+	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
+	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
 
 	chatsRepo := _chatsRepository.NewChatsRepository(dbConn)
 	chatsUcase := _chatsUseCase.NewChatUseCase(chatsRepo)
