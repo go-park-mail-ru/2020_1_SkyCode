@@ -7,6 +7,6 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:5000']
 
-    - job_name: 'system'
-      static_configs:
-        - targets: ['localhost:9100']
+  - job_name: 'system'
+    static_configs:
+      - targets: ['localhost:9100']
