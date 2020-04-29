@@ -5,11 +5,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"strconv"
+	"time"
 )
 
 type MetricsController struct {
 	Counter prometheus.Counter
 	Hits *prometheus.CounterVec
+	Duration *prometheus.HistogramVec
 
 }
 
@@ -23,9 +25,17 @@ func NewMetricsController(router *gin.Engine) *MetricsController {
 		Name: "hits",
 	}, []string{"status", "path"})
 
+	duration := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: "http",
+		Name:      "request_duration_seconds",
+		Help:      "The latency of the HTTP requests.",
+		Buckets:   prometheus.DefBuckets,
+	}, []string{"path", "method", "code"})
+
 	m := &MetricsController{
 		Counter: counter,
 		Hits: hits,
+		Duration: duration,
 	}
 
 	prometheus.MustRegister(counter, hits)
@@ -34,6 +44,7 @@ func NewMetricsController(router *gin.Engine) *MetricsController {
 
 	router.Use(m.IncCounter())
 	router.Use(m.Hit())
+	router.Use(m.GetTime())
 
 	return m
 }
@@ -50,5 +61,15 @@ func (mC *MetricsController) Hit() gin.HandlerFunc {
 		c.Next()
 		statusCode := strconv.Itoa(c.Writer.Status())
 		mC.Hits.WithLabelValues(statusCode, c.Request.URL.String()).Inc()
+	}
+}
+
+func (mC *MetricsController) GetTime() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		end := time.Since(start).Seconds()
+		statusCode := strconv.Itoa(c.Writer.Status())
+		mC.Duration.WithLabelValues(c.Request.URL.String(), c.Request.Method, statusCode).Observe(end)
 	}
 }
