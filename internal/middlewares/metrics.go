@@ -11,7 +11,7 @@ import (
 type MetricsController struct {
 	Counter prometheus.Counter
 	Hits *prometheus.CounterVec
-	Duration *prometheus.HistogramVec
+	Duration *prometheus.SummaryVec
 
 }
 
@@ -25,10 +25,9 @@ func NewMetricsController(router *gin.Engine) *MetricsController {
 		Name: "hits",
 	}, []string{"status", "path"})
 
-	duration := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	duration := prometheus.NewSummaryVec(prometheus.SummaryOpts{
 		Name:      "duration",
 		Help:      "The latency of the HTTP requests.",
-		Buckets:   prometheus.DefBuckets,
 	}, []string{"path", "method", "code"})
 
 	m := &MetricsController{
