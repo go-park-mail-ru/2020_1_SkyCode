@@ -28,7 +28,6 @@ func NewMetricsController(router *gin.Engine) *MetricsController {
 	duration := prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Name:      "duration",
 		Help:      "The latency of the HTTP requests.",
-		Buckets:   prometheus.DefBuckets,
 	}, []string{"path", "method", "code"})
 
 	m := &MetricsController{
