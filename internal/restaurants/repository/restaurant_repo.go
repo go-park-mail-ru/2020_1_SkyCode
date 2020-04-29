@@ -69,7 +69,7 @@ func (rr *RestaurantRepository) GetAllInServiceRadius(
 		"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
 		"ST_MakePoint($1, $2)::geography, rp.radius * 1000) "+
 		"GROUP BY r.id, r.rating "+
-		"ORDER BY dst ASC, r.rating DESC"+
+		"ORDER BY dst ASC, r.rating DESC "+
 		"LIMIT $3 OFFSET $4", pos.Latitude, pos.Longitude, count, count*(page-1))
 	if err != nil {
 		return nil, 0, err
