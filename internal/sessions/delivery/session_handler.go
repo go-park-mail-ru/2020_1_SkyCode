@@ -14,9 +14,9 @@ import (
 )
 
 type SessionHandler struct {
-	SessionUseCase sessions.UseCase
-	UserUseCase    users.UseCase
-	MiddlewareC    *middlewares.MWController
+	sessionUseCase sessions.UseCase
+	userUseCase    users.UseCase
+	middlewareC    *middlewares.MWController
 	tM             *CSRFManager.CSRFManager
 	v              *requestValidator.RequestValidator
 }
@@ -24,9 +24,9 @@ type SessionHandler struct {
 func NewSessionHandler(private *gin.RouterGroup, public *gin.RouterGroup, sessionUC sessions.UseCase, usersUC users.UseCase,
 	validator *requestValidator.RequestValidator, tM *CSRFManager.CSRFManager, mwareC *middlewares.MWController) *SessionHandler {
 	sh := &SessionHandler{
-		SessionUseCase: sessionUC,
-		UserUseCase:    usersUC,
-		MiddlewareC:    mwareC,
+		sessionUseCase: sessionUC,
+		userUseCase:    usersUC,
+		middlewareC:    mwareC,
 		tM:             tM,
 		v:              validator,
 	}
@@ -57,10 +57,21 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &signInRequest{}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -77,7 +88,7 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 			return
 		}
 
-		user, err := sh.UserUseCase.GetUserByPhone(req.Phone)
+		user, err := sh.userUseCase.GetUserByPhone(req.Phone)
 
 		if err != nil {
 			logrus.Info(err, req)
@@ -88,7 +99,7 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 			return
 		}
 
-		session, err := sh.MiddlewareC.GetSession(c)
+		session, err := sh.middlewareC.GetSession(c)
 
 		if err == nil && session.UserId == user.ID {
 			logrus.Info(tools.HashingError)
@@ -109,7 +120,7 @@ func (sh *SessionHandler) SignIn() gin.HandlerFunc {
 
 		session, cookie := models.GenerateSession(user.ID)
 
-		if err := sh.SessionUseCase.StoreSession(session); err != nil {
+		if err := sh.sessionUseCase.StoreSession(session); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusNotFound, tools.Error{
 				ErrorMessage: tools.SessionStoreError.Error(),
@@ -177,7 +188,7 @@ func (sh *SessionHandler) LogOut() gin.HandlerFunc {
 			return
 		}
 
-		if err := sh.SessionUseCase.DeleteSession(session.ID); err != nil {
+		if err := sh.sessionUseCase.DeleteSession(session.ID); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusInternalServerError, tools.Error{
 				ErrorMessage: tools.DeleteSessionError.Error(),

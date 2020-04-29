@@ -14,16 +14,16 @@ import (
 )
 
 type OrderHandler struct {
-	OrderUseCase orders.UseCase
-	MiddlewareC  *middlewares.MWController
+	orderUseCase orders.UseCase
+	middlewareC  *middlewares.MWController
 	v            *requestValidator.RequestValidator
 }
 
 func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC orders.UseCase,
 	validator *requestValidator.RequestValidator, mw *middlewares.MWController) *OrderHandler {
 	oh := &OrderHandler{
-		OrderUseCase: orderUC,
-		MiddlewareC:  mw,
+		orderUseCase: orderUC,
+		middlewareC:  mw,
 		v:            validator,
 	}
 	public.GET("/orders", oh.GetUserOrders())
@@ -62,7 +62,7 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &orderRequest{}
 
-		_, err := oH.MiddlewareC.GetUser(c)
+		_, err := oH.middlewareC.GetUser(c)
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
@@ -72,10 +72,21 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 			return
 		}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -104,7 +115,7 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 			Phone:     req.Phone,
 		}
 
-		if err := oH.OrderUseCase.CheckoutOrder(order, req.Products); err != nil {
+		if err := oH.orderUseCase.CheckoutOrder(order, req.Products); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
@@ -133,7 +144,7 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 //@Router /orders [get]
 func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := oH.MiddlewareC.GetUser(c)
+		user, err := oH.middlewareC.GetUser(c)
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
@@ -154,7 +165,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 			return
 		}
 
-		userOrders, total, err := oH.OrderUseCase.GetAllUserOrders(user.ID, count, page)
+		userOrders, total, err := oH.orderUseCase.GetAllUserOrders(user.ID, count, page)
 
 		if err != nil {
 			logrus.Info(err)
@@ -185,7 +196,7 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 //@Router /orders/:order_id [get]
 func (oH *OrderHandler) GetUserOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := oH.MiddlewareC.GetUser(c)
+		user, err := oH.middlewareC.GetUser(c)
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
@@ -203,7 +214,7 @@ func (oH *OrderHandler) GetUserOrder() gin.HandlerFunc {
 			})
 		}
 
-		userOrders, err := oH.OrderUseCase.GetOrderByID(orderID, user.ID)
+		userOrders, err := oH.orderUseCase.GetOrderByID(orderID, user.ID)
 
 		if err != nil {
 			logrus.Info(err)
@@ -233,7 +244,7 @@ func (oH *OrderHandler) GetUserOrder() gin.HandlerFunc {
 //@Router /orders/:order_id [delete]
 func (oH *OrderHandler) DeleteOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user, err := oH.MiddlewareC.GetUser(c)
+		user, err := oH.middlewareC.GetUser(c)
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
@@ -253,7 +264,7 @@ func (oH *OrderHandler) DeleteOrder() gin.HandlerFunc {
 			return
 		}
 
-		if err := oH.OrderUseCase.DeleteOrder(orderID, user.ID); err != nil {
+		if err := oH.orderUseCase.DeleteOrder(orderID, user.ID); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusNotFound, tools.Error{
 				ErrorMessage: tools.NotFound.Error(),

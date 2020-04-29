@@ -48,6 +48,11 @@ type productRequest struct {
 	Price float32 `json:"price, omitempty" binding:"required"`
 }
 
+type UpdateProductRequest struct {
+	Name  string  `json:"name, omitempty" binding:"required"`
+	Price float32 `json:"price, omitempty" binding:"required"`
+}
+
 //@Tags Product
 //@Summary Get Product Route
 //@Description Returning Product Model
@@ -200,10 +205,21 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			return
 		}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -275,18 +291,24 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 //@Failure 400 object tools.Error
 //@Router /product/:prod_id/update [put]
 func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
-	type UpdateProductRequest struct {
-		Name  string  `json:"name, omitempty" binding:"required"`
-		Price float32 `json:"price, omitempty" binding:"required"`
-	}
-
 	return func(c *gin.Context) {
 		req := &UpdateProductRequest{}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return

@@ -138,10 +138,21 @@ func (rh *ReviewsHandler) UpdateReview() gin.HandlerFunc {
 		}
 
 		req := &reviewUpdateRequest{}
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return

@@ -180,10 +180,21 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 			return
 		}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -258,10 +269,21 @@ func (rh *RestaurantHandler) UpdateRestaurant() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &restaurantRequest{}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -481,10 +503,21 @@ func (rh *RestaurantHandler) AddPoint() gin.HandlerFunc {
 		}
 
 		req := &pointRequest{}
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -634,10 +667,21 @@ func (rh *RestaurantHandler) AddReview() gin.HandlerFunc {
 
 		req := &reviewRequest{}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
