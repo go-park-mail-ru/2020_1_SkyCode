@@ -111,6 +111,7 @@ func main() {
 
 	reqValidator := _rValidator.NewRequestValidator()
 
+	_ = _middleware.NewMetricsController(e)
 	mwareC := _middleware.NewMiddleWareController(e, sessionsUcase, userUcase, csrfManager)
 
 	publicGroup := e.Group("/api/v1")
