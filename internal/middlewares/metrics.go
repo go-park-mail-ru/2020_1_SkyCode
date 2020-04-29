@@ -37,7 +37,7 @@ func NewMetricsController(router *gin.Engine) *MetricsController {
 		Duration: duration,
 	}
 
-	prometheus.MustRegister(counter, hits)
+	prometheus.MustRegister(counter, hits, duration)
 
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
