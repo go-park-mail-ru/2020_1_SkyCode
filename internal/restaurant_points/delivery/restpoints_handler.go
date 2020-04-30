@@ -98,7 +98,7 @@ func (rph *RestPointsHandler) DeletePoint() gin.HandlerFunc {
 
 		if !user.IsManager() && !user.IsAdmin() {
 			c.JSON(http.StatusForbidden, tools.Error{
-				ErrorMessage: tools.DontEnoughRights.Error(),
+				ErrorMessage: tools.PermissionError.Error(),
 			})
 
 			return

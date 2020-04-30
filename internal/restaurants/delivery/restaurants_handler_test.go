@@ -162,7 +162,7 @@ func TestRestaurantHandler_CreateRestaurant(t *testing.T) {
 
 	g := gin.New()
 	gin.SetMode(gin.TestMode)
-	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetLevel(logrus.TraceLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -204,7 +204,7 @@ func TestRestaurantHandler_CreateRestaurant(t *testing.T) {
 	g.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
-		t.Error("Status is not ok")
+		t.Errorf("Status is not ok %v, %v", w.Code, w.Body)
 		return
 	}
 

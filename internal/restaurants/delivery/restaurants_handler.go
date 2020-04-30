@@ -174,7 +174,7 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 
 		if !user.IsManager() && !user.IsAdmin() {
 			c.JSON(http.StatusForbidden, tools.Error{
-				ErrorMessage: tools.DontEnoughRights.Error(),
+				ErrorMessage: tools.PermissionError.Error(),
 			})
 
 			return
@@ -475,7 +475,7 @@ func (rh *RestaurantHandler) AddPoint() gin.HandlerFunc {
 
 		if !user.IsManager() && !user.IsAdmin() {
 			c.JSON(http.StatusForbidden, tools.Error{
-				ErrorMessage: tools.DontEnoughRights.Error(),
+				ErrorMessage: tools.PermissionError.Error(),
 			})
 
 			return

@@ -56,7 +56,7 @@ func (rUC *ReviewsUseCase) UpdateReview(r *models.Review, u *models.User) error 
 	}
 
 	if u.ID != returnReview.Author.ID {
-		return tools.DontEnoughRights
+		return tools.PermissionError
 	}
 
 	r.Rate = math.Round(r.Rate*100) / 100
@@ -79,7 +79,7 @@ func (rUC *ReviewsUseCase) DeleteReview(id uint64, u *models.User) error {
 	}
 
 	if u.ID != returnReview.Author.ID {
-		return tools.DontEnoughRights
+		return tools.PermissionError
 	}
 
 	err = rUC.reviewsRepo.DeleteReview(id)

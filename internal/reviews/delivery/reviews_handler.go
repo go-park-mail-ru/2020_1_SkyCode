@@ -36,7 +36,7 @@ func NewReviewsHandler(private *gin.RouterGroup, public *gin.RouterGroup, rUC re
 }
 
 type reviewUpdateRequest struct {
-	Text string  `json:"text, omitempty" binding:"required" validate:"min=2"`
+	Text string  `json:"text, omitempty" binding:"required"`
 	Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
@@ -185,9 +185,9 @@ func (rh *ReviewsHandler) UpdateReview() gin.HandlerFunc {
 
 				return
 			}
-			if err == tools.DontEnoughRights {
+			if err == tools.PermissionError {
 				c.JSON(http.StatusForbidden, tools.Error{
-					ErrorMessage: tools.DontEnoughRights.Error(),
+					ErrorMessage: tools.PermissionError.Error(),
 				})
 
 				return
@@ -234,9 +234,9 @@ func (rh *ReviewsHandler) DeleteReview() gin.HandlerFunc {
 
 				return
 			}
-			if err == tools.DontEnoughRights {
+			if err == tools.PermissionError {
 				c.JSON(http.StatusForbidden, tools.Error{
-					ErrorMessage: tools.DontEnoughRights.Error(),
+					ErrorMessage: tools.PermissionError.Error(),
 				})
 
 				return
