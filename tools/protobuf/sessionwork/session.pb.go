@@ -4,7 +4,7 @@
 // 	protoc        v3.11.4
 // source: session.proto
 
-package protobuf_session
+package sessionwork
 
 import (
 	context "context"

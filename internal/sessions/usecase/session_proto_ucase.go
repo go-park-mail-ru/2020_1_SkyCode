@@ -4,19 +4,19 @@ import (
 	"context"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
-	protobuf_session "github.com/2020_1_Skycode/internal/sessions/delivery/protobuf"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/tools/protobuf/sessionwork"
 	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 )
 
 type ProtoUseCase struct {
-	sessionManager protobuf_session.SessionWorkerClient
+	sessionManager sessionwork.SessionWorkerClient
 }
 
 func NewSessionProtoUseCase(conn *grpc.ClientConn) sessions.UseCase {
 	return &ProtoUseCase{
-		sessionManager: protobuf_session.NewSessionWorkerClient(conn),
+		sessionManager: sessionwork.NewSessionWorkerClient(conn),
 	}
 }
 
@@ -28,7 +28,7 @@ func (sUC *ProtoUseCase) StoreSession(session *models.Session) error {
 
 	answ, err := sUC.sessionManager.Create(
 		context.Background(),
-		&protobuf_session.ProtoSession{
+		&sessionwork.ProtoSession{
 			ID:         session.ID,
 			UserID:     session.UserId,
 			Token:      session.Token,
@@ -47,7 +47,7 @@ func (sUC *ProtoUseCase) StoreSession(session *models.Session) error {
 }
 
 func (sUC *ProtoUseCase) GetSession(token string) (*models.Session, error) {
-	currSession := &protobuf_session.ProtoSessionToken{
+	currSession := &sessionwork.ProtoSessionToken{
 		Token: token,
 	}
 
@@ -72,7 +72,7 @@ func (sUC *ProtoUseCase) GetSession(token string) (*models.Session, error) {
 }
 
 func (sUC *ProtoUseCase) DeleteSession(sessionId uint64) error {
-	currSession := &protobuf_session.ProtoSessionID{
+	currSession := &sessionwork.ProtoSessionID{
 		ID: sessionId,
 	}
 

@@ -7,9 +7,9 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurant_points"
 	"github.com/2020_1_Skycode/internal/restaurants"
-	protobuf_admin_rest "github.com/2020_1_Skycode/internal/restaurants/delivery/protobuf"
 	"github.com/2020_1_Skycode/internal/reviews"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/tools/protobuf/adminwork"
 	"google.golang.org/grpc"
 	"math"
 )
@@ -19,7 +19,7 @@ type RestaurantWithProtoUseCase struct {
 	reviewsRepo    reviews.Repository
 	geoDataRepo    geodata.Repository
 	restPointsRepo restaurant_points.Repository
-	adminManager   protobuf_admin_rest.RestaurantAdminWorkerClient
+	adminManager   adminwork.RestaurantAdminWorkerClient
 }
 
 func NewRestaurantsWithProtoUseCase(rr restaurants.Repository, rpr restaurant_points.Repository,
@@ -29,7 +29,7 @@ func NewRestaurantsWithProtoUseCase(rr restaurants.Repository, rpr restaurant_po
 		reviewsRepo:    rvr,
 		geoDataRepo:    gdr,
 		restPointsRepo: rpr,
-		adminManager:   protobuf_admin_rest.NewRestaurantAdminWorkerClient(conn),
+		adminManager:   adminwork.NewRestaurantAdminWorkerClient(conn),
 	}
 }
 
@@ -54,7 +54,7 @@ func (rUC *RestaurantWithProtoUseCase) GetRestaurantByID(id uint64) (*models.Res
 func (rUC *RestaurantWithProtoUseCase) CreateRestaurant(rest *models.Restaurant) error {
 	answ, err := rUC.adminManager.CreateRestaurant(
 		context.Background(),
-		&protobuf_admin_rest.ProtoRestaurant{
+		&adminwork.ProtoRestaurant{
 			ManagerID:   rest.ManagerID,
 			Name:        rest.Name,
 			Description: rest.Description,
@@ -73,7 +73,7 @@ func (rUC *RestaurantWithProtoUseCase) CreateRestaurant(rest *models.Restaurant)
 func (rUC *RestaurantWithProtoUseCase) UpdateRestaurant(rest *models.Restaurant) error {
 	answ, err := rUC.adminManager.UpdateRestaurant(
 		context.Background(),
-		&protobuf_admin_rest.ProtoRestaurant{
+		&adminwork.ProtoRestaurant{
 			ID:          rest.ID,
 			Name:        rest.Name,
 			Description: rest.Description,
@@ -94,7 +94,7 @@ func (rUC *RestaurantWithProtoUseCase) UpdateRestaurant(rest *models.Restaurant)
 func (rUC *RestaurantWithProtoUseCase) UpdateImage(restID uint64, filename string) error {
 	answ, err := rUC.adminManager.UpdateRestaurantImage(
 		context.Background(),
-		&protobuf_admin_rest.ProtoImage{
+		&adminwork.ProtoImage{
 			ID:        restID,
 			ImagePath: filename,
 		})
@@ -114,7 +114,7 @@ func (rUC *RestaurantWithProtoUseCase) UpdateImage(restID uint64, filename strin
 func (rUC *RestaurantWithProtoUseCase) Delete(restID uint64) error {
 	answ, err := rUC.adminManager.DeleteRestaurant(
 		context.Background(),
-		&protobuf_admin_rest.ProtoID{
+		&adminwork.ProtoID{
 			ID: restID,
 		})
 
@@ -133,7 +133,7 @@ func (rUC *RestaurantWithProtoUseCase) Delete(restID uint64) error {
 func (rUC *RestaurantWithProtoUseCase) AddPoint(p *models.RestaurantPoint) error {
 	answ, err := rUC.adminManager.CreatePoint(
 		context.Background(),
-		&protobuf_admin_rest.ProtoPoint{
+		&adminwork.ProtoPoint{
 			Address: p.Address,
 			RestID:  p.RestID,
 			Radius:  float32(p.ServiceRadius),

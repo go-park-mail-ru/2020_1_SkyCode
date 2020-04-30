@@ -9,6 +9,7 @@ import (
 	protobuf_admin_rest "github.com/2020_1_Skycode/internal/restaurants/delivery/protobuf"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/tools/protobuf/adminwork"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"log"
@@ -61,7 +62,7 @@ func main() {
 
 	server := grpc.NewServer()
 
-	protobuf_admin_rest.RegisterRestaurantAdminWorkerServer(server, adminManager)
+	adminwork.RegisterRestaurantAdminWorkerServer(server, adminManager)
 
 	logrus.Info("Starting server on port", port)
 	server.Serve(lis)

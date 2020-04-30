@@ -235,7 +235,7 @@ func TestRestaurantRepository_GetAllInServiceRadius(t *testing.T) {
 	repo := NewRestaurantRepository(db)
 
 	rows := sqlmock.
-		NewRows([]string{"id", "name", "description", "rating", "image"})
+		NewRows([]string{"id", "name", "description", "rating", "image", "dst"})
 	expect := []*models.Restaurant{
 		{
 			ID:          uint64(1),
@@ -259,7 +259,7 @@ func TestRestaurantRepository_GetAllInServiceRadius(t *testing.T) {
 	}
 
 	for _, item := range expect {
-		rows = rows.AddRow(item.ID, item.Name, item.Description, item.Rating, item.Image)
+		rows = rows.AddRow(item.ID, item.Name, item.Description, item.Rating, item.Image, 5)
 	}
 
 	rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(2)

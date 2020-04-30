@@ -4,27 +4,27 @@ import (
 	"context"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/products"
-	protobuf_admin_rest "github.com/2020_1_Skycode/internal/restaurants/delivery/protobuf"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/tools/protobuf/adminwork"
 	"google.golang.org/grpc"
 )
 
 type ProductWithProtoUseCase struct {
 	productRepo  products.Repository
-	adminManager protobuf_admin_rest.RestaurantAdminWorkerClient
+	adminManager adminwork.RestaurantAdminWorkerClient
 }
 
 func NewProductWithProtoUseCase(pr products.Repository, conn *grpc.ClientConn) products.UseCase {
 	return &ProductWithProtoUseCase{
 		productRepo:  pr,
-		adminManager: protobuf_admin_rest.NewRestaurantAdminWorkerClient(conn),
+		adminManager: adminwork.NewRestaurantAdminWorkerClient(conn),
 	}
 }
 
 func (pUC *ProductWithProtoUseCase) CreateProduct(product *models.Product) error {
 	answ, err := pUC.adminManager.CreateProduct(
 		context.Background(),
-		&protobuf_admin_rest.ProtoProduct{
+		&adminwork.ProtoProduct{
 			Name:      product.Name,
 			Price:     product.Price,
 			ImagePath: product.Image,
@@ -65,7 +65,7 @@ func (pUC *ProductWithProtoUseCase) GetProductsByRestaurantID(
 func (pUC *ProductWithProtoUseCase) UpdateProduct(product *models.Product) error {
 	answ, err := pUC.adminManager.UpdateProduct(
 		context.Background(),
-		&protobuf_admin_rest.ProtoProduct{
+		&adminwork.ProtoProduct{
 			ID:    product.ID,
 			Name:  product.Name,
 			Price: product.Price,
@@ -86,7 +86,7 @@ func (pUC *ProductWithProtoUseCase) UpdateProduct(product *models.Product) error
 func (pUC *ProductWithProtoUseCase) UpdateProductImage(id uint64, path string) error {
 	answ, err := pUC.adminManager.UpdateProductImage(
 		context.Background(),
-		&protobuf_admin_rest.ProtoImage{
+		&adminwork.ProtoImage{
 			ID:        id,
 			ImagePath: path,
 		})
@@ -106,7 +106,7 @@ func (pUC *ProductWithProtoUseCase) UpdateProductImage(id uint64, path string) e
 func (pUC *ProductWithProtoUseCase) DeleteProduct(id uint64) error {
 	answ, err := pUC.adminManager.DeleteProduct(
 		context.Background(),
-		&protobuf_admin_rest.ProtoID{
+		&adminwork.ProtoID{
 			ID: id,
 		})
 
