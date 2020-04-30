@@ -180,21 +180,10 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 			return
 		}
 
-		data, err := c.GetRawData()
-
-		if err != nil {
+		if err := c.Bind(req); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BindingError.Error(),
-			})
-
-			return
-		}
-
-		if err := req.UnmarshalJSON(data); err != nil {
-			logrus.Info(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.NotRequiredFields.Error(),
+				ErrorMessage: tools.BadRequest.Error(),
 			})
 
 			return
