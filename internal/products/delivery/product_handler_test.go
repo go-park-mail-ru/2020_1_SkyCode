@@ -14,7 +14,9 @@ import (
 	mock_users "github.com/2020_1_Skycode/internal/users/mocks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -48,8 +50,8 @@ func TestProductHandler_CreateProduct(t *testing.T) {
 	userID := uint64(1)
 
 	restRes := &models.Restaurant{ID: restID}
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "Admin"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: sessRes.UserId, Role: "Admin"}
 
 	expectResult := &tools.Message{Message: "Product has been created"}
 
@@ -59,6 +61,8 @@ func TestProductHandler_CreateProduct(t *testing.T) {
 	mockProdUC.EXPECT().CreateProduct(gomock.Any()).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -129,8 +133,8 @@ func TestProductHandler_DeleteProduct(t *testing.T) {
 
 	resResp := &tools.Message{Message: "success"}
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "Admin"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: sessRes.UserId, Role: "Admin"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)
@@ -138,6 +142,8 @@ func TestProductHandler_DeleteProduct(t *testing.T) {
 	mockProdUC.EXPECT().DeleteProduct(prodID).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -187,14 +193,16 @@ func TestProductHandler_GetProduct(t *testing.T) {
 
 	userID := uint64(1)
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "User"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: userID, Role: "User"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)
 	mockProdUC.EXPECT().GetProductByID(resProd.ID).Return(resProd, nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -254,14 +262,23 @@ func TestProductHandler_GetProducts(t *testing.T) {
 	restID := uint64(1)
 	userID := uint64(1)
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "User"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: sessRes.UserId, Role: "User"}
+
+	total := uint64(2)
+
+	expectRes := &tools.Body{
+		"products": resProd,
+		"total":    total,
+	}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)
-	mockProdUC.EXPECT().GetProductsByRestaurantID(restID).Return(resProd, nil)
+	mockProdUC.EXPECT().GetProductsByRestaurantID(restID, uint64(2), uint64(1)).Return(resProd, total, nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -279,6 +296,11 @@ func TestProductHandler_GetProducts(t *testing.T) {
 		Name:  "SkyDelivery",
 		Value: "1234",
 	})
+	q := req.URL.Query()
+	q.Add("page", "1")
+	q.Add("count", "2")
+	req.URL.RawQuery = q.Encode()
+
 	w := httptest.NewRecorder()
 
 	g.ServeHTTP(w, req)
@@ -288,10 +310,12 @@ func TestProductHandler_GetProducts(t *testing.T) {
 		return
 	}
 
-	var result []*models.Product
-	_ = json.NewDecoder(w.Result().Body).Decode(&result)
+	result, err := ioutil.ReadAll(w.Result().Body)
+	require.NoError(t, err)
+	expect, err := json.Marshal(expectRes)
+	require.NoError(t, err)
 
-	require.EqualValues(t, resProd, result)
+	require.EqualValues(t, expect, result)
 }
 
 func TestProductHandler_UpdateImage(t *testing.T) {
@@ -319,8 +343,8 @@ func TestProductHandler_UpdateImage(t *testing.T) {
 
 	userID := uint64(1)
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "Admin"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: userID, Role: "Admin"}
 
 	expectResult := &tools.Message{Message: "success"}
 
@@ -330,6 +354,8 @@ func TestProductHandler_UpdateImage(t *testing.T) {
 	mockProdUC.EXPECT().UpdateProductImage(reqProd.ID, gomock.Any()).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -410,14 +436,16 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 
 	resResp := &tools.Message{Message: "Product has been updated"}
 
-	sessRes := &models.Session{UserId: userID}
-	userRes := &models.User{Role: "Admin"}
+	sessRes := &models.Session{ID: 1, UserId: userID}
+	userRes := &models.User{ID: userID, Role: "Admin"}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)
 	mockProdUC.EXPECT().UpdateProduct(reqProd).Return(nil)
 
 	g := gin.New()
+	gin.SetMode(gin.TestMode)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)

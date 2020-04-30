@@ -4,22 +4,27 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/restaurants"
+	"time"
 )
 
 type OrdersRepository struct {
-	db *sql.DB
+	RestRepository restaurants.Repository
+	db             *sql.DB
 }
 
-func NewOrdersRepository(db *sql.DB) *OrdersRepository {
+func NewOrdersRepository(db *sql.DB, rR restaurants.Repository) *OrdersRepository {
 	return &OrdersRepository{
-		db: db,
+		RestRepository: rR,
+		db:             db,
 	}
 }
 
-func (oR *OrdersRepository) InsertOrder(order *models.Order) error {
-	if err := oR.db.QueryRow("INSERT INTO orders(userId, address, comment, personNum, phone, price) "+
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+func (oR *OrdersRepository) InsertOrder(order *models.Order, ordProducts []*models.OrderProduct) error {
+	if err := oR.db.QueryRow("INSERT INTO orders(userId, restId, address, comment, personNum, phone, price) "+
+		"VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
 		order.UserID,
+		order.RestID,
 		order.Address,
 		order.Comment,
 		order.PersonNum,
@@ -28,7 +33,7 @@ func (oR *OrdersRepository) InsertOrder(order *models.Order) error {
 		return err
 	}
 
-	if err := oR.insertOrderProducts(order.ID, order.Products); err != nil {
+	if err := oR.insertOrderProducts(order.ID, ordProducts); err != nil {
 		return err
 	}
 
@@ -54,9 +59,108 @@ func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*mode
 	return nil
 }
 
-func (oR *OrdersRepository) Get(order *models.Order) error {
-	if err := oR.db.QueryRow("SELECT userId, address, comment, personNum, price FROM orders WHERE id = $1",
-		order.ID).Scan(&order.UserID, &order.Address, &order.Comment, &order.PersonNum, &order.Price); err != nil {
+func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
+	var ordersList []*models.Order
+
+	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, datetime, status from orders where userId = $1"+
+		" LIMIT $2 OFFSET $3",
+		userID, count, (page-1)*count)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var total uint64
+	if err = oR.db.QueryRow("SELECT COUNT(*) FROM orders WHERE userId = $1", userID).
+		Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		order := &models.Order{}
+		time := time.Time{}
+
+		err = rows.Scan(&order.ID, &order.UserID, &order.RestID, &order.Address, &order.Price, &order.Phone, &order.Comment, &order.PersonNum, &time, &order.Status)
+
+		order.CreatedAt = time.Format("2006/Jan/_2/15:04:05")
+
+		if err != nil {
+			return nil, 0, err
+		}
+
+		products, err := oR.getOrderProducts(order.ID)
+
+		if err != nil {
+			return nil, 0, err
+		}
+
+		restaurant, err := oR.RestRepository.GetByID(order.RestID)
+
+		if err != nil {
+			return nil, 0, err
+		}
+
+		order.RestName = restaurant.Name
+
+		order.Products = products
+		ordersList = append(ordersList, order)
+	}
+
+	return ordersList, total, nil
+}
+
+func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Order, error) {
+	order := &models.Order{}
+	err := oR.db.QueryRow("SELECT id, address, phone, price, comment, personnum, datetime "+
+		"FROM orders WHERE id = $1 AND userid = $2",
+		orderID,
+		userID).Scan(&order.ID, &order.Address, &order.Phone, &order.Price, &order.Comment, &order.PersonNum, &order.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	products, err := oR.getOrderProducts(order.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	order.Products = products
+
+	return order, nil
+}
+
+func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.Product, error) {
+	var ProductsList []*models.Product
+
+	rows, err := oR.db.Query("select p.id, p.rest_id, p.name, p.price, p.image, orderProducts.count "+
+		"from products p join (select productId, count from orderproducts where orderId = $1) as orderProducts "+
+		"on p.id = orderProducts.productId;",
+		orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		order := &models.Product{}
+		err = rows.Scan(&order.ID, &order.RestId, &order.Name, &order.Price, &order.Image, &order.Count)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ProductsList = append(ProductsList, order)
+	}
+
+	return ProductsList, nil
+}
+
+func (oR *OrdersRepository) DeleteOrder(orderID uint64, userID uint64) error {
+	var id uint64
+	if err := oR.db.QueryRow("DELETE FROM orders CASCADE WHERE id = $1 AND userId = $2 RETURNING id",
+		orderID,
+		userID).Scan(&id); err != nil {
 		return err
 	}
 

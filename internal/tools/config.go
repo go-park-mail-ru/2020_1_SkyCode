@@ -8,10 +8,10 @@ import (
 
 type Config struct {
 	Database struct {
-		Name string `json:"name"`
-		Host string `json:"host"`
-		Port uint16 `json:"port"`
-		User string `json:"user"`
+		Name     string `json:"name"`
+		Host     string `json:"host"`
+		Port     uint16 `json:"port"`
+		User     string `json:"user"`
 		Password string `json:"password"`
 	} `json:"database"`
 
@@ -19,6 +19,10 @@ type Config struct {
 		Host string `json:"host"`
 		Port string `json:"port"`
 	} `json:"server"`
+
+	ApiKeys struct {
+		YandexGeoCoder string `json:"yandex_geocoder"`
+	} `json:"apikeys"`
 }
 
 func LoadConf(filename string) (*Config, error) {

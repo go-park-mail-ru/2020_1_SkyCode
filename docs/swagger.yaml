@@ -23,7 +23,6 @@ definitions:
       lastName:
         type: string
     required:
-    - email
     - firstName
     - lastName
     type: object
@@ -99,6 +98,27 @@ definitions:
     - password
     - phone
     type: object
+  models.Order:
+    properties:
+      address:
+        type: string
+      comment:
+        type: string
+      id:
+        type: integer
+      person_num:
+        type: integer
+      phone:
+        type: string
+      price:
+        type: number
+      products:
+        items:
+          $ref: '#/definitions/models.OrderProduct'
+        type: array
+      user_id:
+        type: integer
+    type: object
   models.OrderProduct:
     properties:
       count:
@@ -134,6 +154,8 @@ definitions:
         type: integer
       image:
         type: string
+      managerId:
+        type: integer
       name:
         type: string
       products:
@@ -156,6 +178,8 @@ definitions:
       phone:
         type: string
       profile_photo:
+        type: string
+      role:
         type: string
     type: object
   tools.Error:
@@ -202,6 +226,94 @@ paths:
       summary: Logout Route
       tags:
       - Session
+  /orders:
+    get:
+      consumes:
+      - application/json
+      description: Creating Order
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Order'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Create Order Route
+      tags:
+      - Order
+  /orders/:order_id:
+    delete:
+      consumes:
+      - application/json
+      description: Creating Order
+      parameters:
+      - description: ID of order
+        in: path
+        name: order_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Create Order Route
+      tags:
+      - Order
+    get:
+      consumes:
+      - application/json
+      description: Creating Order
+      parameters:
+      - description: ID of order
+        in: path
+        name: order_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Order'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/tools.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/tools.Error'
+      security:
+      - basicAuth: []
+      summary: Create Order Route
+      tags:
+      - Order
   /orders/checkout:
     post:
       consumes:
@@ -534,6 +646,17 @@ paths:
       consumes:
       - application/json
       description: Returning list of all restaurants
+      parameters:
+      - description: Count of elements on page
+        in: query
+        name: count
+        required: true
+        type: integer
+      - description: Number of page
+        in: query
+        name: page
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -555,12 +678,21 @@ paths:
       - application/json
       description: Add new restaurant
       parameters:
-      - description: New restaurant data
-        in: body
-        name: RestReq
+      - description: New restaurant name
+        in: formData
+        name: Name
         required: true
-        schema:
-          $ref: '#/definitions/delivery.restaurantRequest'
+        type: string
+      - description: New restaurant price
+        in: formData
+        name: Description
+        required: true
+        type: string
+      - description: New restaurant image
+        in: formData
+        name: image
+        required: true
+        type: file
       produces:
       - application/json
       responses:
@@ -703,6 +835,16 @@ paths:
       - application/json
       description: Returning Products List of Restaurant
       parameters:
+      - description: Count of elements on page
+        in: query
+        name: count
+        required: true
+        type: integer
+      - description: Number of page
+        in: query
+        name: page
+        required: true
+        type: integer
       - description: Id of restaurant
         in: path
         name: rest_id
@@ -734,12 +876,21 @@ paths:
         name: rest_id
         required: true
         type: integer
-      - description: New product data
-        in: body
-        name: ProdReq
+      - description: New product name
+        in: formData
+        name: Name
         required: true
-        schema:
-          $ref: '#/definitions/delivery.productRequest'
+        type: string
+      - description: New product price
+        in: formData
+        name: Price
+        required: true
+        type: number
+      - description: New product image
+        in: formData
+        name: image
+        required: true
+        type: file
       produces:
       - application/json
       responses:

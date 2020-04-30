@@ -15,3 +15,7 @@ type Message struct {
 type UserMessage struct {
 	User *models.User
 }
+
+type ChatsList struct {
+	Chats []*models.Chat `json:"chats"`
+}

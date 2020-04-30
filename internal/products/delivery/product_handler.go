@@ -48,6 +48,11 @@ type productRequest struct {
 	Price float32 `json:"price, omitempty" binding:"required"`
 }
 
+type UpdateProductRequest struct {
+	Name  string  `json:"name, omitempty" binding:"required"`
+	Price float32 `json:"price, omitempty" binding:"required"`
+}
+
 //@Tags Product
 //@Summary Get Product Route
 //@Description Returning Product Model
@@ -89,12 +94,25 @@ func (ph *ProductHandler) GetProduct() gin.HandlerFunc {
 //@Description Returning Products List of Restaurant
 //@Accept json
 //@Produce json
+//@Param count query int true "Count of elements on page"
+//@Param page query int true "Number of page"
 //@Param rest_id path int true "Id of restaurant"
 //@Success 200 array models.Product
 //@Failure 400 object tools.Error
 //@Router /restaurants/rest:id/product [get]
 func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: "Bad params",
+			})
+
+			return
+		}
+
 		id, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
 		if err != nil {
 			logrus.Info(err)
@@ -105,7 +123,7 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 			return
 		}
 
-		products, err := ph.productUseCase.GetProductsByRestaurantID(id)
+		products, total, err := ph.productUseCase.GetProductsByRestaurantID(id, count, page)
 		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusNotFound, tools.Error{
@@ -115,7 +133,10 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, products)
+		c.JSON(http.StatusOK, gin.H{
+			"products": products,
+			"total":    total,
+		})
 	}
 }
 
@@ -125,7 +146,9 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 //@Accept json
 //@Produce json
 //@Param rest_id path int true "Restaurant ID"
-//@Param ProdReq body productRequest true "New product data"
+//@Param Name formData string true "New product name"
+//@Param Price formData number true "New product price"
+//@Param image formData file true "New product image"
 //@Success 200 object tools.Message
 //@Failure 400 object tools.Error
 //@Router /restaurants/rest:id/product [post]
@@ -257,18 +280,24 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 //@Failure 400 object tools.Error
 //@Router /product/:prod_id/update [put]
 func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
-	type UpdateProductRequest struct {
-		Name  string  `json:"name, omitempty" binding:"required"`
-		Price float32 `json:"price, omitempty" binding:"required"`
-	}
-
 	return func(c *gin.Context) {
 		req := &UpdateProductRequest{}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -410,6 +439,7 @@ func (ph *ProductHandler) UpdateImage() gin.HandlerFunc {
 //@Failure 500 object tools.Error
 //@Router /product/:prod_id [delete]
 func (ph *ProductHandler) DeleteProduct() gin.HandlerFunc {
+	rootDir, _ := os.Getwd()
 	return func(c *gin.Context) {
 		prodID, err := strconv.ParseUint(c.Param("prod_id"), 10, 64)
 		if err != nil {
@@ -431,7 +461,7 @@ func (ph *ProductHandler) DeleteProduct() gin.HandlerFunc {
 		}
 
 		if product.Image != "" {
-			if err := os.Remove(tools.ProductImagesPath + product.Image); err != nil {
+			if err := os.Remove(filepath.Join(rootDir, tools.ProductImagesPath, product.Image)); err != nil {
 				logrus.Info(err)
 				c.JSON(http.StatusInternalServerError, tools.Error{
 					ErrorMessage: tools.DeleteAvatarError.Error(),

@@ -10,35 +10,38 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 )
 
 type OrderHandler struct {
-	OrderUseCase orders.UseCase
-	MiddlewareC  *middlewares.MWController
+	orderUseCase orders.UseCase
+	middlewareC  *middlewares.MWController
 	v            *requestValidator.RequestValidator
 }
 
 func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC orders.UseCase,
 	validator *requestValidator.RequestValidator, mw *middlewares.MWController) *OrderHandler {
 	oh := &OrderHandler{
-		OrderUseCase: orderUC,
-		MiddlewareC:  mw,
+		orderUseCase: orderUC,
+		middlewareC:  mw,
 		v:            validator,
 	}
+	public.GET("/orders", oh.GetUserOrders())
+	public.GET("/orders/:orderID", oh.GetUserOrder())
 
 	private.POST("/orders/checkout", oh.Checkout())
-
-	public.GET("/orders/:orderID", oh.Checkout())
+	private.DELETE("/orders/:orderID", oh.DeleteOrder())
 
 	return oh
 }
 
 type orderRequest struct {
 	UserID    uint64                 `json:"userId" binding:"required"`
+	RestID    uint64                 `json:"restId" binding:"required"`
 	Address   string                 `json:"address" binding:"required" validate:"min=5"`
 	Comment   string                 `json:"comment"`
 	Phone     string                 `json:"phone" binding:"required" validate:"min=11,max=15"`
-	PersonNum uint16                 `json:"personNum" binding:"required"`
+	PersonNum uint32                 `json:"personNum" binding:"required"`
 	Products  []*models.OrderProduct `json:"products" binding:"required" required:"dive,required"`
 	Price     float32                `json:"price" binding:"required"`
 }
@@ -59,9 +62,10 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		req := &orderRequest{}
 
-		_, err := oH.MiddlewareC.GetUser(c)
+		_, err := oH.middlewareC.GetUser(c)
 
 		if err != nil {
+			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
 			})
@@ -69,10 +73,21 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 			return
 		}
 
-		if err := c.Bind(req); err != nil {
+		data, err := c.GetRawData()
+
+		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BadRequest.Error(),
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.NotRequiredFields.Error(),
 			})
 
 			return
@@ -93,18 +108,167 @@ func (oH *OrderHandler) Checkout() gin.HandlerFunc {
 
 		order := &models.Order{
 			UserID:    req.UserID,
+			RestID:    req.RestID,
 			Address:   req.Address,
 			Comment:   req.Comment,
 			PersonNum: req.PersonNum,
-			Products:  req.Products,
 			Price:     req.Price,
 			Phone:     req.Phone,
 		}
 
-		if err := oH.OrderUseCase.CheckoutOrder(order); err != nil {
+		if err := oH.orderUseCase.CheckoutOrder(order, req.Products); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Message{
+			Message: "success",
+		})
+	}
+}
+
+//@Tags Order
+//@Summary Create Order Route
+//@Description Creating Order
+//@Accept json
+//@Produce json
+//@Param count query int true "Count of elements on page"
+//@Param page query int true "Number of page"
+//@Success 200 array models.Order
+//@Failure 400 object tools.Error
+//@Failure 500 object tools.Error
+//@Security basicAuth
+//@Router /orders [get]
+func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := oH.middlewareC.GetUser(c)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		userOrders, total, err := oH.orderUseCase.GetAllUserOrders(user.ID, count, page)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusInternalServerError, tools.Error{
+				ErrorMessage: tools.GetOrdersError.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Body{
+			"orders": userOrders,
+			"total":  total,
+		})
+	}
+}
+
+//@Tags Order
+//@Summary Create Order Route
+//@Description Creating Order
+//@Accept json
+//@Produce json
+//@Param order_id path integer true "ID of order"
+//@Success 200 object models.Order
+//@Failure 400 object tools.Error
+//@Failure 404 object tools.Error
+//@Security basicAuth
+//@Router /orders/:order_id [get]
+func (oH *OrderHandler) GetUserOrder() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := oH.middlewareC.GetUser(c)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		orderID, err := strconv.ParseUint(c.Param("orderID"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+		}
+
+		userOrders, err := oH.orderUseCase.GetOrderByID(orderID, user.ID)
+
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusNotFound, tools.Error{
+				ErrorMessage: tools.NotFound.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Body{
+			"order": userOrders,
+		})
+	}
+}
+
+//@Tags Order
+//@Summary Create Order Route
+//@Description Creating Order
+//@Accept json
+//@Produce json
+//@Param order_id path integer true "ID of order"
+//@Success 200 object tools.Message
+//@Failure 400 object tools.Error
+//@Failure 404 object tools.Error
+//@Security basicAuth
+//@Router /orders/:order_id [delete]
+func (oH *OrderHandler) DeleteOrder() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := oH.middlewareC.GetUser(c)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		orderID, err := strconv.ParseUint(c.Param("orderID"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		if err := oH.orderUseCase.DeleteOrder(orderID, user.ID); err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusNotFound, tools.Error{
+				ErrorMessage: tools.NotFound.Error(),
 			})
 
 			return
