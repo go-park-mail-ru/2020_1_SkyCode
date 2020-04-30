@@ -32,6 +32,6 @@ jobs:
       - uses: actions/checkout@v2
         
       - name: tests
-        run: go test -coverpkg=./... ./... -coverprofile cover.out
+        run: go test -coverpkg=./internal/... ./internal/... -coverprofile cover.out && go tool cover -func cover.out | grep total
       
       
