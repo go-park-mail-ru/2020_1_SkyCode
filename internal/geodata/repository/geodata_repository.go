@@ -15,10 +15,31 @@ type GeoDataRepository struct {
 	apikey string
 }
 
+var MapApi = "https://geocode-maps.yandex.ru/1.x/"
+
 func NewGeoDataRepository(key string) geodata.Repository {
 	return &GeoDataRepository{
 		apikey: key,
 	}
+}
+
+type YandexResponce struct {
+	Resp struct {
+		GeoObjColl struct {
+			FeatMem []*struct {
+				GeoObj struct {
+					Point struct {
+						Pos string `json:"pos"`
+					} `json:"Point"`
+					MetaDataProp struct {
+						GeocoderMeta struct {
+							Kind string `json:"kind"`
+						} `json:"GeocoderMetaData"`
+					} `json:"metaDataProperty"`
+				} `json:"GeoObject"`
+			} `json:"featureMember"`
+		} `json:"GeoObjectCollection"`
+	} `json:"response"`
 }
 
 func (gr *GeoDataRepository) GetGeoPosByAddress(addr string) (*models.GeoPos, error) {
@@ -28,7 +49,7 @@ func (gr *GeoDataRepository) GetGeoPosByAddress(addr string) (*models.GeoPos, er
 		Timeout: time.Second * 4,
 	}
 
-	req, err := http.NewRequest("GET", "https://geocode-maps.yandex.ru/1.x/", nil)
+	req, err := http.NewRequest("GET", MapApi, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -47,25 +68,6 @@ func (gr *GeoDataRepository) GetGeoPosByAddress(addr string) (*models.GeoPos, er
 	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, tools.ApiResponseStatusNotOK
-	}
-
-	type YandexResponce struct {
-		Resp struct {
-			GeoObjColl struct {
-				FeatMem []*struct {
-					GeoObj struct {
-						Point struct {
-							Pos string `json:"pos"`
-						} `json:"Point"`
-						MetaDataProp struct {
-							GeocoderMeta struct {
-								Kind string `json:"kind"`
-							} `json:"GeocoderMetaData"`
-						} `json:"metaDataProperty"`
-					} `json:"GeoObject"`
-				} `json:"featureMember"`
-			} `json:"GeoObjectCollection"`
-		} `json:"response"`
 	}
 
 	p := &YandexResponce{}

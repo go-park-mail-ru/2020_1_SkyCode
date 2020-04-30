@@ -9,6 +9,7 @@ import (
 	"github.com/2020_1_Skycode/internal/restaurant_points"
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/tools/protobuf/adminwork"
 )
 
 type AdminRestaurantManager struct {
@@ -28,7 +29,7 @@ func NewAdminRestaurantManager(rr restaurants.Repository, pr products.Repository
 	}
 }
 
-func (am *AdminRestaurantManager) CreateRestaurant(ctx context.Context, r *ProtoRestaurant) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) CreateRestaurant(ctx context.Context, r *adminwork.ProtoRestaurant) (*adminwork.ErrorCode, error) {
 	rest := &models.Restaurant{
 		ManagerID:   r.ManagerID,
 		Name:        r.Name,
@@ -37,19 +38,19 @@ func (am *AdminRestaurantManager) CreateRestaurant(ctx context.Context, r *Proto
 	}
 
 	if err := am.RestaurantRepo.InsertInto(rest); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) UpdateRestaurant(ctx context.Context, r *ProtoRestaurant) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) UpdateRestaurant(ctx context.Context, r *adminwork.ProtoRestaurant) (*adminwork.ErrorCode, error) {
 	_, err := am.RestaurantRepo.GetByID(r.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	rest := &models.Restaurant{
@@ -59,19 +60,19 @@ func (am *AdminRestaurantManager) UpdateRestaurant(ctx context.Context, r *Proto
 	}
 
 	if err := am.RestaurantRepo.Update(rest); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) UpdateRestaurantImage(ctx context.Context, im *ProtoImage) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) UpdateRestaurantImage(ctx context.Context, im *adminwork.ProtoImage) (*adminwork.ErrorCode, error) {
 	_, err := am.RestaurantRepo.GetByID(im.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	rest := &models.Restaurant{
@@ -80,35 +81,35 @@ func (am *AdminRestaurantManager) UpdateRestaurantImage(ctx context.Context, im 
 	}
 
 	if err := am.RestaurantRepo.UpdateImage(rest); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) DeleteRestaurant(ctx context.Context, id *ProtoID) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) DeleteRestaurant(ctx context.Context, id *adminwork.ProtoID) (*adminwork.ErrorCode, error) {
 	_, err := am.RestaurantRepo.GetByID(id.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	if err := am.RestaurantRepo.Delete(id.ID); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) CreateProduct(ctx context.Context, p *ProtoProduct) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) CreateProduct(ctx context.Context, p *adminwork.ProtoProduct) (*adminwork.ErrorCode, error) {
 	_, err := am.RestaurantRepo.GetByID(p.RestID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	prod := &models.Product{
@@ -119,19 +120,19 @@ func (am *AdminRestaurantManager) CreateProduct(ctx context.Context, p *ProtoPro
 	}
 
 	if err := am.ProductRepo.InsertInto(prod); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) UpdateProduct(ctx context.Context, p *ProtoProduct) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) UpdateProduct(ctx context.Context, p *adminwork.ProtoProduct) (*adminwork.ErrorCode, error) {
 	_, err := am.ProductRepo.GetProductByID(p.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	prod := &models.Product{
@@ -141,19 +142,19 @@ func (am *AdminRestaurantManager) UpdateProduct(ctx context.Context, p *ProtoPro
 	}
 
 	if err := am.ProductRepo.Update(prod); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) UpdateProductImage(ctx context.Context, im *ProtoImage) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) UpdateProductImage(ctx context.Context, im *adminwork.ProtoImage) (*adminwork.ErrorCode, error) {
 	_, err := am.ProductRepo.GetProductByID(im.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	prod := &models.Product{
@@ -162,45 +163,45 @@ func (am *AdminRestaurantManager) UpdateProductImage(ctx context.Context, im *Pr
 	}
 
 	if err := am.ProductRepo.UpdateImage(prod); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) DeleteProduct(ctx context.Context, id *ProtoID) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) DeleteProduct(ctx context.Context, id *adminwork.ProtoID) (*adminwork.ErrorCode, error) {
 	_, err := am.ProductRepo.GetProductByID(id.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	if err := am.ProductRepo.Delete(id.ID); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) CreatePoint(ctx context.Context, pnt *ProtoPoint) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) CreatePoint(ctx context.Context, pnt *adminwork.ProtoPoint) (*adminwork.ErrorCode, error) {
 	_, err := am.RestaurantRepo.GetByID(pnt.RestID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	gp, err := am.GeoDataRepo.GetGeoPosByAddress(pnt.Address)
 
 	if err != nil {
 		if err == tools.ApiNotHouseAnswerError {
-			return &ErrorCode{ID: tools.AddressNotHouse}, nil
+			return &adminwork.ErrorCode{ID: tools.AddressNotHouse}, nil
 		}
 
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	point := &models.RestaurantPoint{
@@ -211,24 +212,24 @@ func (am *AdminRestaurantManager) CreatePoint(ctx context.Context, pnt *ProtoPoi
 	}
 
 	if err := am.RestPointsRepo.InsertInto(point); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }
 
-func (am *AdminRestaurantManager) DeletePoint(ctx context.Context, id *ProtoID) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) DeletePoint(ctx context.Context, id *adminwork.ProtoID) (*adminwork.ErrorCode, error) {
 	_, err := am.RestPointsRepo.GetPointByID(id.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &adminwork.ErrorCode{ID: tools.DoesntExist}, nil
 		}
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
 	if err := am.RestPointsRepo.Delete(id.ID); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &adminwork.ErrorCode{ID: tools.InternalError}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &adminwork.ErrorCode{ID: tools.OK}, nil
 }

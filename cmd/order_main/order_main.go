@@ -7,6 +7,7 @@ import (
 	_orderRepo "github.com/2020_1_Skycode/internal/orders/repository"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/tools/protobuf/orderswork"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"log"
@@ -55,7 +56,7 @@ func main() {
 
 	server := grpc.NewServer()
 
-	protobuf_order.RegisterOrderWorkerServer(server, orderManager)
+	orderswork.RegisterOrderWorkerServer(server, orderManager)
 
 	logrus.Info("Starting server on port", port)
 	server.Serve(lis)

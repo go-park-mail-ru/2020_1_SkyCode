@@ -4,7 +4,7 @@
 // 	protoc        v3.11.4
 // source: admin_rest_proto.proto
 
-package protobuf_admin_rest
+package adminwork
 
 import (
 	context "context"
