@@ -92,79 +92,6 @@ func easyjson83df9c93DecodeGithubCom20201SkycodeInternalOrdersDelivery(in *jlexe
 		in.Consumed()
 	}
 }
-func easyjson83df9c93EncodeGithubCom20201SkycodeInternalOrdersDelivery(out *jwriter.Writer, in orderRequest) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"userId\":"
-		out.RawString(prefix[1:])
-		out.Uint64(uint64(in.UserID))
-	}
-	{
-		const prefix string = ",\"restId\":"
-		out.RawString(prefix)
-		out.Uint64(uint64(in.RestID))
-	}
-	{
-		const prefix string = ",\"address\":"
-		out.RawString(prefix)
-		out.String(string(in.Address))
-	}
-	{
-		const prefix string = ",\"comment\":"
-		out.RawString(prefix)
-		out.String(string(in.Comment))
-	}
-	{
-		const prefix string = ",\"phone\":"
-		out.RawString(prefix)
-		out.String(string(in.Phone))
-	}
-	{
-		const prefix string = ",\"personNum\":"
-		out.RawString(prefix)
-		out.Uint32(uint32(in.PersonNum))
-	}
-	{
-		const prefix string = ",\"products\":"
-		out.RawString(prefix)
-		if in.Products == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
-			out.RawByte('[')
-			for v2, v3 := range in.Products {
-				if v2 > 0 {
-					out.RawByte(',')
-				}
-				if v3 == nil {
-					out.RawString("null")
-				} else {
-					easyjson83df9c93EncodeGithubCom20201SkycodeInternalModels(out, *v3)
-				}
-			}
-			out.RawByte(']')
-		}
-	}
-	{
-		const prefix string = ",\"price\":"
-		out.RawString(prefix)
-		out.Float32(float32(in.Price))
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v orderRequest) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson83df9c93EncodeGithubCom20201SkycodeInternalOrdersDelivery(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v orderRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson83df9c93EncodeGithubCom20201SkycodeInternalOrdersDelivery(w, v)
-}
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *orderRequest) UnmarshalJSON(data []byte) error {
@@ -173,10 +100,6 @@ func (v *orderRequest) UnmarshalJSON(data []byte) error {
 	return r.Error()
 }
 
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *orderRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson83df9c93DecodeGithubCom20201SkycodeInternalOrdersDelivery(l, v)
-}
 func easyjson83df9c93DecodeGithubCom20201SkycodeInternalModels(in *jlexer.Lexer, out *models.OrderProduct) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -239,63 +162,4 @@ func easyjson83df9c93EncodeGithubCom20201SkycodeInternalModels(out *jwriter.Writ
 		out.Uint32(uint32(in.Count))
 	}
 	out.RawByte('}')
-}
-func easyjson83df9c93DecodeGithubCom20201SkycodeInternalOrdersDelivery1(in *jlexer.Lexer, out *OrderHandler) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson83df9c93EncodeGithubCom20201SkycodeInternalOrdersDelivery1(out *jwriter.Writer, in OrderHandler) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v OrderHandler) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson83df9c93EncodeGithubCom20201SkycodeInternalOrdersDelivery1(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v OrderHandler) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson83df9c93EncodeGithubCom20201SkycodeInternalOrdersDelivery1(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *OrderHandler) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson83df9c93DecodeGithubCom20201SkycodeInternalOrdersDelivery1(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *OrderHandler) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson83df9c93DecodeGithubCom20201SkycodeInternalOrdersDelivery1(l, v)
 }

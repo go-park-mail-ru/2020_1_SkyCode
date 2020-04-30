@@ -50,34 +50,6 @@ func easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery(in *jle
 		in.Consumed()
 	}
 }
-func easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery(out *jwriter.Writer, in productRequest) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"name\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.Name))
-	}
-	{
-		const prefix string = ",\"price\":"
-		out.RawString(prefix)
-		out.Float32(float32(in.Price))
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v productRequest) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v productRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery(w, v)
-}
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *productRequest) UnmarshalJSON(data []byte) error {
@@ -86,10 +58,6 @@ func (v *productRequest) UnmarshalJSON(data []byte) error {
 	return r.Error()
 }
 
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *productRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery(l, v)
-}
 func easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery1(in *jlexer.Lexer, out *UpdateProductRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -123,102 +91,10 @@ func easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery1(in *jl
 		in.Consumed()
 	}
 }
-func easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery1(out *jwriter.Writer, in UpdateProductRequest) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"name\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.Name))
-	}
-	{
-		const prefix string = ",\"price\":"
-		out.RawString(prefix)
-		out.Float32(float32(in.Price))
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v UpdateProductRequest) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery1(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v UpdateProductRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery1(w, v)
-}
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *UpdateProductRequest) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery1(&r, v)
 	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *UpdateProductRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery1(l, v)
-}
-func easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery2(in *jlexer.Lexer, out *ProductHandler) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery2(out *jwriter.Writer, in ProductHandler) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v ProductHandler) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery2(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v ProductHandler) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2744a1f6EncodeGithubCom20201SkycodeInternalProductsDelivery2(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *ProductHandler) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery2(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *ProductHandler) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2744a1f6DecodeGithubCom20201SkycodeInternalProductsDelivery2(l, v)
 }

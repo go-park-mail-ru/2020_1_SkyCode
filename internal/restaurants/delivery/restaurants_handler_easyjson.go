@@ -58,38 +58,6 @@ func easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery(in *
 		in.Consumed()
 	}
 }
-func easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery(out *jwriter.Writer, in reviewRequest) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"text\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.Text))
-	}
-	{
-		const prefix string = ",\"rate\":"
-		out.RawString(prefix)
-		if in.Rate == nil {
-			out.RawString("null")
-		} else {
-			out.Float64(float64(*in.Rate))
-		}
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v reviewRequest) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v reviewRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery(w, v)
-}
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *reviewRequest) UnmarshalJSON(data []byte) error {
@@ -98,10 +66,6 @@ func (v *reviewRequest) UnmarshalJSON(data []byte) error {
 	return r.Error()
 }
 
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *reviewRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery(l, v)
-}
 func easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery1(in *jlexer.Lexer, out *restaurantRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -135,34 +99,6 @@ func easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery1(in 
 		in.Consumed()
 	}
 }
-func easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery1(out *jwriter.Writer, in restaurantRequest) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"name\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.Name))
-	}
-	{
-		const prefix string = ",\"description\":"
-		out.RawString(prefix)
-		out.String(string(in.Description))
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v restaurantRequest) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery1(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v restaurantRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery1(w, v)
-}
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *restaurantRequest) UnmarshalJSON(data []byte) error {
@@ -171,10 +107,6 @@ func (v *restaurantRequest) UnmarshalJSON(data []byte) error {
 	return r.Error()
 }
 
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *restaurantRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery1(l, v)
-}
 func easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery2(in *jlexer.Lexer, out *pointRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -208,102 +140,10 @@ func easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery2(in 
 		in.Consumed()
 	}
 }
-func easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery2(out *jwriter.Writer, in pointRequest) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	{
-		const prefix string = ",\"address\":"
-		out.RawString(prefix[1:])
-		out.String(string(in.Address))
-	}
-	{
-		const prefix string = ",\"radius\":"
-		out.RawString(prefix)
-		out.Float64(float64(in.Radius))
-	}
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v pointRequest) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery2(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v pointRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery2(w, v)
-}
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *pointRequest) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery2(&r, v)
 	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *pointRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery2(l, v)
-}
-func easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery3(in *jlexer.Lexer, out *RestaurantHandler) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery3(out *jwriter.Writer, in RestaurantHandler) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v RestaurantHandler) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery3(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
-// MarshalEasyJSON supports easyjson.Marshaler interface
-func (v RestaurantHandler) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery3(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *RestaurantHandler) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery3(&r, v)
-	return r.Error()
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *RestaurantHandler) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery3(l, v)
 }

@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson8cdb472bDecodeGithubCom20201SkycodeInternalSessionsDelivery(in *jlexer.Lexer, out *signInRequest) {
+func easyjsonA9650448DecodeGithubCom20201SkycodeInternalReviewsDelivery(in *jlexer.Lexer, out *reviewUpdateRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -36,10 +36,10 @@ func easyjson8cdb472bDecodeGithubCom20201SkycodeInternalSessionsDelivery(in *jle
 			continue
 		}
 		switch key {
-		case "phone":
-			out.Phone = string(in.String())
-		case "password":
-			out.Password = string(in.String())
+		case "text":
+			out.Text = string(in.String())
+		case "rate":
+			out.Rate = float64(in.Float64())
 		default:
 			in.SkipRecursive()
 		}
@@ -52,8 +52,8 @@ func easyjson8cdb472bDecodeGithubCom20201SkycodeInternalSessionsDelivery(in *jle
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *signInRequest) UnmarshalJSON(data []byte) error {
+func (v *reviewUpdateRequest) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson8cdb472bDecodeGithubCom20201SkycodeInternalSessionsDelivery(&r, v)
+	easyjsonA9650448DecodeGithubCom20201SkycodeInternalReviewsDelivery(&r, v)
 	return r.Error()
 }
