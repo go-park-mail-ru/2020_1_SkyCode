@@ -170,7 +170,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 
 		if !user.IsManager() && !user.IsAdmin() {
 			c.JSON(http.StatusForbidden, tools.Error{
-				ErrorMessage: "User doesn't have permissions",
+				ErrorMessage: tools.PermissionError.Error(),
 			})
 
 			return

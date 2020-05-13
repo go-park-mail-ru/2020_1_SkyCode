@@ -4,4 +4,5 @@ const (
 	AvatarPath           = "images"
 	ProductImagesPath    = "images"
 	RestaurantImagesPath = "images"
+	RestTagsImagesPath   = "images"
 )

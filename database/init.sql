@@ -5,6 +5,8 @@ drop table if exists products cascade;
 drop table if exists orderproducts cascade;
 drop table if exists orders cascade;
 drop table if exists chat_messages cascade;
+drop table if exists rest_tags cascade;
+drop table if exists restaraunts_tags cascade;
 
 create extension if not exists postgis;
 create extension if not exists postgis_topology;
@@ -131,4 +133,17 @@ create table chat_messages
     chat     varchar not null,
     message  text    not null,
     created  timestamptz default current_timestamp
-)
+);
+
+create table rest_tags
+(
+    id      serial          not null primary key,
+    name    varchar(80)     not null unique,
+    image   varchar(160)    not null
+);
+
+create table restaraunts_tags
+(
+    rest_id     int references restaurants (id) on delete cascade,
+    resttag_id  int references rest_tags (id) on delete cascade
+);

@@ -39,4 +39,5 @@ var (
 	GRPCOpertionNotSuccess     = errors.New("GRPC answer not true, operation not success")
 	ProductNotFoundError       = errors.New("Product not found")
 	BindingError               = errors.New("Error while binding request")
+	RestTagNotFound            = errors.New("Restaurant tag not found")
 )

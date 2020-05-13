@@ -23,6 +23,9 @@ import (
 	_restDelivery "github.com/2020_1_Skycode/internal/restaurants/delivery"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	_restUcase "github.com/2020_1_Skycode/internal/restaurants/usecase"
+	_restTagsDelivery "github.com/2020_1_Skycode/internal/restaurants_tags/delivery"
+	_restTagsRepository "github.com/2020_1_Skycode/internal/restaurants_tags/repository"
+	_restTagsUseCase "github.com/2020_1_Skycode/internal/restaurants_tags/usecase"
 	_reviewsDelivery "github.com/2020_1_Skycode/internal/reviews/delivery"
 	_reviewsRepository "github.com/2020_1_Skycode/internal/reviews/repository"
 	_reviewsUseCase "github.com/2020_1_Skycode/internal/reviews/usecase"
@@ -107,6 +110,9 @@ func main() {
 	chatsRepo := _chatsRepository.NewChatsRepository(dbConn)
 	chatsUcase := _chatsUseCase.NewChatUseCase(chatsRepo)
 
+	restTagsRepo := _restTagsRepository.NewRestTagRepository(dbConn)
+	restTagsUcase := _restTagsUseCase.NewRestTagsUCase(restTagsRepo)
+
 	csrfManager := _csrfManager.NewCSRFManager()
 
 	reqValidator := _rValidator.NewRequestValidator()
@@ -128,6 +134,7 @@ func main() {
 	_ = _restPointsDelivery.NewRestPointsHandler(privateGroup, publicGroup, restPointsUCase, mwareC)
 	_ = _geodataDelivery.NewGeoDataHandler(privateGroup, publicGroup, geoDataUcase)
 	_ = _chatsDelivery.NewChatsHandler(privateGroup, publicGroup, chatsUcase, mwareC)
+	_ = _restTagsDelivery.NewRestTagHandler(privateGroup, publicGroup, restTagsUcase, reqValidator, mwareC)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
