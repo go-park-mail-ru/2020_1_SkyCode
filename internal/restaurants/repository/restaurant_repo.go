@@ -16,17 +16,30 @@ func NewRestaurantRepository(db *sql.DB) restaurants.Repository {
 	}
 }
 
-func (rr *RestaurantRepository) GetAll(count uint64, page uint64) ([]*models.Restaurant, uint64, error) {
+func (rr *RestaurantRepository) GetAll(count uint64, page uint64, tagID uint64) ([]*models.Restaurant, uint64, error) {
 	var restaurantsList []*models.Restaurant
-
-	rows, err := rr.db.Query("SELECT id, name, rating, image FROM restaurants "+
-		"LIMIT $1 OFFSET $2", count, (page-1)*count)
+	var rows *sql.Rows
+	var err error
+	if tagID == 0 {
+		rows, err = rr.db.Query("SELECT id, name, rating, image FROM restaurants "+
+			"LIMIT $1 OFFSET $2", count, (page-1)*count)
+	} else {
+		rows, err = rr.db.Query("SELECT r.id, r.name, r.rating, r.image FROM restaurants r "+
+			"JOIN restaurants_and_tags rt ON (r.id = rt.rest_id) WHERE rt.resttag_id = $3 "+
+			"LIMIT $1 OFFSET $2", count, (page-1)*count, tagID)
+	}
 	if err != nil {
 		return nil, 0, err
 	}
 
 	var total uint64
-	if err = rr.db.QueryRow("SELECT COUNT(*) FROM restaurants").Scan(&total); err != nil {
+	if tagID == 0 {
+		err = rr.db.QueryRow("SELECT COUNT(*) FROM restaurants").Scan(&total)
+	} else {
+		err = rr.db.QueryRow("SELECT COUNT(*) FROM restaurants r "+
+			"JOIN restaurants_and_tags rt ON (r.id = rt.rest_id) WHERE rt.resttag_id = $1", tagID).Scan(&total)
+	}
+	if err != nil {
 		return nil, 0, err
 	}
 
@@ -58,19 +71,39 @@ func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {
 }
 
 func (rr *RestaurantRepository) GetAllInServiceRadius(
-	pos *models.GeoPos, count, page uint64) ([]*models.Restaurant, uint64, error) {
-	rows, err := rr.db.Query("SELECT r.id, r.name, r.description, r.rating, r.image, "+
-		"min(st_distance("+
-		"st_makepoint(rp.latitude, rp.longitude)::geography, "+
-		"st_makepoint($1, $2)::geography)) as dst "+
-		"FROM restaurants r "+
-		"JOIN rest_points rp ON (r.id = rp.restid) "+
-		"WHERE ST_DWithin("+
-		"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
-		"ST_MakePoint($1, $2)::geography, rp.radius * 1000) "+
-		"GROUP BY r.id, r.rating "+
-		"ORDER BY dst ASC, r.rating DESC "+
-		"LIMIT $3 OFFSET $4", pos.Latitude, pos.Longitude, count, count*(page-1))
+	pos *models.GeoPos, count, page, tagID uint64) ([]*models.Restaurant, uint64, error) {
+	var rows *sql.Rows
+	var err error
+	if tagID == 0 {
+		rows, err = rr.db.Query("SELECT r.id, r.name, r.description, r.rating, r.image, "+
+			"min(st_distance("+
+			"st_makepoint(rp.latitude, rp.longitude)::geography, "+
+			"st_makepoint($1, $2)::geography)) as dst "+
+			"FROM restaurants r "+
+			"JOIN rest_points rp ON (r.id = rp.restid) "+
+			"WHERE ST_DWithin("+
+			"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
+			"ST_MakePoint($1, $2)::geography, rp.radius * 1000) "+
+			"GROUP BY r.id, r.rating "+
+			"ORDER BY dst ASC, r.rating DESC "+
+			"LIMIT $3 OFFSET $4", pos.Latitude, pos.Longitude, count, count*(page-1))
+	} else {
+		rows, err = rr.db.Query("SELECT r.id, r.name, r.description, r.rating, r.image, "+
+			"min(st_distance("+
+			"st_makepoint(rp.latitude, rp.longitude)::geography, "+
+			"st_makepoint($1, $2)::geography)) as dst "+
+			"FROM restaurants r "+
+			"JOIN rest_points rp ON (r.id = rp.restid) "+
+			"JOIN restaurants_and_tags rt ON (r.id = rt.rest_id) "+
+			"WHERE ST_DWithin("+
+			"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
+			"ST_MakePoint($1, $2)::geography, rp.radius * 1000) AND "+
+			"rt.resttag_id = $5 "+
+			"GROUP BY r.id, r.rating "+
+			"ORDER BY dst ASC, r.rating DESC "+
+			"LIMIT $3 OFFSET $4", pos.Latitude, pos.Longitude, count, count*(page-1), tagID)
+	}
+
 	if err != nil {
 		return nil, 0, err
 	}
@@ -90,14 +123,28 @@ func (rr *RestaurantRepository) GetAllInServiceRadius(
 	}
 
 	total := uint64(0)
-	if err := rr.db.QueryRow("SELECT COUNT(r.id) "+
-		"FROM restaurants r "+
-		"JOIN rest_points rp ON (r.id = rp.restid) "+
-		"WHERE ST_DWithin("+
-		"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
-		"ST_MakePoint($1, $2)::geography, rp.radius * 1000) "+
-		"GROUP BY r.id", pos.Latitude, pos.Longitude).Scan(&total); err != nil {
-		return nil, 0, err
+	if tagID == 0 {
+		if err := rr.db.QueryRow("SELECT COUNT(r.id) "+
+			"FROM restaurants r "+
+			"JOIN rest_points rp ON (r.id = rp.restid) "+
+			"WHERE ST_DWithin("+
+			"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
+			"ST_MakePoint($1, $2)::geography, rp.radius * 1000) "+
+			"GROUP BY r.id", pos.Latitude, pos.Longitude).Scan(&total); err != nil {
+			return nil, 0, err
+		}
+	} else {
+		if err := rr.db.QueryRow("SELECT COUNT(r.id) "+
+			"FROM restaurants r "+
+			"JOIN rest_points rp ON (r.id = rp.restid) "+
+			"JOIN restaurants_and_tags rt ON (r.id = rt.rest_id) "+
+			"WHERE ST_DWithin("+
+			"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
+			"ST_MakePoint($1, $2)::geography, rp.radius * 1000) AND "+
+			"rt.resttag_id = $3 "+
+			"GROUP BY r.id", pos.Latitude, pos.Longitude, tagID).Scan(&total); err != nil {
+			return nil, 0, err
+		}
 	}
 
 	return returnRests, total, nil

@@ -7,6 +7,7 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurant_points"
 	"github.com/2020_1_Skycode/internal/restaurants"
+	"github.com/2020_1_Skycode/internal/restaurants_tags"
 	"github.com/2020_1_Skycode/internal/reviews"
 	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/2020_1_Skycode/tools/protobuf/adminwork"
@@ -19,22 +20,34 @@ type RestaurantWithProtoUseCase struct {
 	reviewsRepo    reviews.Repository
 	geoDataRepo    geodata.Repository
 	restPointsRepo restaurant_points.Repository
+	restTagsRepo   restaurants_tags.Repository
 	adminManager   adminwork.RestaurantAdminWorkerClient
 }
 
 func NewRestaurantsWithProtoUseCase(rr restaurants.Repository, rpr restaurant_points.Repository,
-	rvr reviews.Repository, gdr geodata.Repository, conn *grpc.ClientConn) restaurants.UseCase {
+	rvr reviews.Repository, gdr geodata.Repository, rtr restaurants_tags.Repository,
+	conn *grpc.ClientConn) restaurants.UseCase {
 	return &RestaurantWithProtoUseCase{
 		restaurantRepo: rr,
 		reviewsRepo:    rvr,
 		geoDataRepo:    gdr,
 		restPointsRepo: rpr,
+		restTagsRepo:   rtr,
 		adminManager:   adminwork.NewRestaurantAdminWorkerClient(conn),
 	}
 }
 
-func (rUC *RestaurantWithProtoUseCase) GetRestaurants(count uint64, page uint64) ([]*models.Restaurant, uint64, error) {
-	restList, total, err := rUC.restaurantRepo.GetAll(count, page)
+func (rUC *RestaurantWithProtoUseCase) GetRestaurants(
+	count uint64, page uint64, tagID uint64) ([]*models.Restaurant, uint64, error) {
+	if tagID != 0 {
+		if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, 0, tools.RestTagNotFound
+			}
+		}
+	}
+
+	restList, total, err := rUC.restaurantRepo.GetAll(count, page, tagID)
 	if err != nil {
 		return nil, total, err
 	}
@@ -155,13 +168,21 @@ func (rUC *RestaurantWithProtoUseCase) AddPoint(p *models.RestaurantPoint) error
 }
 
 func (rUC *RestaurantWithProtoUseCase) GetRestaurantsInServiceRadius(
-	address string, count, page uint64) ([]*models.Restaurant, uint64, error) {
+	address string, count, page, tagID uint64) ([]*models.Restaurant, uint64, error) {
 	pos, err := rUC.geoDataRepo.GetGeoPosByAddress(address)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	returnRests, total, err := rUC.restaurantRepo.GetAllInServiceRadius(pos, count, page)
+	if tagID != 0 {
+		if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, 0, tools.RestTagNotFound
+			}
+		}
+	}
+
+	returnRests, total, err := rUC.restaurantRepo.GetAllInServiceRadius(pos, count, page, tagID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return []*models.Restaurant{}, 0, nil
@@ -244,4 +265,66 @@ func (rUC *RestaurantWithProtoUseCase) GetReviews(restID, userID, count, page ui
 	}
 
 	return returnReviews, curReview, total, nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) AddTag(restID, tagID uint64) error {
+	if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestTagNotFound
+		}
+
+		return err
+	}
+
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestaurantNotFoundError
+		}
+	}
+
+	check, err := rUC.restTagsRepo.CheckTagRestRelation(restID, tagID)
+	if err != nil {
+		return err
+	}
+
+	if check {
+		return tools.TagRestComboAlreadyExist
+	}
+
+	if err := rUC.restTagsRepo.CreateTagRestRelation(restID, tagID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) DeleteTag(restID, tagID uint64) error {
+	if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestTagNotFound
+		}
+
+		return err
+	}
+
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestaurantNotFoundError
+		}
+	}
+
+	check, err := rUC.restTagsRepo.CheckTagRestRelation(restID, tagID)
+	if err != nil {
+		return err
+	}
+
+	if !check {
+		return tools.TagRestComboDoesntExist
+	}
+
+	if err := rUC.restTagsRepo.DeleteTagRestRelation(restID, tagID); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -8,4 +8,8 @@ type Repository interface {
 	GetAll() ([]*models.RestTag, error)
 	Update(tag *models.RestTag) error
 	Delete(id uint64) error
+
+	CreateTagRestRelation(restID, tagID uint64) error
+	CheckTagRestRelation(restID, tagID uint64) (bool, error)
+	DeleteTagRestRelation(restID, tagID uint64) error
 }

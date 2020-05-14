@@ -72,3 +72,35 @@ func (rtr *RestTagRepository) Delete(id uint64) error {
 
 	return nil
 }
+
+func (rtr *RestTagRepository) CreateTagRestRelation(restID, tagID uint64) error {
+	if _, err := rtr.db.Exec("INSERT INTO restaurants_and_tags (rest_id, resttag_id) "+
+		"VALUES ($1, $2) RETURNING id", restID, tagID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rtr *RestTagRepository) CheckTagRestRelation(restID, tagID uint64) (bool, error) {
+	var id uint64
+	if err := rtr.db.QueryRow("SELECT id FROM restaurants_and_tags "+
+		"WHERE rest_id = $1 AND resttag_id = $2 LIMIT 1", restID, tagID).Scan(&id); err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (rtr *RestTagRepository) DeleteTagRestRelation(restID, tagID uint64) error {
+	if _, err := rtr.db.Exec("DELETE FROM restaurants_and_tags "+
+		"WHERE rest_id = $1 AND resttag_id = $2", restID, tagID); err != nil {
+		return err
+	}
+
+	return nil
+}

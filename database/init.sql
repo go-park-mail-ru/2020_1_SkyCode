@@ -6,7 +6,7 @@ drop table if exists orderproducts cascade;
 drop table if exists orders cascade;
 drop table if exists chat_messages cascade;
 drop table if exists rest_tags cascade;
-drop table if exists restaraunts_tags cascade;
+drop table if exists restaurants_and_tags cascade;
 
 create extension if not exists postgis;
 create extension if not exists postgis_topology;
@@ -142,8 +142,9 @@ create table rest_tags
     image   varchar(160)    not null
 );
 
-create table restaraunts_tags
+create table restaurants_and_tags
 (
     rest_id     int references restaurants (id) on delete cascade,
-    resttag_id  int references rest_tags (id) on delete cascade
+    resttag_id  int references rest_tags (id) on delete cascade,
+    constraint uq_rest_tag_comb unique (rest_id, resttag_id)
 );

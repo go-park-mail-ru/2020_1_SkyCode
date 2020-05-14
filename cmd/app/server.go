@@ -12,7 +12,6 @@ import (
 	_geodataUseCase "github.com/2020_1_Skycode/internal/geodata/usecase"
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
-	_ordersRepository "github.com/2020_1_Skycode/internal/orders/repository"
 	_ordersUseCase "github.com/2020_1_Skycode/internal/orders/usecase"
 	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
@@ -30,7 +29,6 @@ import (
 	_reviewsRepository "github.com/2020_1_Skycode/internal/reviews/repository"
 	_reviewsUseCase "github.com/2020_1_Skycode/internal/reviews/usecase"
 	_sessionsDelivery "github.com/2020_1_Skycode/internal/sessions/delivery"
-	_sessionsRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
 	"github.com/2020_1_Skycode/internal/tools"
 	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
@@ -42,6 +40,7 @@ import (
 	_ "github.com/lib/pq"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc"
 	"log"
 )
 
@@ -79,12 +78,30 @@ func main() {
 		}
 	}()
 
+	grpcSessionConn, err := grpc.Dial("localhost:5001", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcSessionConn.Close()
+
+	grpcAdminConn, err := grpc.Dial("localhost:5002", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcAdminConn.Close()
+
+	grpcOrderConn, err := grpc.Dial("localhost:5003", grpc.WithInsecure())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer grpcOrderConn.Close()
+
 	e := gin.New()
 
 	geoCoderKey := config.ApiKeys.YandexGeoCoder
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
-	prodUcase := _productUseCase.NewProductUseCase(prodRepo)
+	prodUcase := _productUseCase.NewProductWithProtoUseCase(prodRepo, grpcAdminConn)
 
 	reviewRepo := _reviewsRepository.NewReviewsRepository(dbConn)
 	reviewUcase := _reviewsUseCase.NewReviewsUseCase(reviewRepo)
@@ -93,25 +110,24 @@ func main() {
 	geoDataUcase := _geodataUseCase.NewGeoDataUseCase(geoDataRepo)
 
 	restPointsRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
-	restPointsUCase := _restPointsUseCase.NewRestPointsUseCase(restPointsRepo)
+	restPointsUCase := _restPointsUseCase.NewRestPointsWithProtoUseCase(restPointsRepo, grpcAdminConn)
+
+	restTagsRepo := _restTagsRepository.NewRestTagRepository(dbConn)
+	restTagsUcase := _restTagsUseCase.NewRestTagsUCase(restTagsRepo)
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
-	restUcase := _restUcase.NewRestaurantsUseCase(restRepo, restPointsRepo, reviewRepo, geoDataRepo)
+	restUcase := _restUcase.NewRestaurantsWithProtoUseCase(restRepo, restPointsRepo, reviewRepo,
+		geoDataRepo, restTagsRepo, grpcAdminConn)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)
 
-	sessionsRepo := _sessionsRepository.NewSessionRepository(dbConn)
-	sessionsUcase := _sessionsUseCase.NewSessionUseCase(sessionsRepo)
+	sessionsUcase := _sessionsUseCase.NewSessionProtoUseCase(grpcSessionConn)
 
-	ordersRepo := _ordersRepository.NewOrdersRepository(dbConn, restRepo)
-	ordersUcase := _ordersUseCase.NewOrderUseCase(ordersRepo)
+	ordersUcase := _ordersUseCase.NewOrderProtoUseCase(grpcOrderConn)
 
 	chatsRepo := _chatsRepository.NewChatsRepository(dbConn)
 	chatsUcase := _chatsUseCase.NewChatUseCase(chatsRepo)
-
-	restTagsRepo := _restTagsRepository.NewRestTagRepository(dbConn)
-	restTagsUcase := _restTagsUseCase.NewRestTagsUCase(restTagsRepo)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 
