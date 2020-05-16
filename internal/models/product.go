@@ -7,4 +7,5 @@ type Product struct {
 	Image  string  `json:"image"`
 	RestId uint64  `json:"rest_id"`
 	Count  uint64  `json:"count, omitempty"`
+	Tag    uint64  `json:"tag"`
 }

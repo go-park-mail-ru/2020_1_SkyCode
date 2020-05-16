@@ -17,40 +17,35 @@ func NewProductRepository(db *sql.DB) products.Repository {
 }
 
 func (pr *ProductRepository) GetProductsByRestID(
-	restID uint64, count uint64, page uint64) ([]*models.Product, uint64, error) {
+	restID uint64) ([]*models.Product, error) {
 	productList := []*models.Product{}
 
-	rows, err := pr.db.Query("SELECT id, name, price, image FROM products WHERE rest_id = $1 "+
-		"LIMIT $2 OFFSET $3", restID, count, (page-1)*count)
+	rows, err := pr.db.Query("SELECT id, name, price, image, coalesce(tag, 0) "+
+		"FROM products WHERE rest_id = $1", restID)
 	if err != nil {
-		return nil, 0, err
-	}
-
-	var total uint64
-	if err := pr.db.QueryRow("SELECT COUNT(*) FROM products WHERE rest_id = $1", restID).
-		Scan(&total); err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
 	defer rows.Close()
 	for rows.Next() {
 		product := &models.Product{}
-		err = rows.Scan(&product.ID, &product.Name, &product.Price, &product.Image)
+		err = rows.Scan(&product.ID, &product.Name, &product.Price, &product.Image, &product.Tag)
 		if err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 		productList = append(productList, product)
 	}
 
-	return productList, total, nil
+	return productList, nil
 }
 
 func (pr *ProductRepository) GetProductByID(prodID uint64) (*models.Product, error) {
 	product := &models.Product{}
 
-	if err := pr.db.QueryRow("SELECT id, name, price, image, rest_id FROM products WHERE id = $1",
+	if err := pr.db.QueryRow("SELECT id, name, price, image, rest_id, coalesce(tag, 0) "+
+		"FROM products WHERE id = $1",
 		prodID).Scan(&product.ID, &product.Name, &product.Price,
-		&product.Image, &product.RestId); err != nil {
+		&product.Image, &product.RestId, &product.Tag); err != nil {
 		return nil, err
 	}
 
@@ -58,12 +53,13 @@ func (pr *ProductRepository) GetProductByID(prodID uint64) (*models.Product, err
 }
 
 func (pr *ProductRepository) InsertInto(product *models.Product) error {
-	if err := pr.db.QueryRow("INSERT INTO products (name, price, image, rest_id) "+
-		"VALUES ($1, $2, $3, $4) RETURNING id",
+	if err := pr.db.QueryRow("INSERT INTO products (name, price, image, rest_id, tag) "+
+		"VALUES ($1, $2, $3, $4, CASE WHEN $5 = 0 THEN NULL ELSE $5 END) RETURNING id",
 		product.Name,
 		product.Price,
 		product.Image,
-		product.RestId).Scan(&product.ID); err != nil {
+		product.RestId,
+		product.Tag).Scan(&product.ID); err != nil {
 		return err
 	}
 
@@ -79,10 +75,12 @@ func (pr *ProductRepository) Delete(prodID uint64) error {
 }
 
 func (pr *ProductRepository) Update(product *models.Product) error {
-	if _, err := pr.db.Exec("UPDATE products SET name = $2, price = $3 WHERE id = $1",
+	if _, err := pr.db.Exec("UPDATE products SET name = $2, price = $3, "+
+		"tag = (CASE WHEN $4 = 0 THEN NULL ELSE $4 END) WHERE id = $1",
 		product.ID,
 		product.Name,
-		product.Price); err != nil {
+		product.Price,
+		product.Tag); err != nil {
 		return err
 	}
 

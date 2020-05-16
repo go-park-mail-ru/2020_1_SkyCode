@@ -13,6 +13,7 @@ import (
 	_middleware "github.com/2020_1_Skycode/internal/middlewares"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
 	_ordersUseCase "github.com/2020_1_Skycode/internal/orders/usecase"
+	_prodTagsRepository "github.com/2020_1_Skycode/internal/product_tags/repository"
 	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
 	_productUseCase "github.com/2020_1_Skycode/internal/products/usecase"
@@ -101,7 +102,10 @@ func main() {
 	geoCoderKey := config.ApiKeys.YandexGeoCoder
 
 	prodRepo := _productRepo.NewProductRepository(dbConn)
-	prodUcase := _productUseCase.NewProductWithProtoUseCase(prodRepo, grpcAdminConn)
+
+	prodTagsRepo := _prodTagsRepository.NewProductTagsRepository(dbConn)
+
+	prodUcase := _productUseCase.NewProductWithProtoUseCase(prodRepo, prodTagsRepo, grpcAdminConn)
 
 	reviewRepo := _reviewsRepository.NewReviewsRepository(dbConn)
 	reviewUcase := _reviewsUseCase.NewReviewsUseCase(reviewRepo)
@@ -117,7 +121,7 @@ func main() {
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
 	restUcase := _restUcase.NewRestaurantsWithProtoUseCase(restRepo, restPointsRepo, reviewRepo,
-		geoDataRepo, restTagsRepo, grpcAdminConn)
+		geoDataRepo, restTagsRepo, prodTagsRepo, grpcAdminConn)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)

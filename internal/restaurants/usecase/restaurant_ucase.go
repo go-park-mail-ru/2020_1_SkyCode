@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/2020_1_Skycode/internal/geodata"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/product_tags"
 	"github.com/2020_1_Skycode/internal/restaurant_points"
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"github.com/2020_1_Skycode/internal/restaurants_tags"
@@ -13,21 +14,24 @@ import (
 )
 
 type RestaurantUseCase struct {
-	restaurantRepo restaurants.Repository
-	reviewsRepo    reviews.Repository
-	geoDataRepo    geodata.Repository
-	restPointsRepo restaurant_points.Repository
-	restTagsRepo   restaurants_tags.Repository
+	restaurantRepo  restaurants.Repository
+	reviewsRepo     reviews.Repository
+	geoDataRepo     geodata.Repository
+	restPointsRepo  restaurant_points.Repository
+	restTagsRepo    restaurants_tags.Repository
+	productTagsRepo product_tags.Repository
 }
 
 func NewRestaurantsUseCase(rr restaurants.Repository, rpr restaurant_points.Repository,
-	rvr reviews.Repository, gdr geodata.Repository, rtr restaurants_tags.Repository) *RestaurantUseCase {
+	rvr reviews.Repository, gdr geodata.Repository, rtr restaurants_tags.Repository,
+	ptr product_tags.Repository) *RestaurantUseCase {
 	return &RestaurantUseCase{
-		restaurantRepo: rr,
-		reviewsRepo:    rvr,
-		geoDataRepo:    gdr,
-		restPointsRepo: rpr,
-		restTagsRepo:   rtr,
+		restaurantRepo:  rr,
+		reviewsRepo:     rvr,
+		geoDataRepo:     gdr,
+		restPointsRepo:  rpr,
+		restTagsRepo:    rtr,
+		productTagsRepo: ptr,
 	}
 }
 
@@ -278,6 +282,47 @@ func (rUC *RestaurantUseCase) DeleteTag(restID, tagID uint64) error {
 	}
 
 	if err := rUC.restTagsRepo.DeleteTagRestRelation(restID, tagID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantUseCase) GetProductTagsByID(restID uint64) ([]*models.ProductTag, error) {
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, tools.RestaurantNotFoundError
+		}
+
+		return nil, err
+	}
+
+	tags, err := rUC.productTagsRepo.GetByRestID(restID)
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}
+
+func (rUC *RestaurantUseCase) AddProductTag(tag *models.ProductTag) error {
+	if err := rUC.productTagsRepo.InsertInto(tag); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantUseCase) DeleteProductTag(ID uint64) error {
+	if _, err := rUC.productTagsRepo.GetByID(ID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.ProductTagNotFound
+		}
+
+		return err
+	}
+
+	if err := rUC.productTagsRepo.Delete(ID); err != nil {
 		return err
 	}
 

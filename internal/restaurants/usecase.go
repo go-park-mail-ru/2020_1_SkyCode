@@ -19,4 +19,8 @@ type UseCase interface {
 
 	AddTag(restID, tagID uint64) error
 	DeleteTag(restID, tagID uint64) error
+
+	GetProductTagsByID(restID uint64) ([]*models.ProductTag, error)
+	AddProductTag(tag *models.ProductTag) error
+	DeleteProductTag(ID uint64) error
 }

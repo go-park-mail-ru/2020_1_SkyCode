@@ -1,21 +1,34 @@
 package usecase
 
 import (
+	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/product_tags"
 	"github.com/2020_1_Skycode/internal/products"
+	"github.com/2020_1_Skycode/internal/tools"
 )
 
 type ProductUseCase struct {
-	productRepo products.Repository
+	productRepo     products.Repository
+	productTagsRepo product_tags.Repository
 }
 
-func NewProductUseCase(pr products.Repository) *ProductUseCase {
+func NewProductUseCase(pr products.Repository, ptr product_tags.Repository) *ProductUseCase {
 	return &ProductUseCase{
-		productRepo: pr,
+		productRepo:     pr,
+		productTagsRepo: ptr,
 	}
 }
 
 func (pUC *ProductUseCase) CreateProduct(product *models.Product) error {
+	if _, err := pUC.productTagsRepo.GetByID(product.Tag); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.ProductTagNotFound
+		}
+
+		return err
+	}
+
 	if err := pUC.productRepo.InsertInto(product); err != nil {
 		return err
 	}
@@ -33,25 +46,34 @@ func (pUC *ProductUseCase) GetProductByID(id uint64) (*models.Product, error) {
 }
 
 func (pUC *ProductUseCase) GetProductsByRestaurantID(
-	id uint64, count uint64, page uint64) ([]*models.Product, uint64, error) {
-	productList, total, err := pUC.productRepo.GetProductsByRestID(id, count, page)
+	id uint64, count uint64, page uint64) ([]*models.Product, error) {
+	productList, err := pUC.productRepo.GetProductsByRestID(id)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	return productList, total, nil
+	return productList, nil
 }
 
 func (pUC *ProductUseCase) UpdateProduct(product *models.Product) error {
+	if _, err := pUC.productTagsRepo.GetByID(product.Tag); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.ProductTagNotFound
+		}
+
+		return err
+	}
+
 	updProduct := &models.Product{
 		ID:    product.ID,
 		Name:  product.Name,
 		Price: product.Price,
+		Tag:   product.Tag,
 	}
+
 	if err := pUC.productRepo.Update(updProduct); err != nil {
 		return err
 	}
-
 	return nil
 }
 

@@ -42,4 +42,5 @@ var (
 	RestTagNotFound            = errors.New("Restaurant tag not found")
 	TagRestComboAlreadyExist   = errors.New("Restaurant already have this tag")
 	TagRestComboDoesntExist    = errors.New("Restaurant tag combination doesn't exist")
+	ProductTagNotFound         = errors.New("Product tag not found")
 )

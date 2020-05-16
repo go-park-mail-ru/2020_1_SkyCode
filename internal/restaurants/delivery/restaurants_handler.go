@@ -49,6 +49,10 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	private.POST("/restaurants/:rest_id/tag/:tag_id", rh.AddTag())
 	private.DELETE("/restaurants/:rest_id/tag/:tag_id", rh.DeleteTag())
 
+	public.GET("/restaurants/:rest_id/prod_tags", rh.GetProductTags())
+	private.POST("/restaurants/:rest_id/prod_tags", rh.AddProductTag())
+	private.DELETE("/restaurants/:rest_id/prod_tags/:tag_id", rh.DeleteProductTag())
+
 	return rh
 }
 
@@ -65,6 +69,10 @@ type reviewRequest struct {
 type pointRequest struct {
 	Address string  `json:"address" binding:"required"`
 	Radius  float64 `json:"radius" binding:"required"`
+}
+
+type productTagRequest struct {
+	Name string `json:"name" binding:"required" validate:"min=2"`
 }
 
 //@Tags Restaurant
@@ -966,6 +974,185 @@ func (rh *RestaurantHandler) DeleteTag() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Message{
 			Message: "Tag deleted from the restaurant",
+		})
+	}
+}
+
+func (rh *RestaurantHandler) GetProductTags() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		tags, err := rh.restUseCase.GetProductTagsByID(restID)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"Tags": tags,
+		})
+	}
+}
+
+func (rh *RestaurantHandler) AddProductTag() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		if !user.IsManager() && !user.IsAdmin() {
+			c.JSON(http.StatusForbidden, tools.Error{
+				ErrorMessage: tools.PermissionError.Error(),
+			})
+
+			return
+		}
+
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		data, err := c.GetRawData()
+
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BindingError.Error(),
+			})
+
+			return
+		}
+
+		req := &productTagRequest{}
+
+		if err := req.UnmarshalJSON(data); err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		errorsList := rh.v.ValidateRequest(req)
+		if len(*errorsList) > 0 {
+			logrus.Info(tools.NotRequiredFields)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.ErrorRequestValidation.Error(),
+			})
+
+			return
+		}
+
+		tag := &models.ProductTag{
+			Name:   req.Name,
+			RestID: restID,
+		}
+
+		if err := rh.restUseCase.AddProductTag(tag); err != nil {
+			if err == tools.TagRestComboAlreadyExist {
+				c.JSON(http.StatusConflict, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			if err == tools.RestaurantNotFoundError || err == tools.RestTagNotFound {
+				c.JSON(http.StatusNotFound, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Message{
+			Message: "Product tag added",
+		})
+	}
+}
+
+func (rh *RestaurantHandler) DeleteProductTag() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		if !user.IsManager() && !user.IsAdmin() {
+			c.JSON(http.StatusForbidden, tools.Error{
+				ErrorMessage: tools.PermissionError.Error(),
+			})
+
+			return
+		}
+
+		tagID, err := strconv.ParseUint(c.Param("tag_id"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		if err := rh.restUseCase.DeleteProductTag(tagID); err != nil {
+			if err == tools.ProductTagNotFound {
+				c.JSON(http.StatusConflict, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Message{
+			Message: "Product tag deleted",
 		})
 	}
 }

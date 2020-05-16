@@ -4,7 +4,6 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/orders"
 	"github.com/2020_1_Skycode/internal/tools"
-	"github.com/2020_1_Skycode/tools/protobuf/orderswork"
 	"golang.org/x/net/context"
 )
 
@@ -18,7 +17,7 @@ func NewOrderProtoManager(orderRepo orders.Repository) *OrderManager {
 	}
 }
 
-func (oU *OrderManager) CheckOutOrder(ctx context.Context, c *orderswork.Checkout) (*orderswork.Error, error) {
+func (oU *OrderManager) CheckOutOrder(ctx context.Context, c *Checkout) (*Error, error) {
 	order := &models.Order{
 		ID:        c.Order.ID,
 		UserID:    c.Order.UserID,
@@ -45,22 +44,22 @@ func (oU *OrderManager) CheckOutOrder(ctx context.Context, c *orderswork.Checkou
 	}
 
 	if err := oU.orderRepo.InsertOrder(order, products); err != nil {
-		return &orderswork.Error{Err: tools.CheckoutOrderError.Error()}, err
+		return &Error{Err: tools.CheckoutOrderError.Error()}, err
 	}
 
-	return &orderswork.Error{}, nil
+	return &Error{}, nil
 }
 
-func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *orderswork.UserOrders) (*orderswork.GetAllResponse, error) {
+func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *UserOrders) (*GetAllResponse, error) {
 	userOrders, total, err := oU.orderRepo.GetAllByUserID(u.UserID, u.Count, u.Page)
 
-	orders := []*orderswork.Order{}
+	orders := []*Order{}
 
 	for _, val := range userOrders {
-		products := []*orderswork.Product{}
+		products := []*Product{}
 
 		for _, val := range val.Products {
-			products = append(products, &orderswork.Product{
+			products = append(products, &Product{
 				ID:     val.ID,
 				Name:   val.Name,
 				Price:  val.Price,
@@ -70,7 +69,7 @@ func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *orderswork.User
 			})
 		}
 
-		orders = append(orders, &orderswork.Order{
+		orders = append(orders, &Order{
 			ID:        val.ID,
 			UserID:    val.UserID,
 			RestID:    val.RestID,
@@ -86,7 +85,7 @@ func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *orderswork.User
 		})
 	}
 
-	res := &orderswork.GetAllResponse{
+	res := &GetAllResponse{
 		Order: orders,
 		Total: total,
 	}
@@ -98,17 +97,17 @@ func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *orderswork.User
 	return res, nil
 }
 
-func (oU *OrderManager) GetOrderByID(ctx context.Context, u *orderswork.GetByID) (*orderswork.GetByIDResponse, error) {
+func (oU *OrderManager) GetOrderByID(ctx context.Context, u *GetByID) (*GetByIDResponse, error) {
 	order, err := oU.orderRepo.GetByID(u.OrderID, u.UserID)
 
 	if err != nil {
-		return &orderswork.GetByIDResponse{}, err
+		return &GetByIDResponse{}, err
 	}
 
-	products := []*orderswork.Product{}
+	products := []*Product{}
 
 	for _, val := range order.Products {
-		products = append(products, &orderswork.Product{
+		products = append(products, &Product{
 			ID:     val.ID,
 			Name:   val.Name,
 			Price:  val.Price,
@@ -118,7 +117,7 @@ func (oU *OrderManager) GetOrderByID(ctx context.Context, u *orderswork.GetByID)
 		})
 	}
 
-	resOrder := &orderswork.Order{
+	resOrder := &Order{
 		ID:        order.ID,
 		UserID:    order.UserID,
 		RestID:    order.RestID,
@@ -133,17 +132,17 @@ func (oU *OrderManager) GetOrderByID(ctx context.Context, u *orderswork.GetByID)
 		Status:    order.Status,
 	}
 
-	res := &orderswork.GetByIDResponse{
+	res := &GetByIDResponse{
 		Order: resOrder,
 	}
 
 	return res, err
 }
 
-func (oU *OrderManager) DeleteOrder(ctx context.Context, d *orderswork.DelOrder) (*orderswork.Error, error) {
+func (oU *OrderManager) DeleteOrder(ctx context.Context, d *DelOrder) (*Error, error) {
 	if err := oU.orderRepo.DeleteOrder(d.OrderID, d.UserID); err != nil {
-		return &orderswork.Error{Err: err.Error()}, err
+		return &Error{Err: err.Error()}, err
 	}
 
-	return &orderswork.Error{}, nil
+	return &Error{}, nil
 }
