@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/orders"
 	"github.com/2020_1_Skycode/internal/restaurants"
 	"time"
 )
@@ -13,7 +14,7 @@ type OrdersRepository struct {
 	db             *sql.DB
 }
 
-func NewOrdersRepository(db *sql.DB, rR restaurants.Repository) *OrdersRepository {
+func NewOrdersRepository(db *sql.DB, rR restaurants.Repository) orders.Repository {
 	return &OrdersRepository{
 		RestRepository: rR,
 		db:             db,
@@ -62,7 +63,8 @@ func (oR *OrdersRepository) insertOrderProducts(orderID uint64, products []*mode
 func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
 	var ordersList []*models.Order
 
-	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, datetime, status from orders where userId = $1"+
+	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, "+
+		"datetime, status from orders where userId = $1"+
 		" LIMIT $2 OFFSET $3",
 		userID, count, (page-1)*count)
 	if err != nil {
@@ -108,12 +110,12 @@ func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uin
 	return ordersList, total, nil
 }
 
-func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Order, error) {
+func (oR *OrdersRepository) GetByID(orderID uint64) (*models.Order, error) {
 	order := &models.Order{}
-	err := oR.db.QueryRow("SELECT id, address, phone, price, comment, personnum, datetime "+
-		"FROM orders WHERE id = $1 AND userid = $2",
-		orderID,
-		userID).Scan(&order.ID, &order.Address, &order.Phone, &order.Price, &order.Comment, &order.PersonNum, &order.CreatedAt)
+	err := oR.db.QueryRow("SELECT id, userid, address, phone, price, comment, personnum, datetime, status "+
+		"FROM orders WHERE id = $1",
+		orderID).Scan(&order.ID, &order.UserID, &order.Address, &order.Phone, &order.Price, &order.Comment,
+		&order.PersonNum, &order.CreatedAt, &order.Status)
 
 	if err != nil {
 		return nil, err
@@ -128,6 +130,14 @@ func (oR *OrdersRepository) GetByID(orderID uint64, userID uint64) (*models.Orde
 	order.Products = products
 
 	return order, nil
+}
+
+func (oR *OrdersRepository) ChangeStatus(orderID uint64, status string) error {
+	if _, err := oR.db.Exec("UPDATE orders SET status = $2 WHERE id = $1", orderID, status); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (oR *OrdersRepository) getOrderProducts(orderID uint64) ([]*models.Product, error) {

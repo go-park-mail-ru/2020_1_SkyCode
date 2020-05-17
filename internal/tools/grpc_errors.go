@@ -6,4 +6,5 @@ var (
 	AlreadyExists   = uint64(2)
 	DoesntExist     = uint64(3)
 	AddressNotHouse = uint64(4)
+	SameStatus      = uint64(5)
 )

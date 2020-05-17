@@ -88,7 +88,7 @@ create table orders
     personNum int          not null,
     datetime  timestamp    not null default current_timestamp,
     status    varchar(30)  not null default 'Accepted'
-        constraint checkRoleInsert CHECK (status IN ('Accepted', 'Delivering', 'Done')),
+        constraint checkRoleInsert CHECK (status IN ('Accepted', 'Delivering', 'Done', 'Canceled')),
     foreign key (userId) references users (id) on delete cascade,
     foreign key (restId) references restaurants (id) on delete cascade
 );
@@ -155,4 +155,14 @@ create table chat_messages
     chat     varchar not null,
     message  text    not null,
     created  timestamptz default current_timestamp
+);
+
+create table order_notifications
+(
+    id              serial      not null primary key,
+    user_id         int         references users    (id) on delete cascade,
+    order_id        int         references orders   (id) on delete cascade,
+    unread          boolean     not null default true,
+    order_status    varchar(30) not null,
+    getting_time    timestamp    not null default current_timestamp
 );

@@ -652,6 +652,61 @@ func (x *DelOrder) GetUserID() uint64 {
 	return 0
 }
 
+type ChangeStatus struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	OrderID uint64 `protobuf:"varint,1,opt,name=OrderID,proto3" json:"OrderID,omitempty"`
+	Status  string `protobuf:"bytes,2,opt,name=Status,proto3" json:"Status,omitempty"`
+}
+
+func (x *ChangeStatus) Reset() {
+	*x = ChangeStatus{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_order_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ChangeStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangeStatus) ProtoMessage() {}
+
+func (x *ChangeStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangeStatus.ProtoReflect.Descriptor instead.
+func (*ChangeStatus) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ChangeStatus) GetOrderID() uint64 {
+	if x != nil {
+		return x.OrderID
+	}
+	return 0
+}
+
+func (x *ChangeStatus) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 type Error struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -663,7 +718,7 @@ type Error struct {
 func (x *Error) Reset() {
 	*x = Error{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_order_proto_msgTypes[9]
+		mi := &file_order_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -676,7 +731,7 @@ func (x *Error) String() string {
 func (*Error) ProtoMessage() {}
 
 func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_order_proto_msgTypes[9]
+	mi := &file_order_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -689,7 +744,7 @@ func (x *Error) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Error.ProtoReflect.Descriptor instead.
 func (*Error) Descriptor() ([]byte, []int) {
-	return file_order_proto_rawDescGZIP(), []int{9}
+	return file_order_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Error) GetErr() string {
@@ -697,6 +752,53 @@ func (x *Error) GetErr() string {
 		return x.Err
 	}
 	return ""
+}
+
+type ErrorCode struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ID uint64 `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+}
+
+func (x *ErrorCode) Reset() {
+	*x = ErrorCode{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_order_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ErrorCode) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ErrorCode) ProtoMessage() {}
+
+func (x *ErrorCode) ProtoReflect() protoreflect.Message {
+	mi := &file_order_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ErrorCode.ProtoReflect.Descriptor instead.
+func (*ErrorCode) Descriptor() ([]byte, []int) {
+	return file_order_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ErrorCode) GetID() uint64 {
+	if x != nil {
+		return x.ID
+	}
+	return 0
 }
 
 var File_order_proto protoreflect.FileDescriptor
@@ -769,28 +871,39 @@ var file_order_proto_rawDesc = []byte{
 	0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x18, 0x0a, 0x07, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x49, 0x44,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x49, 0x44, 0x12,
 	0x16, 0x0a, 0x06, 0x55, 0x73, 0x65, 0x72, 0x49, 0x44, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x06, 0x55, 0x73, 0x65, 0x72, 0x49, 0x44, 0x22, 0x19, 0x0a, 0x05, 0x45, 0x72, 0x72, 0x6f, 0x72,
-	0x12, 0x10, 0x0a, 0x03, 0x45, 0x72, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x45,
-	0x72, 0x72, 0x32, 0xa9, 0x02, 0x0a, 0x0b, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b,
-	0x65, 0x72, 0x12, 0x40, 0x0a, 0x0d, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x4f, 0x75, 0x74, 0x4f, 0x72,
-	0x64, 0x65, 0x72, 0x12, 0x18, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f,
-	0x72, 0x64, 0x65, 0x72, 0x2e, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6f, 0x75, 0x74, 0x1a, 0x15, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x45,
-	0x72, 0x72, 0x6f, 0x72, 0x12, 0x4e, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x55, 0x73,
-	0x65, 0x72, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x12, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4f, 0x72,
-	0x64, 0x65, 0x72, 0x73, 0x1a, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f,
-	0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x48, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72,
-	0x42, 0x79, 0x49, 0x44, 0x12, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f,
-	0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x42, 0x79, 0x49, 0x44, 0x1a, 0x1f, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x47,
-	0x65, 0x74, 0x42, 0x79, 0x49, 0x44, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3e,
-	0x0a, 0x0b, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x18, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x44,
-	0x65, 0x6c, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x1a, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
-	0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x06, 0x55, 0x73, 0x65, 0x72, 0x49, 0x44, 0x22, 0x40, 0x0a, 0x0c, 0x43, 0x68, 0x61, 0x6e, 0x67,
+	0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x18, 0x0a, 0x07, 0x4f, 0x72, 0x64, 0x65, 0x72,
+	0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x07, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x49,
+	0x44, 0x12, 0x16, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x19, 0x0a, 0x05, 0x45, 0x72, 0x72,
+	0x6f, 0x72, 0x12, 0x10, 0x0a, 0x03, 0x45, 0x72, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x45, 0x72, 0x72, 0x22, 0x1b, 0x0a, 0x09, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64,
+	0x65, 0x12, 0x0e, 0x0a, 0x02, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x49,
+	0x44, 0x32, 0xf7, 0x02, 0x0a, 0x0b, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x57, 0x6f, 0x72, 0x6b, 0x65,
+	0x72, 0x12, 0x40, 0x0a, 0x0d, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x4f, 0x75, 0x74, 0x4f, 0x72, 0x64,
+	0x65, 0x72, 0x12, 0x18, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72,
+	0x64, 0x65, 0x72, 0x2e, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6f, 0x75, 0x74, 0x1a, 0x15, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x45, 0x72,
+	0x72, 0x6f, 0x72, 0x12, 0x4e, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x55, 0x73, 0x65,
+	0x72, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x73, 0x12, 0x1a, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x4f, 0x72, 0x64,
+	0x65, 0x72, 0x73, 0x1a, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f,
+	0x72, 0x64, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x4c, 0x0a, 0x11, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x4f, 0x72, 0x64,
+	0x65, 0x72, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65,
+	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x1a, 0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x6f, 0x64,
+	0x65, 0x12, 0x48, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x42, 0x79, 0x49,
+	0x44, 0x12, 0x17, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64,
+	0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x42, 0x79, 0x49, 0x44, 0x1a, 0x1f, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x42,
+	0x79, 0x49, 0x44, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x3e, 0x0a, 0x0b, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12, 0x18, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x44, 0x65, 0x6c, 0x4f,
+	0x72, 0x64, 0x65, 0x72, 0x1a, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x5f,
+	0x6f, 0x72, 0x64, 0x65, 0x72, 0x2e, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -805,7 +918,7 @@ func file_order_proto_rawDescGZIP() []byte {
 	return file_order_proto_rawDescData
 }
 
-var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_order_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_order_proto_goTypes = []interface{}{
 	(*OrderProduct)(nil),    // 0: protobuf_order.OrderProduct
 	(*Product)(nil),         // 1: protobuf_order.Product
@@ -816,27 +929,31 @@ var file_order_proto_goTypes = []interface{}{
 	(*GetByID)(nil),         // 6: protobuf_order.GetByID
 	(*GetByIDResponse)(nil), // 7: protobuf_order.GetByIDResponse
 	(*DelOrder)(nil),        // 8: protobuf_order.DelOrder
-	(*Error)(nil),           // 9: protobuf_order.Error
+	(*ChangeStatus)(nil),    // 9: protobuf_order.ChangeStatus
+	(*Error)(nil),           // 10: protobuf_order.Error
+	(*ErrorCode)(nil),       // 11: protobuf_order.ErrorCode
 }
 var file_order_proto_depIdxs = []int32{
-	1, // 0: protobuf_order.Order.Products:type_name -> protobuf_order.Product
-	2, // 1: protobuf_order.Checkout.order:type_name -> protobuf_order.Order
-	0, // 2: protobuf_order.Checkout.products:type_name -> protobuf_order.OrderProduct
-	2, // 3: protobuf_order.GetAllResponse.order:type_name -> protobuf_order.Order
-	2, // 4: protobuf_order.GetByIDResponse.order:type_name -> protobuf_order.Order
-	3, // 5: protobuf_order.OrderWorker.CheckOutOrder:input_type -> protobuf_order.Checkout
-	5, // 6: protobuf_order.OrderWorker.GetAllUserOrders:input_type -> protobuf_order.UserOrders
-	6, // 7: protobuf_order.OrderWorker.GetOrderByID:input_type -> protobuf_order.GetByID
-	8, // 8: protobuf_order.OrderWorker.DeleteOrder:input_type -> protobuf_order.DelOrder
-	9, // 9: protobuf_order.OrderWorker.CheckOutOrder:output_type -> protobuf_order.Error
-	4, // 10: protobuf_order.OrderWorker.GetAllUserOrders:output_type -> protobuf_order.GetAllResponse
-	7, // 11: protobuf_order.OrderWorker.GetOrderByID:output_type -> protobuf_order.GetByIDResponse
-	9, // 12: protobuf_order.OrderWorker.DeleteOrder:output_type -> protobuf_order.Error
-	9, // [9:13] is the sub-list for method output_type
-	5, // [5:9] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	1,  // 0: protobuf_order.Order.Products:type_name -> protobuf_order.Product
+	2,  // 1: protobuf_order.Checkout.order:type_name -> protobuf_order.Order
+	0,  // 2: protobuf_order.Checkout.products:type_name -> protobuf_order.OrderProduct
+	2,  // 3: protobuf_order.GetAllResponse.order:type_name -> protobuf_order.Order
+	2,  // 4: protobuf_order.GetByIDResponse.order:type_name -> protobuf_order.Order
+	3,  // 5: protobuf_order.OrderWorker.CheckOutOrder:input_type -> protobuf_order.Checkout
+	5,  // 6: protobuf_order.OrderWorker.GetAllUserOrders:input_type -> protobuf_order.UserOrders
+	9,  // 7: protobuf_order.OrderWorker.ChangeOrderStatus:input_type -> protobuf_order.ChangeStatus
+	6,  // 8: protobuf_order.OrderWorker.GetOrderByID:input_type -> protobuf_order.GetByID
+	8,  // 9: protobuf_order.OrderWorker.DeleteOrder:input_type -> protobuf_order.DelOrder
+	10, // 10: protobuf_order.OrderWorker.CheckOutOrder:output_type -> protobuf_order.Error
+	4,  // 11: protobuf_order.OrderWorker.GetAllUserOrders:output_type -> protobuf_order.GetAllResponse
+	11, // 12: protobuf_order.OrderWorker.ChangeOrderStatus:output_type -> protobuf_order.ErrorCode
+	7,  // 13: protobuf_order.OrderWorker.GetOrderByID:output_type -> protobuf_order.GetByIDResponse
+	10, // 14: protobuf_order.OrderWorker.DeleteOrder:output_type -> protobuf_order.Error
+	10, // [10:15] is the sub-list for method output_type
+	5,  // [5:10] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_order_proto_init() }
@@ -954,7 +1071,31 @@ func file_order_proto_init() {
 			}
 		}
 		file_order_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChangeStatus); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_order_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Error); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_order_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ErrorCode); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -972,7 +1113,7 @@ func file_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_order_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -1000,6 +1141,7 @@ const _ = grpc.SupportPackageIsVersion6
 type OrderWorkerClient interface {
 	CheckOutOrder(ctx context.Context, in *Checkout, opts ...grpc.CallOption) (*Error, error)
 	GetAllUserOrders(ctx context.Context, in *UserOrders, opts ...grpc.CallOption) (*GetAllResponse, error)
+	ChangeOrderStatus(ctx context.Context, in *ChangeStatus, opts ...grpc.CallOption) (*ErrorCode, error)
 	GetOrderByID(ctx context.Context, in *GetByID, opts ...grpc.CallOption) (*GetByIDResponse, error)
 	DeleteOrder(ctx context.Context, in *DelOrder, opts ...grpc.CallOption) (*Error, error)
 }
@@ -1030,6 +1172,15 @@ func (c *orderWorkerClient) GetAllUserOrders(ctx context.Context, in *UserOrders
 	return out, nil
 }
 
+func (c *orderWorkerClient) ChangeOrderStatus(ctx context.Context, in *ChangeStatus, opts ...grpc.CallOption) (*ErrorCode, error) {
+	out := new(ErrorCode)
+	err := c.cc.Invoke(ctx, "/protobuf_order.OrderWorker/ChangeOrderStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orderWorkerClient) GetOrderByID(ctx context.Context, in *GetByID, opts ...grpc.CallOption) (*GetByIDResponse, error) {
 	out := new(GetByIDResponse)
 	err := c.cc.Invoke(ctx, "/protobuf_order.OrderWorker/GetOrderByID", in, out, opts...)
@@ -1052,6 +1203,7 @@ func (c *orderWorkerClient) DeleteOrder(ctx context.Context, in *DelOrder, opts 
 type OrderWorkerServer interface {
 	CheckOutOrder(context.Context, *Checkout) (*Error, error)
 	GetAllUserOrders(context.Context, *UserOrders) (*GetAllResponse, error)
+	ChangeOrderStatus(context.Context, *ChangeStatus) (*ErrorCode, error)
 	GetOrderByID(context.Context, *GetByID) (*GetByIDResponse, error)
 	DeleteOrder(context.Context, *DelOrder) (*Error, error)
 }
@@ -1065,6 +1217,9 @@ func (*UnimplementedOrderWorkerServer) CheckOutOrder(context.Context, *Checkout)
 }
 func (*UnimplementedOrderWorkerServer) GetAllUserOrders(context.Context, *UserOrders) (*GetAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllUserOrders not implemented")
+}
+func (*UnimplementedOrderWorkerServer) ChangeOrderStatus(context.Context, *ChangeStatus) (*ErrorCode, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeOrderStatus not implemented")
 }
 func (*UnimplementedOrderWorkerServer) GetOrderByID(context.Context, *GetByID) (*GetByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOrderByID not implemented")
@@ -1109,6 +1264,24 @@ func _OrderWorker_GetAllUserOrders_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrderWorkerServer).GetAllUserOrders(ctx, req.(*UserOrders))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OrderWorker_ChangeOrderStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeStatus)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderWorkerServer).ChangeOrderStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf_order.OrderWorker/ChangeOrderStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderWorkerServer).ChangeOrderStatus(ctx, req.(*ChangeStatus))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1160,6 +1333,10 @@ var _OrderWorker_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAllUserOrders",
 			Handler:    _OrderWorker_GetAllUserOrders_Handler,
+		},
+		{
+			MethodName: "ChangeOrderStatus",
+			Handler:    _OrderWorker_ChangeOrderStatus_Handler,
 		},
 		{
 			MethodName: "GetOrderByID",

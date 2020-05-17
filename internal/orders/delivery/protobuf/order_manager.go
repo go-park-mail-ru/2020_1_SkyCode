@@ -1,19 +1,23 @@
 package protobuf_order
 
 import (
+	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/notifications"
 	"github.com/2020_1_Skycode/internal/orders"
 	"github.com/2020_1_Skycode/internal/tools"
 	"golang.org/x/net/context"
 )
 
 type OrderManager struct {
-	orderRepo orders.Repository
+	orderRepo         orders.Repository
+	notificationsRepo notifications.Repository
 }
 
-func NewOrderProtoManager(orderRepo orders.Repository) *OrderManager {
+func NewOrderProtoManager(orderRepo orders.Repository, nr notifications.Repository) *OrderManager {
 	return &OrderManager{
-		orderRepo: orderRepo,
+		orderRepo:         orderRepo,
+		notificationsRepo: nr,
 	}
 }
 
@@ -48,6 +52,37 @@ func (oU *OrderManager) CheckOutOrder(ctx context.Context, c *Checkout) (*Error,
 	}
 
 	return &Error{}, nil
+}
+
+func (oU *OrderManager) ChangeOrderStatus(ctx context.Context, cs *ChangeStatus) (*ErrorCode, error) {
+	o, err := oU.orderRepo.GetByID(cs.OrderID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &ErrorCode{ID: tools.DoesntExist}, nil
+		}
+
+		return &ErrorCode{ID: tools.InternalError}, err
+	}
+
+	if o.Status == cs.Status {
+		return &ErrorCode{ID: tools.SameStatus}, nil
+	}
+
+	if err := oU.orderRepo.ChangeStatus(cs.OrderID, cs.Status); err != nil {
+		return &ErrorCode{ID: tools.InternalError}, err
+	}
+
+	note := &models.Notification{
+		UserID:  o.UserID,
+		OrderID: o.ID,
+		Status:  cs.Status,
+	}
+
+	if err := oU.notificationsRepo.InsertInto(note); err != nil {
+		return &ErrorCode{ID: tools.InternalError}, err
+	}
+
+	return &ErrorCode{ID: tools.OK}, nil
 }
 
 func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *UserOrders) (*GetAllResponse, error) {
@@ -98,7 +133,7 @@ func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *UserOrders) (*G
 }
 
 func (oU *OrderManager) GetOrderByID(ctx context.Context, u *GetByID) (*GetByIDResponse, error) {
-	order, err := oU.orderRepo.GetByID(u.OrderID, u.UserID)
+	order, err := oU.orderRepo.GetByID(u.OrderID)
 
 	if err != nil {
 		return &GetByIDResponse{}, err

@@ -29,7 +29,8 @@ func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC 
 	public.GET("/orders", oh.GetUserOrders())
 	public.GET("/orders/:orderID", oh.GetUserOrder())
 
-	private.POST("/orders/checkout", oh.Checkout())
+	private.POST("/orders/:orderID/status", oh.ChangeStatus())
+	private.POST("/orders", oh.Checkout())
 	private.DELETE("/orders/:orderID", oh.DeleteOrder())
 
 	return oh
@@ -229,6 +230,84 @@ func (oH *OrderHandler) GetUserOrder() gin.HandlerFunc {
 		c.JSON(http.StatusOK, tools.Body{
 			"order": userOrders,
 		})
+	}
+}
+
+func (oH *OrderHandler) ChangeStatus() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := oH.middlewareC.GetUser(c)
+
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		if !user.IsManager() && !user.IsAdmin() {
+			c.JSON(http.StatusForbidden, tools.Error{
+				ErrorMessage: tools.PermissionError.Error(),
+			})
+
+			return
+		}
+
+		orderID, err := strconv.ParseUint(c.Param("orderID"), 10, 64)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		newStatusCode, err := strconv.ParseUint(c.Query("status"), 10, 64)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		newStatus := tools.StatusCodes[newStatusCode]
+		if newStatus == "" {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.UnknownOrderStatus.Error(),
+			})
+
+			return
+		}
+
+		if err := oH.orderUseCase.ChangeOrderStatus(orderID, newStatus); err != nil {
+			if err == tools.NewStatusIsTheSame {
+				c.JSON(http.StatusConflict, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+			if err == tools.OrderNotFound {
+				c.JSON(http.StatusBadRequest, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, tools.Message{Message: "Order status successfully updated"})
 	}
 }
 

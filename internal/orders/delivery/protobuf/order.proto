@@ -63,14 +63,23 @@ message DelOrder {
   uint64 UserID = 2;
 }
 
+message ChangeStatus {
+  uint64 OrderID = 1;
+  string Status = 2;
+}
 
 message Error {
   string Err = 1;
 }
 
+message ErrorCode {
+  uint64 ID = 1;
+}
+
 service OrderWorker {
   rpc CheckOutOrder(Checkout) returns (Error);
   rpc GetAllUserOrders(UserOrders) returns (GetAllResponse);
+  rpc ChangeOrderStatus(ChangeStatus) returns (ErrorCode);
   rpc GetOrderByID(GetByID) returns (GetByIDResponse);
   rpc DeleteOrder(DelOrder) returns (Error);
 }

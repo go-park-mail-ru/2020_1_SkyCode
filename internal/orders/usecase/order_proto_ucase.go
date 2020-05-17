@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/orders/delivery/protobuf"
+	"github.com/2020_1_Skycode/internal/tools"
 	"google.golang.org/grpc"
 )
 
@@ -44,6 +45,27 @@ func (oU *ProtoUseCase) CheckoutOrder(order *models.Order, ordProducts []*models
 		Products: prods,
 	}); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (oU *ProtoUseCase) ChangeOrderStatus(orderID uint64, status string) error {
+	code, err := oU.orderManager.ChangeOrderStatus(context.Background(), &protobuf_order.ChangeStatus{
+		OrderID: orderID,
+		Status:  status,
+	})
+	if err != nil {
+		return err
+	}
+
+	if code.ID != tools.OK {
+		if code.ID == tools.DoesntExist {
+			return tools.OrderNotFound
+		}
+		if code.ID == tools.SameStatus {
+			return tools.NewStatusIsTheSame
+		}
 	}
 
 	return nil
