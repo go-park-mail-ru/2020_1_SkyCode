@@ -37,9 +37,11 @@ import (
 	_usersUseCase "github.com/2020_1_Skycode/internal/users/usecase"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
+	"os"
 )
 
 // @title Swagger SkyDelivery API
@@ -75,6 +77,12 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
+
+	f, err := os.OpenFile("skydelivery.log", os.O_WRONLY|os.O_CREATE, 0755)
+	if err != nil {
+		log.Fatal(err)
+	}
+	logrus.SetOutput(f)
 
 	e := gin.New()
 
