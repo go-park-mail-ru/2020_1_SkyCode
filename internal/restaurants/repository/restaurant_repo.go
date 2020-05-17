@@ -56,6 +56,43 @@ func (rr *RestaurantRepository) GetAll(count uint64, page uint64, tagID uint64) 
 	return restaurantsList, total, nil
 }
 
+func (rr *RestaurantRepository) GetRecommendationsByOrder(userID uint64, count uint64) ([]*models.Restaurant, error) {
+	rows, err := rr.db.Query("WITH ordered_rests AS (SELECT DISTINCT restid FROM orders WHERE userid = $1), "+
+		"ordered_tags AS (SELECT DISTINCT resttag_id FROM restaurants_and_tags "+
+		"WHERE rest_id IN (SELECT * FROM ordered_rests)) "+
+		"SELECT id, name, description, rating, image FROM restaurants "+
+		"WHERE id IN (SELECT r.id FROM restaurants r "+
+		"JOIN restaurants_and_tags rat ON r.id = rat.rest_id WHERE rat.resttag_id IN (SELECT * FROM ordered_tags) "+
+		"AND r.id NOT IN (SELECT * FROM ordered_rests) "+
+		"GROUP BY r.id) "+
+
+		"UNION"+
+
+		"SELECT id, name, description, rating, image FROM restaurants "+
+		"WHERE id IN (SELECT r.id FROM restaurants r "+
+		"WHERE r.id NOT IN (SELECT * FROM ordered_rests) "+
+		"GROUP BY r.id) ORDER BY rating DESC LIMIT $2", userID, count)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var rest []*models.Restaurant
+
+	for rows.Next() {
+		r := &models.Restaurant{}
+
+		if err := rows.Scan(&r.ID, &r.Name, &r.Description, &r.Rating, &r.Image); err != nil {
+			return nil, err
+		}
+
+		rest = append(rest, r)
+	}
+
+	return rest, nil
+}
+
 func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {
 	restaurant := &models.Restaurant{}
 
@@ -148,6 +185,61 @@ func (rr *RestaurantRepository) GetAllInServiceRadius(
 	}
 
 	return returnRests, total, nil
+}
+
+func (rr *RestaurantRepository) GetRecommendationsInRadius(pos *models.GeoPos,
+	userID uint64, count uint64) ([]*models.Restaurant, error) {
+	rows, err := rr.db.Query("WITH ordered_rests AS (SELECT DISTINCT restid FROM orders WHERE userid = $1), "+
+		"ordered_tags AS (SELECT DISTINCT resttag_id FROM restaurants_and_tags "+
+		"WHERE rest_id IN (SELECT * FROM ordered_rests)) "+
+		"SELECT r.id, r.name, r.description, r.rating, r.image, "+
+		"min(st_distance("+
+		"st_makepoint(rp.latitude, rp.longitude)::geography, "+
+		"st_makepoint($2, $3)::geography)) as dst "+
+		"FROM restaurants r "+
+		"JOIN rest_points rp ON (r.id = rp.restid) "+
+		"JOIN restaurants_and_tags rat ON r.id = rat.rest_id WHERE rat.resttag_id IN (SELECT * FROM ordered_tags) "+
+		"AND ST_DWithin("+
+		"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
+		"ST_MakePoint($2, $3)::geography, rp.radius * 1000) AND "+
+		"r.id NOT IN (SELECT * FROM ordered_rests) "+
+		"GROUP BY r.id, r.rating "+
+
+		"UNION"+
+
+		"SELECT r.id, r.name, r.description, r.rating, r.image, "+
+		"min(st_distance("+
+		"st_makepoint(rp.latitude, rp.longitude)::geography, "+
+		"st_makepoint($2, $3)::geography)) as dst "+
+		"FROM restaurants r "+
+		"JOIN rest_points rp ON (r.id = rp.restid) "+
+		"WHERE ST_DWithin("+
+		"ST_MakePoint(rp.latitude, rp.longitude)::geography, "+
+		"ST_MakePoint($2, $3)::geography, rp.radius * 1000) AND "+
+		"r.id NOT IN (SELECT * FROM ordered_rests) "+
+		"GROUP BY r.id, r.rating "+
+		"ORDER BY r.rating DESC "+
+		"LIMIT $4", userID, pos.Latitude, pos.Longitude, count)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var rest []*models.Restaurant
+
+	for rows.Next() {
+		r := &models.Restaurant{}
+
+		if err := rows.Scan(&r.ID, &r.Name, &r.Description, &r.Rating, &r.Image); err != nil {
+			return nil, err
+		}
+
+		rest = append(rest, r)
+	}
+
+	return rest, nil
 }
 
 func (rr *RestaurantRepository) InsertInto(rest *models.Restaurant) error {

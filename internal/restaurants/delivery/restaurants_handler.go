@@ -16,6 +16,10 @@ import (
 	"time"
 )
 
+const (
+	countRecommend = 3
+)
+
 type RestaurantHandler struct {
 	restUseCase restaurants.UseCase
 	middlewareC *middlewares.MWController
@@ -32,7 +36,9 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	}
 
 	public.GET("/restaurants", rh.GetRestaurants())
+	public.GET("/restaurants_recommendations", rh.GetRestaurantsRecommendations())
 	public.GET("/restaurants_point", rh.GetRestaurantsWithCloserPoint())
+	public.GET("/restaurants_point_recommendations", rh.GetRestaurantsRecommendationsInRadius())
 	public.GET("/restaurants/:rest_id", rh.GetRestaurantByID())
 
 	private.POST("/restaurants", rh.CreateRestaurant())
@@ -1153,6 +1159,71 @@ func (rh *RestaurantHandler) DeleteProductTag() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Message{
 			Message: "Product tag deleted",
+		})
+	}
+}
+
+func (rh *RestaurantHandler) GetRestaurantsRecommendations() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		restList, err := rh.restUseCase.GetRestaurantsRecommendations(user.ID, countRecommend)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"restaurants": restList,
+		})
+	}
+}
+
+func (rh *RestaurantHandler) GetRestaurantsRecommendationsInRadius() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		address := c.Query("address")
+		if address == "" {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		restList, err := rh.restUseCase.GetRestaurantsRecommendationsInRadius(address, user.ID, countRecommend)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"restaurants": restList,
 		})
 	}
 }

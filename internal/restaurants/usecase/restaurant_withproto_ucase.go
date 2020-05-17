@@ -58,6 +58,16 @@ func (rUC *RestaurantWithProtoUseCase) GetRestaurants(
 	return restList, total, nil
 }
 
+func (rUC *RestaurantWithProtoUseCase) GetRestaurantsRecommendations(
+	userID uint64, count uint64) ([]*models.Restaurant, error) {
+	rest, err := rUC.restaurantRepo.GetRecommendationsByOrder(userID, count)
+	if err != nil {
+		return nil, err
+	}
+
+	return rest, nil
+}
+
 func (rUC *RestaurantWithProtoUseCase) GetRestaurantByID(id uint64) (*models.Restaurant, error) {
 	rest, err := rUC.restaurantRepo.GetByID(id)
 	if err != nil {
@@ -205,6 +215,20 @@ func (rUC *RestaurantWithProtoUseCase) GetRestaurantsInServiceRadius(
 	}
 
 	return returnRests, total, nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) GetRestaurantsRecommendationsInRadius(address string,
+	userID uint64, count uint64) ([]*models.Restaurant, error) {
+	pos, err := rUC.geoDataRepo.GetGeoPosByAddress(address)
+	if err != nil {
+		return nil, err
+	}
+	rest, err := rUC.restaurantRepo.GetRecommendationsInRadius(pos, userID, count)
+	if err != nil {
+		return nil, err
+	}
+
+	return rest, nil
 }
 
 func (rUC *RestaurantWithProtoUseCase) GetPoints(restID, count, page uint64) ([]*models.RestaurantPoint, uint64, error) {

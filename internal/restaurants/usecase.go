@@ -4,6 +4,7 @@ import "github.com/2020_1_Skycode/internal/models"
 
 type UseCase interface {
 	GetRestaurants(count uint64, page uint64, tagID uint64) ([]*models.Restaurant, uint64, error)
+	GetRestaurantsRecommendations(userID uint64, count uint64) ([]*models.Restaurant, error)
 	GetRestaurantByID(id uint64) (*models.Restaurant, error)
 	CreateRestaurant(rest *models.Restaurant) error
 	UpdateRestaurant(rest *models.Restaurant) error
@@ -13,6 +14,7 @@ type UseCase interface {
 	AddPoint(p *models.RestaurantPoint) error
 	GetPoints(restID, count, page uint64) ([]*models.RestaurantPoint, uint64, error)
 	GetRestaurantsInServiceRadius(address string, count, page, tagID uint64) ([]*models.Restaurant, uint64, error)
+	GetRestaurantsRecommendationsInRadius(address string, userID uint64, count uint64) ([]*models.Restaurant, error)
 
 	AddReview(review *models.Review) error
 	GetReviews(restID, userID, count, page uint64) ([]*models.Review, *models.Review, uint64, error)
