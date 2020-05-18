@@ -53,6 +53,7 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	public.GET("/restaurants/:rest_id/reviews", rh.GetReviews())
 
 	private.POST("/restaurants/:rest_id/tag/:tag_id", rh.AddTag())
+	public.GET("/restaurants/:rest_id/tag", rh.GetRestaurantTags())
 	private.DELETE("/restaurants/:rest_id/tag/:tag_id", rh.DeleteTag())
 
 	public.GET("/restaurants/:rest_id/prod_tags", rh.GetProductTags())
@@ -980,6 +981,42 @@ func (rh *RestaurantHandler) DeleteTag() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, tools.Message{
 			Message: "Tag deleted from the restaurant",
+		})
+	}
+}
+
+func (rh *RestaurantHandler) GetRestaurantTags() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		tags, err := rh.restUseCase.GetTags(restID)
+		if err != nil {
+			if err == tools.RestaurantNotFoundError {
+				c.JSON(http.StatusNotFound, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"tags": tags,
 		})
 	}
 }

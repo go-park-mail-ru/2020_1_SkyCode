@@ -327,6 +327,21 @@ func (rUC *RestaurantWithProtoUseCase) AddTag(restID, tagID uint64) error {
 	return nil
 }
 
+func (rUC *RestaurantWithProtoUseCase) GetTags(restID uint64) ([]*models.RestTag, error) {
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, tools.RestaurantNotFoundError
+		}
+	}
+
+	tags, err := rUC.restTagsRepo.GetRestTags(restID)
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}
+
 func (rUC *RestaurantWithProtoUseCase) DeleteTag(restID, tagID uint64) error {
 	if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
 		if err == sql.ErrNoRows {

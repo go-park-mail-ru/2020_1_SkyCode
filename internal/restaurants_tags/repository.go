@@ -11,5 +11,6 @@ type Repository interface {
 
 	CreateTagRestRelation(restID, tagID uint64) error
 	CheckTagRestRelation(restID, tagID uint64) (bool, error)
+	GetRestTags(restID uint64) ([]*models.RestTag, error)
 	DeleteTagRestRelation(restID, tagID uint64) error
 }

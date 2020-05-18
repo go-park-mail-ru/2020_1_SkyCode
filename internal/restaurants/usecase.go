@@ -20,6 +20,7 @@ type UseCase interface {
 	GetReviews(restID, userID, count, page uint64) ([]*models.Review, *models.Review, uint64, error)
 
 	AddTag(restID, tagID uint64) error
+	GetTags(restID uint64) ([]*models.RestTag, error)
 	DeleteTag(restID, tagID uint64) error
 
 	GetProductTagsByID(restID uint64) ([]*models.ProductTag, error)

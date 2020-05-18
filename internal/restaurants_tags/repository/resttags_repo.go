@@ -26,7 +26,7 @@ func (rtr *RestTagRepository) InsertInto(tag *models.RestTag) error {
 }
 
 func (rtr *RestTagRepository) GetAll() ([]*models.RestTag, error) {
-	rows, err := rtr.db.Query("SELECT id, name, image FROM rest_tags")
+	rows, err := rtr.db.Query("SELECT id, name, image FROM rest_tags ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +94,28 @@ func (rtr *RestTagRepository) CheckTagRestRelation(restID, tagID uint64) (bool, 
 	}
 
 	return true, nil
+}
+
+func (rtr *RestTagRepository) GetRestTags(restID uint64) ([]*models.RestTag, error) {
+	rows, err := rtr.db.Query("SELECT rt.id, rt.name, rt.image FROM rest_tags rt "+
+		"JOIN restaurants_and_tags rat ON (rat.resttag_id = rt.id) WHERE rat.rest_id = $1", restID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var tags []*models.RestTag
+	for rows.Next() {
+		tag := &models.RestTag{}
+		if err := rows.Scan(&tag.ID, &tag.Name, &tag.Image); err != nil {
+			return nil, err
+		}
+
+		tags = append(tags, tag)
+	}
+
+	return tags, nil
 }
 
 func (rtr *RestTagRepository) DeleteTagRestRelation(restID, tagID uint64) error {
