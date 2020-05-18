@@ -5,20 +5,20 @@ import (
 	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurant_points"
+	protobuf_admin_rest "github.com/2020_1_Skycode/internal/restaurants/delivery/protobuf"
 	"github.com/2020_1_Skycode/internal/tools"
-	"github.com/2020_1_Skycode/tools/protobuf/adminwork"
 	"google.golang.org/grpc"
 )
 
 type RestPointsWithProtoUseCase struct {
 	RestPointsRepo restaurant_points.Repository
-	adminManager   adminwork.RestaurantAdminWorkerClient
+	adminManager   protobuf_admin_rest.RestaurantAdminWorkerClient
 }
 
 func NewRestPointsWithProtoUseCase(rpr restaurant_points.Repository, conn *grpc.ClientConn) restaurant_points.UseCase {
 	return &RestPointsWithProtoUseCase{
 		RestPointsRepo: rpr,
-		adminManager:   adminwork.NewRestaurantAdminWorkerClient(conn),
+		adminManager:   protobuf_admin_rest.NewRestaurantAdminWorkerClient(conn),
 	}
 }
 
@@ -47,14 +47,16 @@ func (rpUC *RestPointsWithProtoUseCase) GetAllPoints() ([]*models.RestaurantPoin
 func (rpUC *RestPointsWithProtoUseCase) Delete(id uint64) error {
 	answ, err := rpUC.adminManager.DeletePoint(
 		context.Background(),
-		&adminwork.ProtoID{ID: id})
+		&protobuf_admin_rest.ProtoID{ID: id})
+
+	if err != nil {
+		return err
+	}
 
 	if answ.ID != tools.OK {
 		if answ.ID == tools.DoesntExist {
 			return tools.RestPointNotFound
 		}
-
-		return err
 	}
 
 	return nil

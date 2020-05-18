@@ -5,41 +5,67 @@ import (
 	"database/sql"
 	"github.com/2020_1_Skycode/internal/geodata"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/product_tags"
 	"github.com/2020_1_Skycode/internal/restaurant_points"
 	"github.com/2020_1_Skycode/internal/restaurants"
+	protobuf_admin_rest "github.com/2020_1_Skycode/internal/restaurants/delivery/protobuf"
+	"github.com/2020_1_Skycode/internal/restaurants_tags"
 	"github.com/2020_1_Skycode/internal/reviews"
 	"github.com/2020_1_Skycode/internal/tools"
-	"github.com/2020_1_Skycode/tools/protobuf/adminwork"
 	"google.golang.org/grpc"
 	"math"
 )
 
 type RestaurantWithProtoUseCase struct {
-	restaurantRepo restaurants.Repository
-	reviewsRepo    reviews.Repository
-	geoDataRepo    geodata.Repository
-	restPointsRepo restaurant_points.Repository
-	adminManager   adminwork.RestaurantAdminWorkerClient
+	restaurantRepo  restaurants.Repository
+	reviewsRepo     reviews.Repository
+	geoDataRepo     geodata.Repository
+	restPointsRepo  restaurant_points.Repository
+	restTagsRepo    restaurants_tags.Repository
+	productTagsRepo product_tags.Repository
+	adminManager    protobuf_admin_rest.RestaurantAdminWorkerClient
 }
 
 func NewRestaurantsWithProtoUseCase(rr restaurants.Repository, rpr restaurant_points.Repository,
-	rvr reviews.Repository, gdr geodata.Repository, conn *grpc.ClientConn) restaurants.UseCase {
+	rvr reviews.Repository, gdr geodata.Repository, rtr restaurants_tags.Repository,
+	ptr product_tags.Repository, conn *grpc.ClientConn) restaurants.UseCase {
 	return &RestaurantWithProtoUseCase{
-		restaurantRepo: rr,
-		reviewsRepo:    rvr,
-		geoDataRepo:    gdr,
-		restPointsRepo: rpr,
-		adminManager:   adminwork.NewRestaurantAdminWorkerClient(conn),
+		restaurantRepo:  rr,
+		reviewsRepo:     rvr,
+		geoDataRepo:     gdr,
+		restPointsRepo:  rpr,
+		restTagsRepo:    rtr,
+		productTagsRepo: ptr,
+		adminManager:    protobuf_admin_rest.NewRestaurantAdminWorkerClient(conn),
 	}
 }
 
-func (rUC *RestaurantWithProtoUseCase) GetRestaurants(count uint64, page uint64) ([]*models.Restaurant, uint64, error) {
-	restList, total, err := rUC.restaurantRepo.GetAll(count, page)
+func (rUC *RestaurantWithProtoUseCase) GetRestaurants(
+	count uint64, page uint64, tagID uint64) ([]*models.Restaurant, uint64, error) {
+	if tagID != 0 {
+		if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, 0, tools.RestTagNotFound
+			}
+		}
+	}
+
+	restList, total, err := rUC.restaurantRepo.GetAll(count, page, tagID)
 	if err != nil {
 		return nil, total, err
 	}
 
 	return restList, total, nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) GetRestaurantsRecommendations(
+	userID uint64, count uint64) ([]*models.Restaurant, error) {
+	rest, err := rUC.restaurantRepo.GetRecommendationsByOrder(userID, count)
+	if err != nil {
+		return nil, err
+	}
+
+	return rest, nil
 }
 
 func (rUC *RestaurantWithProtoUseCase) GetRestaurantByID(id uint64) (*models.Restaurant, error) {
@@ -52,19 +78,17 @@ func (rUC *RestaurantWithProtoUseCase) GetRestaurantByID(id uint64) (*models.Res
 }
 
 func (rUC *RestaurantWithProtoUseCase) CreateRestaurant(rest *models.Restaurant) error {
-	answ, err := rUC.adminManager.CreateRestaurant(
+	_, err := rUC.adminManager.CreateRestaurant(
 		context.Background(),
-		&adminwork.ProtoRestaurant{
+		&protobuf_admin_rest.ProtoRestaurant{
 			ManagerID:   rest.ManagerID,
 			Name:        rest.Name,
 			Description: rest.Description,
 			ImagePath:   rest.Image,
 		})
 
-	if answ.ID != tools.OK {
-		if err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -73,18 +97,19 @@ func (rUC *RestaurantWithProtoUseCase) CreateRestaurant(rest *models.Restaurant)
 func (rUC *RestaurantWithProtoUseCase) UpdateRestaurant(rest *models.Restaurant) error {
 	answ, err := rUC.adminManager.UpdateRestaurant(
 		context.Background(),
-		&adminwork.ProtoRestaurant{
+		&protobuf_admin_rest.ProtoRestaurant{
 			ID:          rest.ID,
 			Name:        rest.Name,
 			Description: rest.Description,
 		})
 
+	if err != nil {
+		return err
+	}
+
 	if answ.ID != tools.OK {
 		if answ.ID == tools.DoesntExist {
 			return tools.RestaurantNotFoundError
-		}
-		if err != nil {
-			return err
 		}
 	}
 
@@ -94,17 +119,18 @@ func (rUC *RestaurantWithProtoUseCase) UpdateRestaurant(rest *models.Restaurant)
 func (rUC *RestaurantWithProtoUseCase) UpdateImage(restID uint64, filename string) error {
 	answ, err := rUC.adminManager.UpdateRestaurantImage(
 		context.Background(),
-		&adminwork.ProtoImage{
+		&protobuf_admin_rest.ProtoImage{
 			ID:        restID,
 			ImagePath: filename,
 		})
 
+	if err != nil {
+		return err
+	}
+
 	if answ.ID != tools.OK {
 		if answ.ID == tools.DoesntExist {
 			return tools.RestaurantNotFoundError
-		}
-		if err != nil {
-			return err
 		}
 	}
 
@@ -114,16 +140,17 @@ func (rUC *RestaurantWithProtoUseCase) UpdateImage(restID uint64, filename strin
 func (rUC *RestaurantWithProtoUseCase) Delete(restID uint64) error {
 	answ, err := rUC.adminManager.DeleteRestaurant(
 		context.Background(),
-		&adminwork.ProtoID{
+		&protobuf_admin_rest.ProtoID{
 			ID: restID,
 		})
+
+	if err != nil {
+		return err
+	}
 
 	if answ.ID != tools.OK {
 		if answ.ID == tools.DoesntExist {
 			return tools.RestaurantNotFoundError
-		}
-		if err != nil {
-			return err
 		}
 	}
 
@@ -133,11 +160,15 @@ func (rUC *RestaurantWithProtoUseCase) Delete(restID uint64) error {
 func (rUC *RestaurantWithProtoUseCase) AddPoint(p *models.RestaurantPoint) error {
 	answ, err := rUC.adminManager.CreatePoint(
 		context.Background(),
-		&adminwork.ProtoPoint{
+		&protobuf_admin_rest.ProtoPoint{
 			Address: p.Address,
 			RestID:  p.RestID,
 			Radius:  float32(p.ServiceRadius),
 		})
+
+	if err != nil {
+		return err
+	}
 
 	if answ.ID != tools.OK {
 		if answ.ID == tools.DoesntExist {
@@ -146,22 +177,27 @@ func (rUC *RestaurantWithProtoUseCase) AddPoint(p *models.RestaurantPoint) error
 		if answ.ID == tools.AddressNotHouse {
 			return tools.ApiNotHouseAnswerError
 		}
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
 }
 
 func (rUC *RestaurantWithProtoUseCase) GetRestaurantsInServiceRadius(
-	address string, count, page uint64) ([]*models.Restaurant, uint64, error) {
+	address string, count, page, tagID uint64) ([]*models.Restaurant, uint64, error) {
 	pos, err := rUC.geoDataRepo.GetGeoPosByAddress(address)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	returnRests, total, err := rUC.restaurantRepo.GetAllInServiceRadius(pos, count, page)
+	if tagID != 0 {
+		if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, 0, tools.RestTagNotFound
+			}
+		}
+	}
+
+	returnRests, total, err := rUC.restaurantRepo.GetAllInServiceRadius(pos, count, page, tagID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return []*models.Restaurant{}, 0, nil
@@ -179,6 +215,20 @@ func (rUC *RestaurantWithProtoUseCase) GetRestaurantsInServiceRadius(
 	}
 
 	return returnRests, total, nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) GetRestaurantsRecommendationsInRadius(address string,
+	userID uint64, count uint64) ([]*models.Restaurant, error) {
+	pos, err := rUC.geoDataRepo.GetGeoPosByAddress(address)
+	if err != nil {
+		return nil, err
+	}
+	rest, err := rUC.restaurantRepo.GetRecommendationsInRadius(pos, userID, count)
+	if err != nil {
+		return nil, err
+	}
+
+	return rest, nil
 }
 
 func (rUC *RestaurantWithProtoUseCase) GetPoints(restID, count, page uint64) ([]*models.RestaurantPoint, uint64, error) {
@@ -244,4 +294,122 @@ func (rUC *RestaurantWithProtoUseCase) GetReviews(restID, userID, count, page ui
 	}
 
 	return returnReviews, curReview, total, nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) AddTag(restID, tagID uint64) error {
+	if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestTagNotFound
+		}
+
+		return err
+	}
+
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestaurantNotFoundError
+		}
+	}
+
+	check, err := rUC.restTagsRepo.CheckTagRestRelation(restID, tagID)
+	if err != nil {
+		return err
+	}
+
+	if check {
+		return tools.TagRestComboAlreadyExist
+	}
+
+	if err := rUC.restTagsRepo.CreateTagRestRelation(restID, tagID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) GetTags(restID uint64) ([]*models.RestTag, error) {
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, tools.RestaurantNotFoundError
+		}
+	}
+
+	tags, err := rUC.restTagsRepo.GetRestTags(restID)
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) DeleteTag(restID, tagID uint64) error {
+	if _, err := rUC.restTagsRepo.GetByID(tagID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestTagNotFound
+		}
+
+		return err
+	}
+
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.RestaurantNotFoundError
+		}
+	}
+
+	check, err := rUC.restTagsRepo.CheckTagRestRelation(restID, tagID)
+	if err != nil {
+		return err
+	}
+
+	if !check {
+		return tools.TagRestComboDoesntExist
+	}
+
+	if err := rUC.restTagsRepo.DeleteTagRestRelation(restID, tagID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) GetProductTagsByID(restID uint64) ([]*models.ProductTag, error) {
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, tools.RestaurantNotFoundError
+		}
+
+		return nil, err
+	}
+
+	tags, err := rUC.productTagsRepo.GetByRestID(restID)
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) AddProductTag(tag *models.ProductTag) error {
+	if err := rUC.productTagsRepo.InsertInto(tag); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) DeleteProductTag(ID uint64) error {
+	if _, err := rUC.productTagsRepo.GetByID(ID); err != nil {
+		if err == sql.ErrNoRows {
+			return tools.ProductTagNotFound
+		}
+
+		return err
+	}
+
+	if err := rUC.productTagsRepo.Delete(ID); err != nil {
+		return err
+	}
+
+	return nil
 }

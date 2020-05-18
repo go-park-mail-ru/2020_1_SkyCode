@@ -6,7 +6,6 @@ import (
 	protobuf_session "github.com/2020_1_Skycode/internal/sessions/delivery/protobuf"
 	_sessionRepository "github.com/2020_1_Skycode/internal/sessions/repository"
 	"github.com/2020_1_Skycode/internal/tools"
-	"github.com/2020_1_Skycode/tools/protobuf/sessionwork"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"log"
@@ -53,7 +52,7 @@ func main() {
 
 	server := grpc.NewServer()
 
-	sessionwork.RegisterSessionWorkerServer(server, sessionManager)
+	protobuf_session.RegisterSessionWorkerServer(server, sessionManager)
 
 	logrus.Info("Startin server on port", port)
 	server.Serve(lis)

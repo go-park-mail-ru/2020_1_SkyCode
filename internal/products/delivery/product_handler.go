@@ -46,11 +46,13 @@ func NewProductHandler(private *gin.RouterGroup, public *gin.RouterGroup, pUC pr
 type productRequest struct {
 	Name  string  `json:"name, omitempty" binding:"required" validate:"min=2"`
 	Price float32 `json:"price, omitempty" binding:"required"`
+	Tag   uint64  `json:"tag" binding:"omitempty"`
 }
 
 type UpdateProductRequest struct {
 	Name  string  `json:"name, omitempty" binding:"required"`
 	Price float32 `json:"price, omitempty" binding:"required"`
+	Tag   uint64  `json:"tag" binding:"omitempty"`
 }
 
 //@Tags Product
@@ -102,17 +104,6 @@ func (ph *ProductHandler) GetProduct() gin.HandlerFunc {
 //@Router /restaurants/rest:id/product [get]
 func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
-		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
-		if err != nil {
-			logrus.Info(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: "Bad params",
-			})
-
-			return
-		}
-
 		id, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
 		if err != nil {
 			logrus.Info(err)
@@ -123,7 +114,7 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 			return
 		}
 
-		products, total, err := ph.productUseCase.GetProductsByRestaurantID(id, count, page)
+		products, err := ph.productUseCase.GetProductsByRestaurantID(id)
 		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusNotFound, tools.Error{
@@ -135,7 +126,6 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{
 			"products": products,
-			"total":    total,
 		})
 	}
 }
@@ -170,7 +160,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 
 		if !user.IsManager() && !user.IsAdmin() {
 			c.JSON(http.StatusForbidden, tools.Error{
-				ErrorMessage: "User doesn't have permissions",
+				ErrorMessage: tools.PermissionError.Error(),
 			})
 
 			return
@@ -252,6 +242,7 @@ func (ph *ProductHandler) CreateProduct() gin.HandlerFunc {
 			Price:  req.Price,
 			RestId: restID,
 			Image:  filename,
+			Tag:    req.Tag,
 		}
 
 		if err = ph.productUseCase.CreateProduct(product); err != nil {
@@ -328,6 +319,7 @@ func (ph *ProductHandler) UpdateProduct() gin.HandlerFunc {
 			ID:    prodID,
 			Name:  req.Name,
 			Price: req.Price,
+			Tag:   req.Tag,
 		}
 
 		if err = ph.productUseCase.UpdateProduct(product); err != nil {

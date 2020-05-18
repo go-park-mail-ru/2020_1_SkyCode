@@ -4,7 +4,7 @@
 // 	protoc        v3.11.4
 // source: order.proto
 
-package orderswork
+package protobuf_order
 
 import (
 	context "context"

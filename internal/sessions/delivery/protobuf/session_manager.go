@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/sessions"
-	"github.com/2020_1_Skycode/tools/protobuf/sessionwork"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/sirupsen/logrus"
 )
@@ -20,11 +19,11 @@ func NewSessionManager(sr sessions.Repository) *SessionManager {
 	}
 }
 
-func (sm *SessionManager) Create(ctx context.Context, s *sessionwork.ProtoSession) (*sessionwork.Answer, error) {
+func (sm *SessionManager) Create(ctx context.Context, s *ProtoSession) (*Answer, error) {
 	t, err := ptypes.Timestamp(s.Expiration)
 	if err != nil {
 		logrus.Error(err)
-		return &sessionwork.Answer{Success: false}, err
+		return &Answer{Success: false}, err
 	}
 
 	newSession := &models.Session{
@@ -36,32 +35,32 @@ func (sm *SessionManager) Create(ctx context.Context, s *sessionwork.ProtoSessio
 
 	if err := sm.sessionRepo.InsertInto(newSession); err != nil {
 		logrus.Error(err)
-		return &sessionwork.Answer{Success: false}, err
+		return &Answer{Success: false}, err
 	}
 
-	return &sessionwork.Answer{Success: true}, nil
+	return &Answer{Success: true}, nil
 }
 
-func (sm *SessionManager) Get(ctx context.Context, token *sessionwork.ProtoSessionToken) (*sessionwork.ProtoSession, error) {
+func (sm *SessionManager) Get(ctx context.Context, token *ProtoSessionToken) (*ProtoSession, error) {
 	currSession := &models.Session{
 		Token: token.Token,
 	}
 
 	if err := sm.sessionRepo.Get(currSession); err != nil {
 		if err == sql.ErrNoRows {
-			return &sessionwork.ProtoSession{ID: 0}, nil
+			return &ProtoSession{ID: 0}, nil
 		}
 		logrus.Error(err)
-		return &sessionwork.ProtoSession{ID: 0}, err
+		return &ProtoSession{ID: 0}, err
 	}
 
 	t, err := ptypes.TimestampProto(currSession.Expiration)
 	if err != nil {
 		logrus.Error(err)
-		return &sessionwork.ProtoSession{ID: 0}, err
+		return &ProtoSession{ID: 0}, err
 	}
 
-	returnSession := &sessionwork.ProtoSession{
+	returnSession := &ProtoSession{
 		ID:         currSession.ID,
 		UserID:     currSession.UserId,
 		Token:      currSession.Token,
@@ -71,15 +70,15 @@ func (sm *SessionManager) Get(ctx context.Context, token *sessionwork.ProtoSessi
 	return returnSession, nil
 }
 
-func (sm *SessionManager) Delete(ctx context.Context, id *sessionwork.ProtoSessionID) (*sessionwork.Answer, error) {
+func (sm *SessionManager) Delete(ctx context.Context, id *ProtoSessionID) (*Answer, error) {
 	currSession := &models.Session{
 		ID: id.ID,
 	}
 
 	if err := sm.sessionRepo.Delete(currSession); err != nil {
 		logrus.Error(err)
-		return &sessionwork.Answer{Success: false}, err
+		return &Answer{Success: false}, err
 	}
 
-	return &sessionwork.Answer{Success: true}, nil
+	return &Answer{Success: true}, nil
 }

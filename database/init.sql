@@ -5,6 +5,8 @@ drop table if exists products cascade;
 drop table if exists orderproducts cascade;
 drop table if exists orders cascade;
 drop table if exists chat_messages cascade;
+drop table if exists rest_tags cascade;
+drop table if exists restaurants_and_tags cascade;
 
 create extension if not exists postgis;
 create extension if not exists postgis_topology;
@@ -42,6 +44,27 @@ create table restaurants
     foreign key (moderId) references users (id) on delete cascade
 );
 
+create table rest_tags
+(
+    id      serial          not null primary key,
+    name    varchar(80)     not null unique,
+    image   varchar(160)    not null
+);
+
+create table product_tags
+(
+    id      serial          not null primary key,
+    name    varchar(80)     not null,
+    rest_id int references restaurants (id) on delete cascade
+);
+
+create table restaurants_and_tags
+(
+    rest_id     int references restaurants (id) on delete cascade,
+    resttag_id  int references rest_tags (id) on delete cascade,
+    constraint uq_rest_tag_comb unique (rest_id, resttag_id)
+);
+
 create table products
 (
     id      serial      not null primary key,
@@ -49,7 +72,8 @@ create table products
     name    varchar(30) not null,
     price   real        not null,
     image   varchar(50) not null,
-    foreign key (rest_id) references restaurants (id) on delete cascade
+    tag     int references product_tags (id) on delete set null,
+    foreign key (rest_id) references restaurant (id) on delete cascade
 );
 
 create table orders
@@ -131,4 +155,4 @@ create table chat_messages
     chat     varchar not null,
     message  text    not null,
     created  timestamptz default current_timestamp
-)
+);
