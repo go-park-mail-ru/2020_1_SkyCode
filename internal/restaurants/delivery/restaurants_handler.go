@@ -1212,7 +1212,16 @@ func (rh *RestaurantHandler) GetRestaurantsRecommendations() gin.HandlerFunc {
 			return
 		}
 
-		restList, err := rh.restUseCase.GetRestaurantsRecommendations(user.ID, countRecommend)
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		if count == 0 || err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		restList, err := rh.restUseCase.GetRestaurantsRecommendations(user.ID, count)
 		if err != nil {
 			logrus.Error(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
@@ -1249,7 +1258,16 @@ func (rh *RestaurantHandler) GetRestaurantsRecommendationsInRadius() gin.Handler
 			return
 		}
 
-		restList, err := rh.restUseCase.GetRestaurantsRecommendationsInRadius(address, user.ID, countRecommend)
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		if count == 0 || err != nil {
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		restList, err := rh.restUseCase.GetRestaurantsRecommendationsInRadius(address, user.ID, count)
 		if err != nil {
 			logrus.Error(err)
 			c.JSON(http.StatusBadRequest, tools.Error{

@@ -31,7 +31,7 @@ func NewChatsHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 }
 
 func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
-	return func (c *gin.Context) {
+	return func(c *gin.Context) {
 		user, err := cH.mw.GetUser(c)
 
 		if user == nil {
@@ -47,6 +47,7 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 
 		if err != nil {
 			logrus.Error(err)
+			return
 		}
 
 		joinMsg.UserID = user.ID
@@ -69,10 +70,10 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 			}
 
 			if err := cH.cU.StoreMessage(&models.ChatMessage{
-				UserID: user.ID,
+				UserID:   user.ID,
 				UserName: user.FirstName,
-				ChatID: message.ChatID,
-				Message: message.Message,
+				ChatID:   message.ChatID,
+				Message:  message.Message,
 			}); err != nil {
 				logrus.Error(err)
 			}
@@ -85,7 +86,7 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 }
 
 func (cH *ChatHandler) GetSupChatList() gin.HandlerFunc {
-	return func (c *gin.Context) {
+	return func(c *gin.Context) {
 		user, err := cH.mw.GetUser(c)
 
 		if user == nil || !user.IsSupport() {
@@ -103,7 +104,7 @@ func (cH *ChatHandler) GetSupChatList() gin.HandlerFunc {
 }
 
 func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
-	return func (c *gin.Context) {
+	return func(c *gin.Context) {
 		user, err := cH.mw.GetUser(c)
 
 		if user == nil || !user.IsSupport() {
@@ -154,9 +155,9 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 
 			if err := cH.cU.StoreMessage(&models.ChatMessage{
 				UserName: user.FirstName,
-				UserID: user.ID,
-				ChatID: message.ChatID,
-				Message: message.Message,
+				UserID:   user.ID,
+				ChatID:   message.ChatID,
+				Message:  message.Message,
 			}); err != nil {
 				logrus.Error(err)
 			}
@@ -214,4 +215,3 @@ func (cH *ChatHandler) GetChatMessages() gin.HandlerFunc {
 		c.JSON(http.StatusOK, messages)
 	}
 }
-
