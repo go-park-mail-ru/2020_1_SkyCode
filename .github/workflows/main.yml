@@ -33,5 +33,16 @@ jobs:
         
       - name: tests
         run: go test -coverpkg=./internal/... ./internal/... -coverprofile cover.out && go tool cover -func cover.out | grep total
+  
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to nerdhood.de
+      uses: appleboy/ssh-action@master
+      env:
+        USERNAME: ubuntu
+        HOST: https://skydelivery.site
+        SCRIPT: ~/deployment.sh
+        KEY: ${{ secrets.SSH_DEPLOYMENT_KEY }}
       
       
