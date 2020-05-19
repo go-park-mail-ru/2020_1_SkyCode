@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/orders/delivery/protobuf"
+	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 )
 
@@ -47,6 +49,41 @@ func (oU *ProtoUseCase) CheckoutOrder(order *models.Order, ordProducts []*models
 	}
 
 	return nil
+}
+
+func (oU *ProtoUseCase) ChangeOrderStatus(orderID uint64, status string) (*models.Notification, error) {
+	answ, err := oU.orderManager.ChangeOrderStatus(context.Background(), &protobuf_order.ChangeStatus{
+		OrderID: orderID,
+		Status:  status,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if answ.Code.ID != tools.OK {
+		if answ.Code.ID == tools.DoesntExist {
+			return nil, tools.OrderNotFound
+		}
+		if answ.Code.ID == tools.SameStatus {
+			return nil, tools.NewStatusIsTheSame
+		}
+	}
+
+	t, err := ptypes.Timestamp(answ.Note.DateTime)
+	if err != nil {
+		return nil, err
+	}
+
+	note := &models.Notification{
+		ID:           answ.Note.ID,
+		UserID:       answ.Note.UserID,
+		OrderID:      answ.Note.OrderID,
+		UnreadStatus: answ.Note.UnreadStatus,
+		Status:       answ.Note.Status,
+		DateTime:     t,
+	}
+
+	return note, nil
 }
 
 func (oU *ProtoUseCase) GetAllUserOrders(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {

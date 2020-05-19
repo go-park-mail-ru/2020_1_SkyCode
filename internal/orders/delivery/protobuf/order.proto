@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package protobuf_order;
 
+import "google/protobuf/timestamp.proto";
+
 message OrderProduct {
   uint64 ID = 1;
   uint64 OrderID = 2;
@@ -63,14 +65,37 @@ message DelOrder {
   uint64 UserID = 2;
 }
 
+message ChangeStatus {
+  uint64 OrderID = 1;
+  string Status = 2;
+}
 
 message Error {
   string Err = 1;
 }
 
+message ErrorCode {
+  uint64 ID = 1;
+}
+
+message Notification {
+  uint64        ID = 1;
+  uint64        UserID = 2;
+  uint64        OrderID = 3;
+  bool          UnreadStatus = 4;
+  string        Status = 5;
+  google.protobuf.Timestamp DateTime = 6;
+}
+
+message ChaneStatusAnswer {
+  Notification  note = 1;
+  ErrorCode     code = 2;
+}
+
 service OrderWorker {
   rpc CheckOutOrder(Checkout) returns (Error);
   rpc GetAllUserOrders(UserOrders) returns (GetAllResponse);
+  rpc ChangeOrderStatus(ChangeStatus) returns (ChaneStatusAnswer);
   rpc GetOrderByID(GetByID) returns (GetByIDResponse);
   rpc DeleteOrder(DelOrder) returns (Error);
 }

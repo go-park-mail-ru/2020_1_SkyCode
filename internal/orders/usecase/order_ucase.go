@@ -34,7 +34,7 @@ func (oU *OrderUseCase) GetAllUserOrders(userID uint64, count uint64, page uint6
 }
 
 func (oU *OrderUseCase) GetOrderByID(orderID uint64, userID uint64) (*models.Order, error) {
-	order, err := oU.orderRepo.GetByID(orderID, userID)
+	order, err := oU.orderRepo.GetByID(orderID)
 
 	if err != nil {
 		return nil, err

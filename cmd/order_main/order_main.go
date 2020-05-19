@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	_notificationsRepo "github.com/2020_1_Skycode/internal/notifications/repository"
 	protobuf_order "github.com/2020_1_Skycode/internal/orders/delivery/protobuf"
 	_orderRepo "github.com/2020_1_Skycode/internal/orders/repository"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
@@ -43,8 +44,9 @@ func main() {
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
 	orderRepo := _orderRepo.NewOrdersRepository(dbConn, restRepo)
+	notificationsRepo := _notificationsRepo.NewNotificationsRepository(dbConn)
 
-	orderManager := protobuf_order.NewOrderProtoManager(orderRepo)
+	orderManager := protobuf_order.NewOrderProtoManager(orderRepo, notificationsRepo)
 
 	port := ":5003"
 
