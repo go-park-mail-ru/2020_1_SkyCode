@@ -6,6 +6,7 @@ import (
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/orders"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/notificationsWS"
 	"github.com/2020_1_Skycode/internal/tools/requestValidator"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -15,14 +16,17 @@ import (
 
 type OrderHandler struct {
 	orderUseCase orders.UseCase
+	noteServer   *notificationsWS.NotificationServer
 	middlewareC  *middlewares.MWController
 	v            *requestValidator.RequestValidator
 }
 
 func NewOrderHandler(private *gin.RouterGroup, public *gin.RouterGroup, orderUC orders.UseCase,
-	validator *requestValidator.RequestValidator, mw *middlewares.MWController) *OrderHandler {
+	validator *requestValidator.RequestValidator, mw *middlewares.MWController,
+	ns *notificationsWS.NotificationServer) *OrderHandler {
 	oh := &OrderHandler{
 		orderUseCase: orderUC,
+		noteServer:   ns,
 		middlewareC:  mw,
 		v:            validator,
 	}
@@ -283,7 +287,9 @@ func (oH *OrderHandler) ChangeStatus() gin.HandlerFunc {
 			return
 		}
 
-		if err := oH.orderUseCase.ChangeOrderStatus(orderID, newStatus); err != nil {
+		note, err := oH.orderUseCase.ChangeOrderStatus(orderID, newStatus)
+
+		if err != nil {
 			if err == tools.NewStatusIsTheSame {
 				c.JSON(http.StatusConflict, tools.Error{
 					ErrorMessage: err.Error(),
@@ -306,6 +312,8 @@ func (oH *OrderHandler) ChangeStatus() gin.HandlerFunc {
 
 			return
 		}
+
+		oH.noteServer.SendNotification(note)
 
 		c.JSON(http.StatusOK, tools.Message{Message: "Order status successfully updated"})
 	}

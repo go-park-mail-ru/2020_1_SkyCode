@@ -4,6 +4,7 @@ import (
 	"github.com/2020_1_Skycode/internal/middlewares"
 	"github.com/2020_1_Skycode/internal/notifications"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/2020_1_Skycode/internal/tools/notificationsWS"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -13,18 +14,21 @@ import (
 type NotificationsHandler struct {
 	notificationsUC notifications.UseCase
 	middlewareC     *middlewares.MWController
+	noteServer      *notificationsWS.NotificationServer
 }
 
 func NewNotificationsHandler(private *gin.RouterGroup, public *gin.RouterGroup, nUC notifications.UseCase,
-	mw *middlewares.MWController) *NotificationsHandler {
+	mw *middlewares.MWController, ns *notificationsWS.NotificationServer) *NotificationsHandler {
 	nh := &NotificationsHandler{
 		notificationsUC: nUC,
 		middlewareC:     mw,
+		noteServer:      ns,
 	}
 
 	public.GET("/notifications", nh.GeUserNotifications())
 	private.POST("/notifications/:id", nh.ChangeReadStatus())
 
+	public.GET("/notification_server", nh.JoinNotificationServer())
 	private.DELETE("/notifications/:id", nh.DeleteNotification())
 
 	return nh
@@ -156,5 +160,30 @@ func (nh *NotificationsHandler) DeleteNotification() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, tools.Message{Message: "Success"})
+	}
+}
+
+func (nh *NotificationsHandler) JoinNotificationServer() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u, err := nh.middlewareC.GetUser(c)
+
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		_, err = nh.noteServer.CreateClient(c.Writer, c.Request, u.ID)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
 	}
 }

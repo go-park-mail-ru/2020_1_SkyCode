@@ -36,6 +36,7 @@ import (
 	_sessionsUseCase "github.com/2020_1_Skycode/internal/sessions/usecase"
 	"github.com/2020_1_Skycode/internal/tools"
 	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
+	"github.com/2020_1_Skycode/internal/tools/notificationsWS"
 	_rValidator "github.com/2020_1_Skycode/internal/tools/requestValidator"
 	_usersDelivery "github.com/2020_1_Skycode/internal/users/delivery"
 	_usersRepository "github.com/2020_1_Skycode/internal/users/repository"
@@ -138,6 +139,7 @@ func main() {
 
 	notificationsRepo := _notificationsRepository.NewNotificationsRepository(dbConn)
 	notificationsUCase := _notificationsUseCase.NewNotificationsUseCase(notificationsRepo)
+	notificationsServer := notificationsWS.NewNotificationServer()
 
 	csrfManager := _csrfManager.NewCSRFManager()
 
@@ -151,17 +153,21 @@ func main() {
 
 	privateGroup.Use(mwareC.CSRFControl())
 
-	_ = _sessionsDelivery.NewSessionHandler(privateGroup, publicGroup, sessionsUcase, userUcase, reqValidator, csrfManager, mwareC)
-	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, reqValidator, csrfManager, mwareC)
+	_ = _sessionsDelivery.NewSessionHandler(privateGroup, publicGroup, sessionsUcase, userUcase, reqValidator,
+		csrfManager, mwareC)
+	_ = _usersDelivery.NewUserHandler(privateGroup, publicGroup, userUcase, sessionsUcase, reqValidator,
+		csrfManager, mwareC)
 	_ = _restDelivery.NewRestaurantHandler(privateGroup, publicGroup, reqValidator, restUcase, mwareC)
 	_ = _productDelivery.NewProductHandler(privateGroup, publicGroup, prodUcase, reqValidator, restUcase, mwareC)
-	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, reqValidator, mwareC)
+	_ = _ordersDelivery.NewOrderHandler(privateGroup, publicGroup, ordersUcase, reqValidator, mwareC,
+		notificationsServer)
 	_ = _reviewsDelivery.NewReviewsHandler(privateGroup, publicGroup, reviewUcase, reqValidator, mwareC)
 	_ = _restPointsDelivery.NewRestPointsHandler(privateGroup, publicGroup, restPointsUCase, mwareC)
 	_ = _geodataDelivery.NewGeoDataHandler(privateGroup, publicGroup, geoDataUcase)
 	_ = _chatsDelivery.NewChatsHandler(privateGroup, publicGroup, chatsUcase, mwareC)
 	_ = _restTagsDelivery.NewRestTagHandler(privateGroup, publicGroup, restTagsUcase, reqValidator, mwareC)
-	_ = _notificationsDelivery.NewNotificationsHandler(privateGroup, publicGroup, notificationsUCase, mwareC)
+	_ = _notificationsDelivery.NewNotificationsHandler(privateGroup, publicGroup, notificationsUCase, mwareC,
+		notificationsServer)
 
 	e.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

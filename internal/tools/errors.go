@@ -47,4 +47,5 @@ var (
 	OrderNotFound              = errors.New("Order not found")
 	NewStatusIsTheSame         = errors.New("New status is the same as current")
 	NotificationNotFound       = errors.New("Notification not found")
+	NoteConnectionExists       = errors.New("Web socket connection already exists")
 )

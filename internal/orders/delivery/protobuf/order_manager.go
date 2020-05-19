@@ -6,7 +6,9 @@ import (
 	"github.com/2020_1_Skycode/internal/notifications"
 	"github.com/2020_1_Skycode/internal/orders"
 	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/golang/protobuf/ptypes"
 	"golang.org/x/net/context"
+	"time"
 )
 
 type OrderManager struct {
@@ -54,22 +56,22 @@ func (oU *OrderManager) CheckOutOrder(ctx context.Context, c *Checkout) (*Error,
 	return &Error{}, nil
 }
 
-func (oU *OrderManager) ChangeOrderStatus(ctx context.Context, cs *ChangeStatus) (*ErrorCode, error) {
+func (oU *OrderManager) ChangeOrderStatus(ctx context.Context, cs *ChangeStatus) (*ChaneStatusAnswer, error) {
 	o, err := oU.orderRepo.GetByID(cs.OrderID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return &ErrorCode{ID: tools.DoesntExist}, nil
+			return &ChaneStatusAnswer{Code: &ErrorCode{ID: tools.DoesntExist}}, nil
 		}
 
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &ChaneStatusAnswer{Code: &ErrorCode{ID: tools.InternalError}}, err
 	}
 
 	if o.Status == cs.Status {
-		return &ErrorCode{ID: tools.SameStatus}, nil
+		return &ChaneStatusAnswer{Code: &ErrorCode{ID: tools.SameStatus}}, nil
 	}
 
 	if err := oU.orderRepo.ChangeStatus(cs.OrderID, cs.Status); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &ChaneStatusAnswer{Code: &ErrorCode{ID: tools.InternalError}}, err
 	}
 
 	note := &models.Notification{
@@ -79,10 +81,25 @@ func (oU *OrderManager) ChangeOrderStatus(ctx context.Context, cs *ChangeStatus)
 	}
 
 	if err := oU.notificationsRepo.InsertInto(note); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &ChaneStatusAnswer{Code: &ErrorCode{ID: tools.InternalError}}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	protoTime, err := ptypes.TimestampProto(time.Now())
+	if err != nil {
+		return &ChaneStatusAnswer{Code: &ErrorCode{ID: tools.InternalError}}, err
+	}
+
+	return &ChaneStatusAnswer{
+		Code: &ErrorCode{ID: tools.OK},
+		Note: &Notification{
+			ID:           note.ID,
+			UserID:       note.UserID,
+			OrderID:      note.OrderID,
+			UnreadStatus: true,
+			Status:       note.Status,
+			DateTime:     protoTime,
+		},
+	}, nil
 }
 
 func (oU *OrderManager) GetAllUserOrders(ctx context.Context, u *UserOrders) (*GetAllResponse, error) {
