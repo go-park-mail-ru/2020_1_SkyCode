@@ -66,7 +66,7 @@ func (rr *RestaurantRepository) GetRecommendationsByOrder(userID uint64, count u
 		"AND r.id NOT IN (SELECT * FROM ordered_rests) "+
 		"GROUP BY r.id) "+
 
-		"UNION"+
+		"UNION "+
 
 		"SELECT id, name, description, rating, image FROM restaurants "+
 		"WHERE id IN (SELECT r.id FROM restaurants r "+
@@ -205,7 +205,7 @@ func (rr *RestaurantRepository) GetRecommendationsInRadius(pos *models.GeoPos,
 		"r.id NOT IN (SELECT * FROM ordered_rests) "+
 		"GROUP BY r.id, r.rating "+
 
-		"UNION"+
+		"UNION "+
 
 		"SELECT r.id, r.name, r.description, r.rating, r.image, "+
 		"min(st_distance("+

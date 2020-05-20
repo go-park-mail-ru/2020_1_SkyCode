@@ -60,6 +60,7 @@ create table product_tags
 
 create table restaurants_and_tags
 (
+    id          serial  not null primary key,
     rest_id     int references restaurants (id) on delete cascade,
     resttag_id  int references rest_tags (id) on delete cascade,
     constraint uq_rest_tag_comb unique (rest_id, resttag_id)
