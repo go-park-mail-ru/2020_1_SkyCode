@@ -24,7 +24,7 @@ jobs:
 
     # Runs a single command using the runners shell
     - name: build
-      run: go build cmd/app/server.go
+      run: make build
     
     - name: Upload build result
       uses: actions/upload-artifact@v1
