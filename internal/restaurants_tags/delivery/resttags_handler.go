@@ -119,19 +119,8 @@ func (rth *RestTagsHandler) CreateTag() gin.HandlerFunc {
 			return
 		}
 
-		data, err := c.GetRawData()
-
-		if err != nil {
-			logrus.Error(err)
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.BindingError.Error(),
-			})
-
-			return
-		}
-
 		req := &tagRequest{}
-		if err := req.UnmarshalJSON(data); err != nil {
+		if err := c.Bind(req); err != nil {
 			logrus.Error(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
