@@ -82,6 +82,7 @@ func TestOrdersRepository_GetByID(t *testing.T) {
 
 	testOrder := &models.Order{
 		ID:        1,
+		UserID:    1,
 		Address:   "test address",
 		Phone:     "79986543321",
 		Comment:   "faster",
@@ -89,27 +90,27 @@ func TestOrdersRepository_GetByID(t *testing.T) {
 		CreatedAt: time.Now().String(),
 		PersonNum: 3,
 		Price:     555,
+		Status:    "Ok",
 	}
 
-	userID := uint64(1)
-
-	rows := sqlmock.NewRows([]string{"id", "address", "phone", "price", "comment", "personNum", "datetime"})
-	rows.AddRow(testOrder.ID, testOrder.Address, testOrder.Phone,
-		testOrder.Price, testOrder.Comment, testOrder.PersonNum, testOrder.CreatedAt)
+	rows := sqlmock.NewRows([]string{"id", "userid", "address", "phone", "price", "comment", "personNum",
+		"datetime", "status"})
+	rows.AddRow(testOrder.ID, testOrder.UserID, testOrder.Address, testOrder.Phone,
+		testOrder.Price, testOrder.Comment, testOrder.PersonNum, testOrder.CreatedAt, testOrder.Status)
 
 	rowsProd := sqlmock.NewRows([]string{"id", "restid", "name", "price", "image", "count"})
 	rowsProd.AddRow(testOrderProduct[0].ID, testOrderProduct[0].RestId, testOrderProduct[0].Name,
 		testOrderProduct[0].Price, testOrderProduct[0].Image, testOrderProduct[0].Count)
 
-	mock.ExpectQuery("SELECT id, address").
-		WithArgs(testOrder.ID, userID).
+	mock.ExpectQuery("SELECT id, userid").
+		WithArgs(testOrder.ID).
 		WillReturnRows(rows)
 
 	mock.ExpectQuery("select p.id, p.rest_id, p.name, p.price, p.image, orderProducts.count").
 		WithArgs(1).
 		WillReturnRows(rowsProd)
 
-	resultOrder, err := repo.GetByID(testOrder.ID, userID)
+	resultOrder, err := repo.GetByID(testOrder.ID)
 	if err != nil {
 		t.Errorf("Unexpected err: %s", err)
 		return

@@ -56,7 +56,7 @@ func TestOrderUseCase_GetOrderByID(t *testing.T) {
 		Price:     100.0,
 	}
 
-	mockOrdersRepo.EXPECT().GetByID(uint64(1), testOrder.UserID).Return(testOrder, nil)
+	mockOrdersRepo.EXPECT().GetByID(uint64(1)).Return(testOrder, nil)
 	ordersUCase := NewOrderUseCase(mockOrdersRepo)
 
 	result, err := ordersUCase.GetOrderByID(uint64(1), testOrder.UserID)

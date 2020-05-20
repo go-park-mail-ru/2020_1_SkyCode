@@ -46,7 +46,7 @@ func (pUC *ProductUseCase) GetProductByID(id uint64) (*models.Product, error) {
 }
 
 func (pUC *ProductUseCase) GetProductsByRestaurantID(
-	id uint64, count uint64, page uint64) ([]*models.Product, error) {
+	id uint64) ([]*models.Product, error) {
 	productList, err := pUC.productRepo.GetProductsByRestID(id)
 	if err != nil {
 		return nil, err

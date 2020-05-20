@@ -50,18 +50,32 @@ func (mr *MockRepositoryMockRecorder) GetAllByUserID(userID, count, page interfa
 }
 
 // GetByID mocks base method
-func (m *MockRepository) GetByID(orderID, userID uint64) (*models.Order, error) {
+func (m *MockRepository) GetByID(orderID uint64) (*models.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", orderID, userID)
+	ret := m.ctrl.Call(m, "GetByID", orderID)
 	ret0, _ := ret[0].(*models.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID
-func (mr *MockRepositoryMockRecorder) GetByID(orderID, userID interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetByID(orderID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockRepository)(nil).GetByID), orderID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockRepository)(nil).GetByID), orderID)
+}
+
+// ChangeStatus mocks base method
+func (m *MockRepository) ChangeStatus(orderID uint64, status string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeStatus", orderID, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeStatus indicates an expected call of ChangeStatus
+func (mr *MockRepositoryMockRecorder) ChangeStatus(orderID, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeStatus", reflect.TypeOf((*MockRepository)(nil).ChangeStatus), orderID, status)
 }
 
 // InsertOrder mocks base method

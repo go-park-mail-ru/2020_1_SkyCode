@@ -218,7 +218,7 @@ func (rr *RestaurantRepository) GetRecommendationsInRadius(pos *models.GeoPos,
 		"ST_MakePoint($2, $3)::geography, rp.radius * 1000) AND "+
 		"r.id NOT IN (SELECT * FROM ordered_rests) "+
 		"GROUP BY r.id, r.rating "+
-		"ORDER BY r.rating DESC "+
+		"ORDER BY rating DESC "+
 		"LIMIT $4", userID, pos.Latitude, pos.Longitude, count)
 
 	if err != nil {
@@ -231,8 +231,9 @@ func (rr *RestaurantRepository) GetRecommendationsInRadius(pos *models.GeoPos,
 
 	for rows.Next() {
 		r := &models.Restaurant{}
+		var dist float64
 
-		if err := rows.Scan(&r.ID, &r.Name, &r.Description, &r.Rating, &r.Image); err != nil {
+		if err := rows.Scan(&r.ID, &r.Name, &r.Description, &r.Rating, &r.Image, &dist); err != nil {
 			return nil, err
 		}
 

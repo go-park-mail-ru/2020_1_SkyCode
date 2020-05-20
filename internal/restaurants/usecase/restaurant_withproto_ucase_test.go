@@ -3,8 +3,10 @@ package usecase
 import (
 	mock_geodata "github.com/2020_1_Skycode/internal/geodata/mocks"
 	"github.com/2020_1_Skycode/internal/models"
+	mock_prodtags "github.com/2020_1_Skycode/internal/product_tags/mocks"
 	mock_restpoints "github.com/2020_1_Skycode/internal/restaurant_points/mocks"
 	mock_restaurants "github.com/2020_1_Skycode/internal/restaurants/mocks"
+	mock_resttags "github.com/2020_1_Skycode/internal/restaurants_tags/mocks"
 	mock_reviews "github.com/2020_1_Skycode/internal/reviews/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -22,6 +24,8 @@ func TestRestaurantWithProtoUseCase_GetRestaurants(t *testing.T) {
 	mockGeoDataRepo := mock_geodata.NewMockRepository(ctrl)
 	mockReviewsRepo := mock_reviews.NewMockRepository(ctrl)
 	mockRestPointsRepo := mock_restpoints.NewMockRepository(ctrl)
+	mockRestTagsRepo := mock_resttags.NewMockRepository(ctrl)
+	mockProdTagsRepo := mock_prodtags.NewMockRepository(ctrl)
 
 	resultRests := []*models.Restaurant{
 		{ID: 1, Name: "test1", Rating: 4.2, Image: "./default.jpg"},
@@ -29,13 +33,13 @@ func TestRestaurantWithProtoUseCase_GetRestaurants(t *testing.T) {
 
 	expectTotal := uint64(1)
 
-	mockRestaurantsRepo.EXPECT().GetAll(uint64(1), uint64(1)).Return(resultRests, expectTotal, nil)
+	mockRestaurantsRepo.EXPECT().GetAll(uint64(1), uint64(1), uint64(0)).Return(resultRests, expectTotal, nil)
 
 	c := &grpc.ClientConn{}
 	restUCase := NewRestaurantsWithProtoUseCase(mockRestaurantsRepo, mockRestPointsRepo,
-		mockReviewsRepo, mockGeoDataRepo, c)
+		mockReviewsRepo, mockGeoDataRepo, mockRestTagsRepo, mockProdTagsRepo, c)
 
-	rests, total, err := restUCase.GetRestaurants(uint64(1), uint64(1))
+	rests, total, err := restUCase.GetRestaurants(uint64(1), uint64(1), uint64(0))
 
 	if err != nil {
 		t.Errorf("Unexpected err: %s", err)
@@ -55,6 +59,8 @@ func TestRestaurantWithProtoUseCase_GetRestaurantByID(t *testing.T) {
 	mockGeoDataRepo := mock_geodata.NewMockRepository(ctrl)
 	mockReviewsRepo := mock_reviews.NewMockRepository(ctrl)
 	mockRestPointsRepo := mock_restpoints.NewMockRepository(ctrl)
+	mockRestTagsRepo := mock_resttags.NewMockRepository(ctrl)
+	mockProdTagsRepo := mock_prodtags.NewMockRepository(ctrl)
 
 	resultRest := &models.Restaurant{
 		ID: uint64(1), ManagerID: uint64(1), Name: "test1",
@@ -65,7 +71,8 @@ func TestRestaurantWithProtoUseCase_GetRestaurantByID(t *testing.T) {
 	mockRestaurantsRepo.EXPECT().GetByID(elemID).Return(resultRest, nil)
 	c := &grpc.ClientConn{}
 	restUCase := NewRestaurantsWithProtoUseCase(mockRestaurantsRepo, mockRestPointsRepo,
-		mockReviewsRepo, mockGeoDataRepo, c)
+		mockReviewsRepo, mockGeoDataRepo, mockRestTagsRepo, mockProdTagsRepo, c)
+
 	rest, err := restUCase.GetRestaurantByID(elemID)
 
 	if err != nil {
@@ -85,6 +92,8 @@ func TestRestaurantWithProtoUseCase_AddReview(t *testing.T) {
 	mockGeoDataRepo := mock_geodata.NewMockRepository(ctrl)
 	mockReviewsRepo := mock_reviews.NewMockRepository(ctrl)
 	mockRestPointsRepo := mock_restpoints.NewMockRepository(ctrl)
+	mockRestTagsRepo := mock_resttags.NewMockRepository(ctrl)
+	mockProdTagsRepo := mock_prodtags.NewMockRepository(ctrl)
 
 	testRest := &models.Restaurant{
 		ID:          1,
@@ -107,7 +116,7 @@ func TestRestaurantWithProtoUseCase_AddReview(t *testing.T) {
 
 	c := &grpc.ClientConn{}
 	restUCase := NewRestaurantsWithProtoUseCase(mockRestaurantsRepo, mockRestPointsRepo,
-		mockReviewsRepo, mockGeoDataRepo, c)
+		mockReviewsRepo, mockGeoDataRepo, mockRestTagsRepo, mockProdTagsRepo, c)
 
 	err := restUCase.AddReview(testReview)
 	require.NoError(t, err)
@@ -122,6 +131,8 @@ func TestRestaurantWithProtoUseCase_GetPoints(t *testing.T) {
 	mockGeoDataRepo := mock_geodata.NewMockRepository(ctrl)
 	mockReviewsRepo := mock_reviews.NewMockRepository(ctrl)
 	mockRestPointsRepo := mock_restpoints.NewMockRepository(ctrl)
+	mockRestTagsRepo := mock_resttags.NewMockRepository(ctrl)
+	mockProdTagsRepo := mock_prodtags.NewMockRepository(ctrl)
 
 	testRest := &models.Restaurant{
 		ID:          1,
@@ -152,7 +163,7 @@ func TestRestaurantWithProtoUseCase_GetPoints(t *testing.T) {
 
 	c := &grpc.ClientConn{}
 	restUCase := NewRestaurantsWithProtoUseCase(mockRestaurantsRepo, mockRestPointsRepo,
-		mockReviewsRepo, mockGeoDataRepo, c)
+		mockReviewsRepo, mockGeoDataRepo, mockRestTagsRepo, mockProdTagsRepo, c)
 
 	result, total, err := restUCase.GetPoints(testRest.ID, uint64(1), uint64(1))
 	require.NoError(t, err)
@@ -169,6 +180,8 @@ func TestRestaurantWithProtoUseCase_GetRestaurantsInServiceRadius(t *testing.T) 
 	mockGeoDataRepo := mock_geodata.NewMockRepository(ctrl)
 	mockReviewsRepo := mock_reviews.NewMockRepository(ctrl)
 	mockRestPointsRepo := mock_restpoints.NewMockRepository(ctrl)
+	mockRestTagsRepo := mock_resttags.NewMockRepository(ctrl)
+	mockProdTagsRepo := mock_prodtags.NewMockRepository(ctrl)
 
 	testGP := &models.GeoPos{
 		Longitude: 55.753227,
@@ -194,14 +207,15 @@ func TestRestaurantWithProtoUseCase_GetRestaurantsInServiceRadius(t *testing.T) 
 	expectTotal := uint64(1)
 
 	mockGeoDataRepo.EXPECT().GetGeoPosByAddress(testPoint.Address).Return(testGP, nil)
-	mockRestaurantsRepo.EXPECT().GetAllInServiceRadius(testGP, uint64(1), uint64(1)).Return(testRests, expectTotal, nil)
+	mockRestaurantsRepo.EXPECT().GetAllInServiceRadius(testGP, uint64(1), uint64(1), uint64(0)).
+		Return(testRests, expectTotal, nil)
 	mockRestPointsRepo.EXPECT().GetCloserPointByRestID(testPoint.RestID, testGP).Return(testPoint, nil)
 
 	c := &grpc.ClientConn{}
 	restUCase := NewRestaurantsWithProtoUseCase(mockRestaurantsRepo, mockRestPointsRepo,
-		mockReviewsRepo, mockGeoDataRepo, c)
+		mockReviewsRepo, mockGeoDataRepo, mockRestTagsRepo, mockProdTagsRepo, c)
 
-	result, total, err := restUCase.GetRestaurantsInServiceRadius(testPoint.Address, uint64(1), uint64(1))
+	result, total, err := restUCase.GetRestaurantsInServiceRadius(testPoint.Address, uint64(1), uint64(1), uint64(0))
 	require.NoError(t, err)
 	require.EqualValues(t, testRests, result)
 	require.EqualValues(t, expectTotal, total)
@@ -216,6 +230,8 @@ func TestRestaurantWithProtoUseCase_GetReviews(t *testing.T) {
 	mockGeoDataRepo := mock_geodata.NewMockRepository(ctrl)
 	mockReviewsRepo := mock_reviews.NewMockRepository(ctrl)
 	mockRestPointsRepo := mock_restpoints.NewMockRepository(ctrl)
+	mockRestTagsRepo := mock_resttags.NewMockRepository(ctrl)
+	mockProdTagsRepo := mock_prodtags.NewMockRepository(ctrl)
 
 	testRest := &models.Restaurant{
 		ID:          1,
@@ -240,7 +256,7 @@ func TestRestaurantWithProtoUseCase_GetReviews(t *testing.T) {
 
 	c := &grpc.ClientConn{}
 	restUCase := NewRestaurantsWithProtoUseCase(mockRestaurantsRepo, mockRestPointsRepo,
-		mockReviewsRepo, mockGeoDataRepo, c)
+		mockReviewsRepo, mockGeoDataRepo, mockRestTagsRepo, mockProdTagsRepo, c)
 
 	result, current, total, err := restUCase.GetReviews(testRest.ID, testReview.Author.ID, uint64(1), uint64(1))
 	require.NoError(t, err)

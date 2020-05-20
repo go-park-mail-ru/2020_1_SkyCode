@@ -47,6 +47,21 @@ func (mr *MockUseCaseMockRecorder) CheckoutOrder(order, ordProducts interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckoutOrder", reflect.TypeOf((*MockUseCase)(nil).CheckoutOrder), order, ordProducts)
 }
 
+// ChangeOrderStatus mocks base method
+func (m *MockUseCase) ChangeOrderStatus(orderID uint64, status string) (*models.Notification, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeOrderStatus", orderID, status)
+	ret0, _ := ret[0].(*models.Notification)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChangeOrderStatus indicates an expected call of ChangeOrderStatus
+func (mr *MockUseCaseMockRecorder) ChangeOrderStatus(orderID, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrderStatus", reflect.TypeOf((*MockUseCase)(nil).ChangeOrderStatus), orderID, status)
+}
+
 // GetAllUserOrders mocks base method
 func (m *MockUseCase) GetAllUserOrders(userID, count, page uint64) ([]*models.Order, uint64, error) {
 	m.ctrl.T.Helper()

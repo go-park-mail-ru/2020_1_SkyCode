@@ -34,9 +34,9 @@ func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 }
 
 // GetRestaurants mocks base method
-func (m *MockUseCase) GetRestaurants(count, page uint64) ([]*models.Restaurant, uint64, error) {
+func (m *MockUseCase) GetRestaurants(count, page, tagID uint64) ([]*models.Restaurant, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRestaurants", count, page)
+	ret := m.ctrl.Call(m, "GetRestaurants", count, page, tagID)
 	ret0, _ := ret[0].([]*models.Restaurant)
 	ret1, _ := ret[1].(uint64)
 	ret2, _ := ret[2].(error)
@@ -44,9 +44,24 @@ func (m *MockUseCase) GetRestaurants(count, page uint64) ([]*models.Restaurant, 
 }
 
 // GetRestaurants indicates an expected call of GetRestaurants
-func (mr *MockUseCaseMockRecorder) GetRestaurants(count, page interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetRestaurants(count, page, tagID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurants", reflect.TypeOf((*MockUseCase)(nil).GetRestaurants), count, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurants", reflect.TypeOf((*MockUseCase)(nil).GetRestaurants), count, page, tagID)
+}
+
+// GetRestaurantsRecommendations mocks base method
+func (m *MockUseCase) GetRestaurantsRecommendations(userID, count uint64) ([]*models.Restaurant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRestaurantsRecommendations", userID, count)
+	ret0, _ := ret[0].([]*models.Restaurant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRestaurantsRecommendations indicates an expected call of GetRestaurantsRecommendations
+func (mr *MockUseCaseMockRecorder) GetRestaurantsRecommendations(userID, count interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurantsRecommendations", reflect.TypeOf((*MockUseCase)(nil).GetRestaurantsRecommendations), userID, count)
 }
 
 // GetRestaurantByID mocks base method
@@ -151,9 +166,9 @@ func (mr *MockUseCaseMockRecorder) GetPoints(restID, count, page interface{}) *g
 }
 
 // GetRestaurantsInServiceRadius mocks base method
-func (m *MockUseCase) GetRestaurantsInServiceRadius(address string, count, page uint64) ([]*models.Restaurant, uint64, error) {
+func (m *MockUseCase) GetRestaurantsInServiceRadius(address string, count, page, tagID uint64) ([]*models.Restaurant, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRestaurantsInServiceRadius", address, count, page)
+	ret := m.ctrl.Call(m, "GetRestaurantsInServiceRadius", address, count, page, tagID)
 	ret0, _ := ret[0].([]*models.Restaurant)
 	ret1, _ := ret[1].(uint64)
 	ret2, _ := ret[2].(error)
@@ -161,9 +176,24 @@ func (m *MockUseCase) GetRestaurantsInServiceRadius(address string, count, page 
 }
 
 // GetRestaurantsInServiceRadius indicates an expected call of GetRestaurantsInServiceRadius
-func (mr *MockUseCaseMockRecorder) GetRestaurantsInServiceRadius(address, count, page interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetRestaurantsInServiceRadius(address, count, page, tagID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurantsInServiceRadius", reflect.TypeOf((*MockUseCase)(nil).GetRestaurantsInServiceRadius), address, count, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurantsInServiceRadius", reflect.TypeOf((*MockUseCase)(nil).GetRestaurantsInServiceRadius), address, count, page, tagID)
+}
+
+// GetRestaurantsRecommendationsInRadius mocks base method
+func (m *MockUseCase) GetRestaurantsRecommendationsInRadius(address string, userID, count uint64) ([]*models.Restaurant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRestaurantsRecommendationsInRadius", address, userID, count)
+	ret0, _ := ret[0].([]*models.Restaurant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRestaurantsRecommendationsInRadius indicates an expected call of GetRestaurantsRecommendationsInRadius
+func (mr *MockUseCaseMockRecorder) GetRestaurantsRecommendationsInRadius(address, userID, count interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurantsRecommendationsInRadius", reflect.TypeOf((*MockUseCase)(nil).GetRestaurantsRecommendationsInRadius), address, userID, count)
 }
 
 // AddReview mocks base method
@@ -195,4 +225,90 @@ func (m *MockUseCase) GetReviews(restID, userID, count, page uint64) ([]*models.
 func (mr *MockUseCaseMockRecorder) GetReviews(restID, userID, count, page interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReviews", reflect.TypeOf((*MockUseCase)(nil).GetReviews), restID, userID, count, page)
+}
+
+// AddTag mocks base method
+func (m *MockUseCase) AddTag(restID, tagID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddTag", restID, tagID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddTag indicates an expected call of AddTag
+func (mr *MockUseCaseMockRecorder) AddTag(restID, tagID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockUseCase)(nil).AddTag), restID, tagID)
+}
+
+// GetTags mocks base method
+func (m *MockUseCase) GetTags(restID uint64) ([]*models.RestTag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTags", restID)
+	ret0, _ := ret[0].([]*models.RestTag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTags indicates an expected call of GetTags
+func (mr *MockUseCaseMockRecorder) GetTags(restID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockUseCase)(nil).GetTags), restID)
+}
+
+// DeleteTag mocks base method
+func (m *MockUseCase) DeleteTag(restID, tagID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTag", restID, tagID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTag indicates an expected call of DeleteTag
+func (mr *MockUseCaseMockRecorder) DeleteTag(restID, tagID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTag", reflect.TypeOf((*MockUseCase)(nil).DeleteTag), restID, tagID)
+}
+
+// GetProductTagsByID mocks base method
+func (m *MockUseCase) GetProductTagsByID(restID uint64) ([]*models.ProductTag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProductTagsByID", restID)
+	ret0, _ := ret[0].([]*models.ProductTag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProductTagsByID indicates an expected call of GetProductTagsByID
+func (mr *MockUseCaseMockRecorder) GetProductTagsByID(restID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductTagsByID", reflect.TypeOf((*MockUseCase)(nil).GetProductTagsByID), restID)
+}
+
+// AddProductTag mocks base method
+func (m *MockUseCase) AddProductTag(tag *models.ProductTag) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddProductTag", tag)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddProductTag indicates an expected call of AddProductTag
+func (mr *MockUseCaseMockRecorder) AddProductTag(tag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddProductTag", reflect.TypeOf((*MockUseCase)(nil).AddProductTag), tag)
+}
+
+// DeleteProductTag mocks base method
+func (m *MockUseCase) DeleteProductTag(ID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteProductTag", ID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteProductTag indicates an expected call of DeleteProductTag
+func (mr *MockUseCaseMockRecorder) DeleteProductTag(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProductTag", reflect.TypeOf((*MockUseCase)(nil).DeleteProductTag), ID)
 }

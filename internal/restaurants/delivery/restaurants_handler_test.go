@@ -42,7 +42,7 @@ func TestRestaurantHandler_GetRestaurants(t *testing.T) {
 		"restaurants": resultRests,
 		"total":       uint64(1)}
 
-	mockRestUC.EXPECT().GetRestaurants(uint64(1), uint64(1)).Return(resultRests, uint64(1), nil)
+	mockRestUC.EXPECT().GetRestaurants(uint64(1), uint64(1), uint64(0)).Return(resultRests, uint64(1), nil)
 
 	g := gin.New()
 	gin.SetMode(gin.TestMode)
@@ -162,7 +162,7 @@ func TestRestaurantHandler_CreateRestaurant(t *testing.T) {
 
 	g := gin.New()
 	gin.SetMode(gin.TestMode)
-	logrus.SetLevel(logrus.TraceLevel)
+	logrus.SetLevel(logrus.PanicLevel)
 
 	csrfManager := _csrfManager.NewCSRFManager()
 	mwareC := _middleware.NewMiddleWareController(g, mockSessUC, mockUserUC, csrfManager)
@@ -780,7 +780,7 @@ func TestRestaurantHandler_GetRestaurantsWithCloserPoint(t *testing.T) {
 		"restaurants": resultRests,
 		"total":       uint64(1)}
 
-	mockRestUC.EXPECT().GetRestaurantsInServiceRadius(testAddress, uint64(1), uint64(1)).
+	mockRestUC.EXPECT().GetRestaurantsInServiceRadius(testAddress, uint64(1), uint64(1), uint64(0)).
 		Return(resultRests, uint64(1), nil)
 
 	g := gin.New()

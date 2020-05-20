@@ -8,6 +8,7 @@ import (
 	mock_sessions "github.com/2020_1_Skycode/internal/sessions/mocks"
 	"github.com/2020_1_Skycode/internal/tools"
 	_csrfManager "github.com/2020_1_Skycode/internal/tools/CSRFManager"
+	"github.com/2020_1_Skycode/internal/tools/notificationsWS"
 	_rValidator "github.com/2020_1_Skycode/internal/tools/requestValidator"
 	mock_users "github.com/2020_1_Skycode/internal/users/mocks"
 	"github.com/gin-gonic/gin"
@@ -77,10 +78,11 @@ func TestOrderHandler_Checkout(t *testing.T) {
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
+	ns := notificationsWS.NewNotificationServer()
 
-	_ = NewOrderHandler(privateGroup, publicGroup, mockOrderUC, reqValidator, mwareC)
+	_ = NewOrderHandler(privateGroup, publicGroup, mockOrderUC, reqValidator, mwareC, ns)
 
-	target := "/api/v1/orders/checkout"
+	target := "/api/v1/orders"
 	req, err := http.NewRequest("POST", target, strings.NewReader(string(reqJson)))
 	require.NoError(t, err)
 
@@ -95,7 +97,7 @@ func TestOrderHandler_Checkout(t *testing.T) {
 	g.ServeHTTP(w, req)
 
 	if w.Code != http.StatusOK {
-		t.Error("Status is not ok")
+		t.Error("Status is not ok ", w.Code)
 		return
 	}
 
@@ -153,8 +155,9 @@ func TestOrderHandler_GetUserOrder(t *testing.T) {
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
+	ns := notificationsWS.NewNotificationServer()
 
-	_ = NewOrderHandler(privateGroup, publicGroup, mockOrderUC, reqValidator, mwareC)
+	_ = NewOrderHandler(privateGroup, publicGroup, mockOrderUC, reqValidator, mwareC, ns)
 
 	target := "/api/v1/orders/1"
 	req, err := http.NewRequest("GET", target, nil)
@@ -238,8 +241,9 @@ func TestOrderHandler_GetUserOrders(t *testing.T) {
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
+	ns := notificationsWS.NewNotificationServer()
 
-	_ = NewOrderHandler(privateGroup, publicGroup, mockOrderUC, reqValidator, mwareC)
+	_ = NewOrderHandler(privateGroup, publicGroup, mockOrderUC, reqValidator, mwareC, ns)
 
 	target := "/api/v1/orders"
 	req, err := http.NewRequest("GET", target, nil)
@@ -300,8 +304,9 @@ func TestOrderHandler_DeleteOrder(t *testing.T) {
 	publicGroup := g.Group("/api/v1")
 	privateGroup := g.Group("/api/v1")
 	reqValidator := _rValidator.NewRequestValidator()
+	ns := notificationsWS.NewNotificationServer()
 
-	_ = NewOrderHandler(privateGroup, publicGroup, mockOrderUC, reqValidator, mwareC)
+	_ = NewOrderHandler(privateGroup, publicGroup, mockOrderUC, reqValidator, mwareC, ns)
 
 	target := "/api/v1/orders/1"
 	req, err := http.NewRequest("DELETE", target, nil)
