@@ -62,7 +62,7 @@ jobs:
          host: ${{ secrets.HOST }}
          username: ${{ secrets.USERNAME }}
          key: ${{ secrets.DEPLOYKEY }}
-         script: chmod 755 /home/ubuntu/bin/app
+         script: chmod 755 /home/ubuntu/bin
      - name: restart service
        uses: appleboy/ssh-action@master
        with:
