@@ -54,7 +54,7 @@ jobs:
          host: ${{ secrets.HOST }}
          username: ${{ secrets.USERNAME }}
          key: ${{ secrets.SSHPRIVATE }}
-         source: "./bin/bin"
+         source: "./bin"
          target: "/home/ubuntu/"
      - name: chmod
        uses: appleboy/ssh-action@master
