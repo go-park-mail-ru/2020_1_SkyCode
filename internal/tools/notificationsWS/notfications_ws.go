@@ -49,13 +49,10 @@ func NewNotificationServer() *NotificationServer {
 
 func (ns *NotificationServer) run() {
 	logrus.Debug("Server started")
-	for {
-		select {
-		case c := <-ns.client:
-			if curClient := ns.noteChats[c.UserID]; curClient != nil {
-				delete(ns.noteChats, c.UserID)
-				close(c.noteCh)
-			}
+	for c := range ns.client {
+		if curClient := ns.noteChats[c.UserID]; curClient != nil {
+			delete(ns.noteChats, c.UserID)
+			close(c.noteCh)
 		}
 	}
 }
@@ -151,7 +148,12 @@ func (nc *NotificationClient) AddConnection(ws *websocket.Conn) error {
 		return err
 	}
 
-	ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	ws.SetPongHandler(func(string) error {
+		if err := ws.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+			return err
+		}
+		return nil
+	})
 
 	nc.ws = append(nc.ws, ws)
 

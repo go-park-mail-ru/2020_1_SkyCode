@@ -63,7 +63,7 @@ type InputMessage struct {
 }
 
 type JoinStatus struct {
-	ChatID   string `json:"chat_id, omitempty"`
+	ChatID   string `json:"chat_id,omitempty"`
 	UserID uint64 `json:"user_id"`
 	UserName string `json:"user_name"`
 	Joined   bool   `json:"joined"`

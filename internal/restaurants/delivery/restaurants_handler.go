@@ -16,10 +16,6 @@ import (
 	"time"
 )
 
-const (
-	countRecommend = 3
-)
-
 type RestaurantHandler struct {
 	restUseCase restaurants.UseCase
 	middlewareC *middlewares.MWController
@@ -64,12 +60,12 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 }
 
 type restaurantRequest struct {
-	Name        string `json:"name, omitempty" binding:"required" validate:"min=3"`
-	Description string `json:"description, omitempty" binding:"required" validate:"min=10"`
+	Name        string `json:"name,omitempty" binding:"required" validate:"min=3"`
+	Description string `json:"description,omitempty" binding:"required" validate:"min=10"`
 }
 
 type reviewRequest struct {
-	Text string   `json:"text, omitempty" binding:"required"`
+	Text string   `json:"text,omitempty" binding:"required"`
 	Rate *float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
@@ -567,7 +563,7 @@ func (rh *RestaurantHandler) AddPoint() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, tools.Message{"Created"})
+		c.JSON(http.StatusOK, tools.Message{Message: "Created"})
 	}
 }
 
@@ -774,7 +770,7 @@ func (rh *RestaurantHandler) AddReview() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, tools.Message{"Created"})
+		c.JSON(http.StatusOK, tools.Message{Message: "Created"})
 	}
 }
 
@@ -790,9 +786,9 @@ func (rh *RestaurantHandler) GetReviews() gin.HandlerFunc {
 			return
 		}
 
-		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
-		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
-		if err != nil {
+		count, cerr := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, perr := strconv.ParseUint(c.Query("page"), 10, 64)
+		if cerr != nil || perr != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadQueryParams.Error(),

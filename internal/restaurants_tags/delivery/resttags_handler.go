@@ -41,7 +41,7 @@ func NewRestTagHandler(private *gin.RouterGroup, public *gin.RouterGroup, rtUC r
 }
 
 type tagRequest struct {
-	Name string `json:"name, omitempty" binding:"required" validate:"min=2"`
+	Name string `json:"name,omitempty" binding:"required" validate:"min=2"`
 }
 
 func (rth *RestTagsHandler) GetAllTags() gin.HandlerFunc {

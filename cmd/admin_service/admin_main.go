@@ -67,5 +67,7 @@ func main() {
 	protobuf_admin_rest.RegisterRestaurantAdminWorkerServer(server, adminManager)
 
 	logrus.Info("Starting server on port", port)
-	server.Serve(lis)
+	if err := server.Serve(lis); err != nil {
+		logrus.Error(err)
+	}
 }

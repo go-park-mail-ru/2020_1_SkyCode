@@ -60,5 +60,7 @@ func main() {
 	protobuf_order.RegisterOrderWorkerServer(server, orderManager)
 
 	logrus.Info("Starting server on port", port)
-	server.Serve(lis)
+	if err := server.Serve(lis); err != nil {
+		logrus.Error(err)
+	}
 }

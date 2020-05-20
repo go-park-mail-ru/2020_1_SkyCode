@@ -80,8 +80,6 @@ func (cH *ChatHandler) StartUserChat() gin.HandlerFunc {
 
 			cH.cU.WriteFromUserMessage(message)
 		}
-
-		return
 	}
 }
 
@@ -99,7 +97,6 @@ func (cH *ChatHandler) GetSupChatList() gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, cH.cU.GetChats())
-		return
 	}
 }
 
@@ -165,7 +162,6 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 			cH.cU.WriteFromUserMessage(message)
 		}
 
-		return
 	}
 }
 

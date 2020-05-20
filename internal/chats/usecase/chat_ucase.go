@@ -119,7 +119,7 @@ func (cU *ChatUseCase) StoreMessage(message *models.ChatMessage) error {
 }
 
 func (cU *ChatUseCase) GetChatMessages(chatID string) ([]*models.ChatMessage, error) {
-	messages := []*models.ChatMessage{}
+	var messages []*models.ChatMessage
 	messages, err := cU.sR.SelectMessagesByChatID(chatID)
 
 	if err != nil {

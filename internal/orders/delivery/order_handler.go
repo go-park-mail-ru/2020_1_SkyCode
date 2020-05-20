@@ -160,10 +160,10 @@ func (oH *OrderHandler) GetUserOrders() gin.HandlerFunc {
 			return
 		}
 
-		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
-		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		count, cerr := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, perr := strconv.ParseUint(c.Query("page"), 10, 64)
 
-		if err != nil {
+		if cerr != nil || perr != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadQueryParams.Error(),
 			})

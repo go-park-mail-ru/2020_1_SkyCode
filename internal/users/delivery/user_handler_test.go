@@ -32,10 +32,10 @@ func TestUserHandler_SignUp(t *testing.T) {
 	mockUserUC := mock_users.NewMockUseCase(ctrl)
 
 	type signUpRequest struct {
-		FirstName string `json:"firstName, omitempty" binding:"required" validate:"min=2"`
-		LastName  string `json:"lastName, omitempty" binding:"required" validate:"min=2"`
-		Phone     string `json:"phone, omitempty" binding:"required" validate:"min=11,max=15"`
-		Password  string `json:"password, omitempty" binding:"required" validate:"passwd"`
+		FirstName string `json:"firstName,omitempty" binding:"required" validate:"min=2"`
+		LastName  string `json:"lastName,omitempty" binding:"required" validate:"min=2"`
+		Phone     string `json:"phone,omitempty" binding:"required" validate:"min=11,max=15"`
+		Password  string `json:"password,omitempty" binding:"required" validate:"passwd"`
 	}
 
 	reqSignUp := signUpRequest{

@@ -48,10 +48,10 @@ func NewUserHandler(private *gin.RouterGroup, public *gin.RouterGroup, uUC users
 }
 
 type signUpRequest struct {
-	FirstName string `json:"firstName, omitempty" binding:"required" validate:"min=2"`
-	LastName  string `json:"lastName, omitempty" binding:"required" validate:"min=2"`
-	Phone     string `json:"phone, omitempty" binding:"required" validate:"min=11,max=15"`
-	Password  string `json:"password, omitempty" binding:"required" validate:"passwd"`
+	FirstName string `json:"firstName,omitempty" binding:"required" validate:"min=2"`
+	LastName  string `json:"lastName,omitempty" binding:"required" validate:"min=2"`
+	Phone     string `json:"phone,omitempty" binding:"required" validate:"min=11,max=15"`
+	Password  string `json:"password,omitempty" binding:"required" validate:"passwd"`
 }
 
 type editBioRequest struct {

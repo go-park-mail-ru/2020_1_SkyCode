@@ -55,5 +55,7 @@ func main() {
 	protobuf_session.RegisterSessionWorkerServer(server, sessionManager)
 
 	logrus.Info("Startin server on port", port)
-	server.Serve(lis)
+	if err := server.Serve(lis); err != nil {
+		logrus.Error(err)
+	}
 }

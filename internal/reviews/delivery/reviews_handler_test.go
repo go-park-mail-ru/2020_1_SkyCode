@@ -101,7 +101,7 @@ func TestReviewsHandler_UpdateReview(t *testing.T) {
 		Rate:   5,
 	}
 	type reviewUpdateRequest struct {
-		Text string  `json:"text, omitempty" binding:"required" validate:"min=2"`
+		Text string  `json:"text,omitempty" binding:"required" validate:"min=2"`
 		Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 	}
 

@@ -413,8 +413,8 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 	prodID := uint64(1)
 
 	type productRequest struct {
-		Name  string  `json:"name, omitempty" binding:"required" validate:"min=2"`
-		Price float32 `json:"price, omitempty" binding:"required"`
+		Name  string  `json:"name,omitempty" binding:"required" validate:"min=2"`
+		Price float32 `json:"price,omitempty" binding:"required"`
 	}
 
 	reqProd := &models.Product{

@@ -434,8 +434,8 @@ func TestRestaurantHandler_UpdateRestaurant(t *testing.T) {
 	}
 
 	type restaurantRequest struct {
-		Name        string `json:"name, omitempty" binding:"required" validate:"min=3"`
-		Description string `json:"description, omitempty" binding:"required" validate:"min=10"`
+		Name        string `json:"name,omitempty" binding:"required" validate:"min=3"`
+		Description string `json:"description,omitempty" binding:"required" validate:"min=10"`
 	}
 
 	restID := uint64(1)
@@ -574,7 +574,7 @@ func TestRestaurantHandler_AddReview(t *testing.T) {
 	restID := uint64(1)
 
 	type reviewRequest struct {
-		Text string   `json:"text, omitempty" binding:"required"`
+		Text string   `json:"text,omitempty" binding:"required"`
 		Rate *float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 	}
 
@@ -644,7 +644,7 @@ func TestRestaurantHandler_AddReview_ValidationError(t *testing.T) {
 	restID := uint64(1)
 
 	type reviewRequest struct {
-		Text string   `json:"text, omitempty" binding:"required"`
+		Text string   `json:"text,omitempty" binding:"required"`
 		Rate *float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 	}
 

@@ -44,14 +44,14 @@ func NewProductHandler(private *gin.RouterGroup, public *gin.RouterGroup, pUC pr
 }
 
 type productRequest struct {
-	Name  string  `json:"name, omitempty" binding:"required" validate:"min=2"`
-	Price float32 `json:"price, omitempty" binding:"required"`
+	Name  string  `json:"name,omitempty" binding:"required" validate:"min=2"`
+	Price float32 `json:"price,omitempty" binding:"required"`
 	Tag   uint64  `json:"tag" binding:"omitempty"`
 }
 
 type UpdateProductRequest struct {
-	Name  string  `json:"name, omitempty" binding:"required"`
-	Price float32 `json:"price, omitempty" binding:"required"`
+	Name  string  `json:"name,omitempty" binding:"required"`
+	Price float32 `json:"price,omitempty" binding:"required"`
 	Tag   uint64  `json:"tag" binding:"omitempty"`
 }
 
