@@ -53,7 +53,7 @@ jobs:
        with:
          host: ${{ secrets.HOST }}
          username: ${{ secrets.USERNAME }}
-         key: ${{ secrets.DEPLOYKEY }}
+         key: ${{ secrets.SSHPRIVATE }}
          source: "bin/bin"
          target: "/home/ubuntu/"
      - name: chmod
@@ -61,13 +61,13 @@ jobs:
        with:
          host: ${{ secrets.HOST }}
          username: ${{ secrets.USERNAME }}
-         key: ${{ secrets.DEPLOYKEY }}
-         script: chmod 755 /home/ubuntu/bin/app
+         key: ${{ secrets.SSHPRIVATE }}
+         script: chmod 755 /home/ubuntu/bin
      - name: restart service
        uses: appleboy/ssh-action@master
        with:
          host: ${{ secrets.HOST }}
          username: ${{ secrets.USERNAME }}
-         key: ${{ secrets.DEPLOYKEY }}
-         script: ls -al
+         key: ${{ secrets.SSHPRIVATE }}
+         script: ls
       
