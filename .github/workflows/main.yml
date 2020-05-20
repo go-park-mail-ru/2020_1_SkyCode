@@ -69,5 +69,5 @@ jobs:
          host: ${{ secrets.HOST }}
          username: ${{ secrets.USERNAME }}
          key: ${{ secrets.SSHPRIVATE }}
-         script: ls
+         script: ls -al
       
