@@ -1,8 +1,6 @@
 package tools
 
 import (
-	"errors"
-	"github.com/joho/godotenv"
 	"os"
 )
 
@@ -29,10 +27,6 @@ type Config struct {
 }
 
 func LoadConf() (*Config, error) {
-	if err := godotenv.Load(); err != nil {
-		return nil, errors.New("No such env file")
-	}
-
 	c := &Config{
 		Database: Database{
 			Name:     os.Getenv("PSQL_DB"),
