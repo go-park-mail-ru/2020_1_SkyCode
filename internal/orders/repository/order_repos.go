@@ -178,7 +178,7 @@ func (oR *OrdersRepository) DeleteOrder(orderID uint64, userID uint64) error {
 }
 
 func (oR *OrdersRepository) GetAllByRestID(restID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
-	rows, err := oR.db.Query("SELECT id, userId, restId, address, price, phone, comment, "+
+	rows, err := oR.db.Query("SELECT id, userId, restId, address, price, phone, comment, personnum, "+
 		"datetime, status, "+
 		"CASE WHEN status = 'Accepted' THEN 1 "+
 		"WHEN status = 'Delivering' THEN 2 "+
@@ -196,10 +196,18 @@ func (oR *OrdersRepository) GetAllByRestID(restID uint64, count uint64, page uin
 	var ordersList []*models.Order
 	for rows.Next() {
 		o := &models.Order{}
+		t := time.Time{}
 
 		var statusId uint64
-		if err := rows.Scan(&o.ID, &o.UserID, &o.RestID, &o.Address, &o.Price, &o.Phone, &o.Comment, &o.CreatedAt,
+		if err := rows.Scan(&o.ID, &o.UserID, &o.RestID, &o.Address, &o.Price, &o.Phone, &o.Comment, &o.PersonNum, &t,
 			&o.Status, &statusId); err != nil {
+			return nil, 0, err
+		}
+
+		o.CreatedAt = t.Format("2006/Jan/_2/15:04:05")
+
+		o.Products, err = oR.getOrderProducts(o.ID)
+		if err != nil {
 			return nil, 0, err
 		}
 
