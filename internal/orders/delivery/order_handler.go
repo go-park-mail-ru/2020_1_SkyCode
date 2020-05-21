@@ -268,20 +268,11 @@ func (oH *OrderHandler) ChangeStatus() gin.HandlerFunc {
 			return
 		}
 
-		newStatusCode, err := strconv.ParseUint(c.Query("status"), 10, 64)
-		if err != nil {
+		newStatus := c.Query("status")
+		if newStatus == "" {
 			logrus.Error(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
-			})
-
-			return
-		}
-
-		newStatus := tools.StatusCodes[newStatusCode]
-		if newStatus == "" {
-			c.JSON(http.StatusBadRequest, tools.Error{
-				ErrorMessage: tools.UnknownOrderStatus.Error(),
 			})
 
 			return
