@@ -2,12 +2,13 @@ package tools
 
 import (
 	"os"
+	"strconv"
 )
 
 type Database struct {
 	Name     string `json:"name"`
 	Host     string `json:"host"`
-	Port     string `json:"port"`
+	Port     uint64 `json:"port"`
 	User     string `json:"user"`
 	Password string `json:"password"`
 }
@@ -27,11 +28,16 @@ type Config struct {
 }
 
 func LoadConf() (*Config, error) {
+	port, err := strconv.ParseUint(os.Getenv("PSQL_PORT"), 10, 64)
+
+	if err != nil {
+		return nil, err
+	}
 	c := &Config{
 		Database: Database{
 			Name:     os.Getenv("PSQL_DB"),
 			Host:     os.Getenv("PSQL_HOST"),
-			Port:     os.Getenv("PSQL_PORT"),
+			Port:     port,
 			User:     os.Getenv("PSQL_USER"),
 			Password: os.Getenv("PSQL_PASSWORD")},
 

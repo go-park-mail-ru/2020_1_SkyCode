@@ -10,12 +10,11 @@ import (
 	protobuf_admin_rest "github.com/2020_1_Skycode/internal/restaurants/delivery/protobuf"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	"github.com/2020_1_Skycode/internal/tools"
+	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"log"
 	"net"
-
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -25,7 +24,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	connString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s sslmode=disable password=%s",
+	connString := fmt.Sprintf("host=%s port=%d dbname=%s user=%s sslmode=disable password=%s",
 		config.Database.Host,
 		config.Database.Port,
 		config.Database.Name,
