@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"errors"
 	"github.com/joho/godotenv"
 	"os"
 )
