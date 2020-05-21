@@ -10,7 +10,7 @@ run:
   timeout: 1m
 
   # exit code when at least one issue was found, default is 1
-  issues-exit-code: 1
+  issues-exit-code: 0
 
   # include test files or not, default is true
   tests: true
@@ -32,6 +32,7 @@ output:
 
 # all available settings of specific linters
 linters-settings:
+  ignore: fmt:.*,io/ioutil:^Read.*/ioutil:^Write.*,net/http:.*
   dogsled:
     # checks assignments with too many blank identifiers; default is 2
     max-blank-identifiers: 2
