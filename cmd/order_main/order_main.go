@@ -23,7 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	connString := fmt.Sprintf("host=%s port=%d dbname=%s user=%s sslmode=disable password=%s",
+	connString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s sslmode=disable password=%s",
 		config.Database.Host,
 		config.Database.Port,
 		config.Database.Name,
