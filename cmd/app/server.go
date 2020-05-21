@@ -60,13 +60,13 @@ import (
 // @host localhost:5000
 // @BasePath /api/v1
 func main() {
-	config, err := tools.LoadConf("./configs/config.json")
+	config, err := tools.LoadConf()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	connString := fmt.Sprintf("host=%s port=%d dbname=%s user=%s sslmode=disable password=%s",
+	connString := fmt.Sprintf("host=%s port=%s dbname=%s user=%s sslmode=disable password=%s",
 		config.Database.Host,
 		config.Database.Port,
 		config.Database.Name,

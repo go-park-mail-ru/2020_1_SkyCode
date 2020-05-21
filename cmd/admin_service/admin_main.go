@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	config, err := tools.LoadConf("./configs/config.json")
+	config, err := tools.LoadConf()
 
 	if err != nil {
 		log.Fatal(err)

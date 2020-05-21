@@ -1,49 +1,48 @@
 package tools
 
 import (
-	"encoding/json"
-	"log"
+	"github.com/joho/godotenv"
 	"os"
 )
 
-type Config struct {
-	Database struct {
-		Name     string `json:"name"`
-		Host     string `json:"host"`
-		Port     uint16 `json:"port"`
-		User     string `json:"user"`
-		Password string `json:"password"`
-	} `json:"database"`
-
-	Server struct {
-		Host string `json:"host"`
-		Port string `json:"port"`
-	} `json:"server"`
-
-	ApiKeys struct {
-		YandexGeoCoder string `json:"yandex_geocoder"`
-	} `json:"apikeys"`
+type Database struct {
+	Name     string `json:"name"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	User     string `json:"user"`
+	Password string `json:"password"`
 }
 
-func LoadConf(filename string) (*Config, error) {
-	c := &Config{}
+type Server struct {
+	Host string `json:"host"`
+	Port string `json:"port"`
+}
 
-	file, err := os.Open(filename)
+type ApiKeys struct {
+	YandexGeoCoder string `json:"yandex_geocoder"`
+}
+type Config struct {
+	Database Database
+	Server   Server
+	ApiKeys  ApiKeys
+}
 
-	defer func() {
-		if err := file.Close(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	if err != nil {
-		return nil, err
+func LoadConf() (*Config, error) {
+	if err := godotenv.Load(); err != nil {
+		return nil, errors.New("No such env file")
 	}
 
-	parser := json.NewDecoder(file)
+	c := &Config{
+		Database: Database{
+			Name:     os.Getenv("PSQL_DB"),
+			Host:     os.Getenv("PSQL_HOST"),
+			Port:     os.Getenv("PSQL_PORT"),
+			User:     os.Getenv("PSQL_USER"),
+			Password: os.Getenv("PSQL_PASSWORD")},
 
-	if err := parser.Decode(c); err != nil {
-		return nil, err
+		ApiKeys: ApiKeys{
+			YandexGeoCoder: os.Getenv("YANDEX_GEOCODER"),
+		},
 	}
 
 	return c, nil
