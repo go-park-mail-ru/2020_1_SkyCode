@@ -15,6 +15,7 @@ import (
 	_notificationsRepository "github.com/2020_1_Skycode/internal/notifications/repository"
 	_notificationsUseCase "github.com/2020_1_Skycode/internal/notifications/usecase"
 	_ordersDelivery "github.com/2020_1_Skycode/internal/orders/delivery"
+	_orderRepo "github.com/2020_1_Skycode/internal/orders/repository"
 	_ordersUseCase "github.com/2020_1_Skycode/internal/orders/usecase"
 	_prodTagsRepository "github.com/2020_1_Skycode/internal/product_tags/repository"
 	_productDelivery "github.com/2020_1_Skycode/internal/products/delivery"
@@ -102,7 +103,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer grpcOrderConn.Close()
-  
+
 	f, err := os.OpenFile("skydelivery.log", os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
 		log.Fatal(err)
@@ -132,8 +133,11 @@ func main() {
 	restTagsUcase := _restTagsUseCase.NewRestTagsUCase(restTagsRepo)
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
+
+	ordersRepo := _orderRepo.NewOrdersRepository(dbConn, restRepo)
+
 	restUcase := _restUcase.NewRestaurantsWithProtoUseCase(restRepo, restPointsRepo, reviewRepo,
-		geoDataRepo, restTagsRepo, prodTagsRepo, grpcAdminConn)
+		geoDataRepo, restTagsRepo, prodTagsRepo, ordersRepo, grpcAdminConn)
 
 	userRepo := _usersRepository.NewUserRepository(dbConn)
 	userUcase := _usersUseCase.NewUserUseCase(userRepo)

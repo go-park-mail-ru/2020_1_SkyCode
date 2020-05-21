@@ -176,3 +176,41 @@ func (oR *OrdersRepository) DeleteOrder(orderID uint64, userID uint64) error {
 
 	return nil
 }
+
+func (oR *OrdersRepository) GetAllByRestID(restID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
+	rows, err := oR.db.Query("SELECT id, userId, restId, address, price, phone, comment, "+
+		"datetime, status, "+
+		"CASE WHEN status = 'Accepted' THEN 1 "+
+		"WHEN status = 'Delivering' THEN 2 "+
+		"WHEN status = 'Canceled' THEN 3 "+
+		"WHEN status = 'Done' THEN 4 "+
+		"end as id_status "+
+		"FROM orders WHERE restid = $1 ORDER BY id_status, datetime "+
+		"LIMIT $2 OFFSET $3", restID, count, count*(page-1))
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer rows.Close()
+
+	var ordersList []*models.Order
+	for rows.Next() {
+		o := &models.Order{}
+
+		var statusId uint64
+		if err := rows.Scan(&o.ID, &o.UserID, &o.RestID, &o.Address, &o.Price, &o.Phone, &o.Comment, &o.CreatedAt,
+			&o.Status, &statusId); err != nil {
+			return nil, 0, err
+		}
+
+		ordersList = append(ordersList, o)
+	}
+
+	var total uint64
+	if err := oR.db.QueryRow("SELECT COUNT(*) FROM orders WHERE restid = $1", restID).
+		Scan(&total); err != nil {
+		return nil, 0, err
+	}
+
+	return ordersList, total, nil
+}

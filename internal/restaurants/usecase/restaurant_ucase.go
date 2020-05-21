@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/2020_1_Skycode/internal/geodata"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/orders"
 	"github.com/2020_1_Skycode/internal/product_tags"
 	"github.com/2020_1_Skycode/internal/restaurant_points"
 	"github.com/2020_1_Skycode/internal/restaurants"
@@ -20,11 +21,12 @@ type RestaurantUseCase struct {
 	restPointsRepo  restaurant_points.Repository
 	restTagsRepo    restaurants_tags.Repository
 	productTagsRepo product_tags.Repository
+	ordersRepo      orders.Repository
 }
 
 func NewRestaurantsUseCase(rr restaurants.Repository, rpr restaurant_points.Repository,
 	rvr reviews.Repository, gdr geodata.Repository, rtr restaurants_tags.Repository,
-	ptr product_tags.Repository) *RestaurantUseCase {
+	ptr product_tags.Repository, or orders.Repository) *RestaurantUseCase {
 	return &RestaurantUseCase{
 		restaurantRepo:  rr,
 		reviewsRepo:     rvr,
@@ -32,6 +34,7 @@ func NewRestaurantsUseCase(rr restaurants.Repository, rpr restaurant_points.Repo
 		restPointsRepo:  rpr,
 		restTagsRepo:    rtr,
 		productTagsRepo: ptr,
+		ordersRepo:      or,
 	}
 }
 
@@ -342,4 +345,22 @@ func (rUC *RestaurantUseCase) DeleteProductTag(ID uint64) error {
 	}
 
 	return nil
+}
+
+func (rUC *RestaurantUseCase) GetRestaurantOrders(restID uint64, count uint64, page uint64) (
+	[]*models.Order, uint64, error) {
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, 0, tools.RestaurantNotFoundError
+		}
+
+		return nil, 0, err
+	}
+
+	ordersList, total, err := rUC.ordersRepo.GetAllByRestID(restID, count, page)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return ordersList, total, nil
 }

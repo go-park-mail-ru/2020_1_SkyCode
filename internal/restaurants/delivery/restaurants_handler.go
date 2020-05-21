@@ -56,6 +56,8 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 	private.POST("/restaurants/:rest_id/prod_tags", rh.AddProductTag())
 	private.DELETE("/restaurants/:rest_id/prod_tags/:tag_id", rh.DeleteProductTag())
 
+	public.GET("/restaurants/:rest_id/orders", rh.GetRestOrders())
+
 	return rh
 }
 
@@ -1275,6 +1277,80 @@ func (rh *RestaurantHandler) GetRestaurantsRecommendationsInRadius() gin.Handler
 
 		c.JSON(http.StatusOK, gin.H{
 			"restaurants": restList,
+		})
+	}
+}
+
+func (rh *RestaurantHandler) GetRestOrders() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user, err := rh.middlewareC.GetUser(c)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: err.Error(),
+			})
+
+			return
+		}
+
+		if !user.IsManager() && !user.IsAdmin() {
+			c.JSON(http.StatusForbidden, tools.Error{
+				ErrorMessage: tools.PermissionError.Error(),
+			})
+
+			return
+		}
+
+		restID, err := strconv.ParseUint(c.Param("rest_id"), 10, 64)
+		if err != nil {
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		orders, total, err := rh.restUseCase.GetRestaurantOrders(restID, count, page)
+		if err != nil {
+			if err == tools.RestaurantNotFoundError {
+				c.JSON(http.StatusNotFound, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"orders": orders,
+			"total":  total,
 		})
 	}
 }

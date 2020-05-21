@@ -49,6 +49,22 @@ func (mr *MockRepositoryMockRecorder) GetAllByUserID(userID, count, page interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByUserID", reflect.TypeOf((*MockRepository)(nil).GetAllByUserID), userID, count, page)
 }
 
+// GetAllByRestID mocks base method
+func (m *MockRepository) GetAllByRestID(restID, count, page uint64) ([]*models.Order, uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllByRestID", restID, count, page)
+	ret0, _ := ret[0].([]*models.Order)
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetAllByRestID indicates an expected call of GetAllByRestID
+func (mr *MockRepositoryMockRecorder) GetAllByRestID(restID, count, page interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByRestID", reflect.TypeOf((*MockRepository)(nil).GetAllByRestID), restID, count, page)
+}
+
 // GetByID mocks base method
 func (m *MockRepository) GetByID(orderID uint64) (*models.Order, error) {
 	m.ctrl.T.Helper()

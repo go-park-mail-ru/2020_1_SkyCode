@@ -312,3 +312,19 @@ func (mr *MockUseCaseMockRecorder) DeleteProductTag(ID interface{}) *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteProductTag", reflect.TypeOf((*MockUseCase)(nil).DeleteProductTag), ID)
 }
+
+// GetRestaurantOrders mocks base method
+func (m *MockUseCase) GetRestaurantOrders(restID, count, page uint64) ([]*models.Order, uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRestaurantOrders", restID, count, page)
+	ret0, _ := ret[0].([]*models.Order)
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetRestaurantOrders indicates an expected call of GetRestaurantOrders
+func (mr *MockUseCaseMockRecorder) GetRestaurantOrders(restID, count, page interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRestaurantOrders", reflect.TypeOf((*MockUseCase)(nil).GetRestaurantOrders), restID, count, page)
+}

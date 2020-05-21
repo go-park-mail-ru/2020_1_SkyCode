@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/2020_1_Skycode/internal/geodata"
 	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/orders"
 	"github.com/2020_1_Skycode/internal/product_tags"
 	"github.com/2020_1_Skycode/internal/restaurant_points"
 	"github.com/2020_1_Skycode/internal/restaurants"
@@ -23,12 +24,13 @@ type RestaurantWithProtoUseCase struct {
 	restPointsRepo  restaurant_points.Repository
 	restTagsRepo    restaurants_tags.Repository
 	productTagsRepo product_tags.Repository
+	ordersRepo      orders.Repository
 	adminManager    protobuf_admin_rest.RestaurantAdminWorkerClient
 }
 
 func NewRestaurantsWithProtoUseCase(rr restaurants.Repository, rpr restaurant_points.Repository,
 	rvr reviews.Repository, gdr geodata.Repository, rtr restaurants_tags.Repository,
-	ptr product_tags.Repository, conn *grpc.ClientConn) restaurants.UseCase {
+	ptr product_tags.Repository, or orders.Repository, conn *grpc.ClientConn) restaurants.UseCase {
 	return &RestaurantWithProtoUseCase{
 		restaurantRepo:  rr,
 		reviewsRepo:     rvr,
@@ -36,6 +38,7 @@ func NewRestaurantsWithProtoUseCase(rr restaurants.Repository, rpr restaurant_po
 		restPointsRepo:  rpr,
 		restTagsRepo:    rtr,
 		productTagsRepo: ptr,
+		ordersRepo:      or,
 		adminManager:    protobuf_admin_rest.NewRestaurantAdminWorkerClient(conn),
 	}
 }
@@ -412,4 +415,22 @@ func (rUC *RestaurantWithProtoUseCase) DeleteProductTag(ID uint64) error {
 	}
 
 	return nil
+}
+
+func (rUC *RestaurantWithProtoUseCase) GetRestaurantOrders(restID uint64, count uint64, page uint64) (
+	[]*models.Order, uint64, error) {
+	if _, err := rUC.restaurantRepo.GetByID(restID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, 0, tools.RestaurantNotFoundError
+		}
+
+		return nil, 0, err
+	}
+
+	ordersList, total, err := rUC.ordersRepo.GetAllByRestID(restID, count, page)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return ordersList, total, nil
 }

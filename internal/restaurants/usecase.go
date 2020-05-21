@@ -26,4 +26,6 @@ type UseCase interface {
 	GetProductTagsByID(restID uint64) ([]*models.ProductTag, error)
 	AddProductTag(tag *models.ProductTag) error
 	DeleteProductTag(ID uint64) error
+
+	GetRestaurantOrders(restID uint64, count uint64, page uint64) ([]*models.Order, uint64, error)
 }
