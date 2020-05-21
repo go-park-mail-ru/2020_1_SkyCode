@@ -16,7 +16,7 @@ func echoUser(w http.ResponseWriter, r *http.Request) {
 
 	ws, joinMsg, err := serv.CreateChat(w, r)
 	if err != nil {
-		fmt.Errorf("error creating chat %s", err)
+		logrus.Error(fmt.Errorf("error creating chat %s", err))
 		return
 	}
 
@@ -30,14 +30,14 @@ func echoUser(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		fmt.Errorf("error joining %s", err)
+		logrus.Error(fmt.Errorf("error joining %s", err))
 		return
 	}
 
 	msg := &InputMessage{}
 	err = ws.ReadJSON(msg)
 	if err != nil {
-		fmt.Errorf("error joining %s", err)
+		logrus.Error(fmt.Errorf("error joining %s", err))
 		return
 	}
 
@@ -46,13 +46,13 @@ func echoUser(w http.ResponseWriter, r *http.Request) {
 	lMsg := &LeaveStatus{}
 	err = ws.ReadJSON(lMsg)
 	if err != nil {
-		fmt.Errorf("error joining %s", err)
+		logrus.Error(fmt.Errorf("error joining %s", err))
 		return
 	}
 
 	err = serv.LeaveUser(lMsg.ChatID)
 	if err != nil {
-		fmt.Errorf("error leaving %s", err)
+		logrus.Error(fmt.Errorf("error leaving %s", err))
 		return
 	}
 
@@ -106,7 +106,7 @@ func echoSupport(w http.ResponseWriter, r *http.Request) {
 
 	ws, joinMsg, err := serv.CreateChat(w, r)
 	if err != nil {
-		fmt.Errorf("error creating chat %s", err)
+		logrus.Error(fmt.Errorf("error creating chat %s", err))
 		return
 	}
 
@@ -120,14 +120,14 @@ func echoSupport(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		fmt.Errorf("error joining %s", err)
+		logrus.Error(fmt.Errorf("error joining %s", err))
 		return
 	}
 
 	msg := &LeaveStatus{}
 	err = ws.ReadJSON(msg)
 	if err != nil {
-		fmt.Errorf("error leaving %s", err)
+		logrus.Error(fmt.Errorf("error leaving %s", err))
 		return
 	}
 
@@ -135,7 +135,7 @@ func echoSupport(w http.ResponseWriter, r *http.Request) {
 
 	err = serv.LeaveSupport(msg.ChatID)
 	if err != nil {
-		fmt.Errorf("error leaving %s", err)
+		logrus.Error(fmt.Errorf("error leaving %s", err))
 		return
 	}
 

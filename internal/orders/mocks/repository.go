@@ -49,19 +49,49 @@ func (mr *MockRepositoryMockRecorder) GetAllByUserID(userID, count, page interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByUserID", reflect.TypeOf((*MockRepository)(nil).GetAllByUserID), userID, count, page)
 }
 
-// GetByID mocks base method
-func (m *MockRepository) GetByID(orderID, userID uint64) (*models.Order, error) {
+// GetAllByRestID mocks base method
+func (m *MockRepository) GetAllByRestID(restID, count, page uint64) ([]*models.Order, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", orderID, userID)
+	ret := m.ctrl.Call(m, "GetAllByRestID", restID, count, page)
+	ret0, _ := ret[0].([]*models.Order)
+	ret1, _ := ret[1].(uint64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetAllByRestID indicates an expected call of GetAllByRestID
+func (mr *MockRepositoryMockRecorder) GetAllByRestID(restID, count, page interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByRestID", reflect.TypeOf((*MockRepository)(nil).GetAllByRestID), restID, count, page)
+}
+
+// GetByID mocks base method
+func (m *MockRepository) GetByID(orderID uint64) (*models.Order, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", orderID)
 	ret0, _ := ret[0].(*models.Order)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID
-func (mr *MockRepositoryMockRecorder) GetByID(orderID, userID interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetByID(orderID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockRepository)(nil).GetByID), orderID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockRepository)(nil).GetByID), orderID)
+}
+
+// ChangeStatus mocks base method
+func (m *MockRepository) ChangeStatus(orderID uint64, status string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeStatus", orderID, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeStatus indicates an expected call of ChangeStatus
+func (mr *MockRepositoryMockRecorder) ChangeStatus(orderID, status interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeStatus", reflect.TypeOf((*MockRepository)(nil).ChangeStatus), orderID, status)
 }
 
 // InsertOrder mocks base method

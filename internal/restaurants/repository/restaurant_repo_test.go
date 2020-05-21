@@ -47,7 +47,7 @@ func TestRestaurantRepository_GetAll(t *testing.T) {
 
 	mock.ExpectQuery("SELECT COUNT").WillReturnRows(rowsCount)
 
-	restList, total, err := repo.GetAll(uint64(2), uint64(1))
+	restList, total, err := repo.GetAll(uint64(2), uint64(1), uint64(0))
 	if err != nil {
 		t.Errorf("Unexpected err: %s", err)
 		return
@@ -273,7 +273,7 @@ func TestRestaurantRepository_GetAllInServiceRadius(t *testing.T) {
 		WithArgs(gp.Latitude, gp.Longitude).
 		WillReturnRows(rowsCount)
 
-	restList, total, err := repo.GetAllInServiceRadius(gp, uint64(2), uint64(1))
+	restList, total, err := repo.GetAllInServiceRadius(gp, uint64(2), uint64(1), uint64(0))
 	if err != nil {
 		t.Errorf("Unexpected err: %s", err)
 		return

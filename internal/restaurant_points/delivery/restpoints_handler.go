@@ -131,6 +131,6 @@ func (rph *RestPointsHandler) DeletePoint() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, tools.Message{"Deleted"})
+		c.JSON(http.StatusOK, tools.Message{Message: "Deleted"})
 	}
 }

@@ -34,9 +34,9 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // GetAll mocks base method
-func (m *MockRepository) GetAll(count, page uint64) ([]*models.Restaurant, uint64, error) {
+func (m *MockRepository) GetAll(count, page, tagID uint64) ([]*models.Restaurant, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll", count, page)
+	ret := m.ctrl.Call(m, "GetAll", count, page, tagID)
 	ret0, _ := ret[0].([]*models.Restaurant)
 	ret1, _ := ret[1].(uint64)
 	ret2, _ := ret[2].(error)
@@ -44,9 +44,24 @@ func (m *MockRepository) GetAll(count, page uint64) ([]*models.Restaurant, uint6
 }
 
 // GetAll indicates an expected call of GetAll
-func (mr *MockRepositoryMockRecorder) GetAll(count, page interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetAll(count, page, tagID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockRepository)(nil).GetAll), count, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockRepository)(nil).GetAll), count, page, tagID)
+}
+
+// GetRecommendationsByOrder mocks base method
+func (m *MockRepository) GetRecommendationsByOrder(userID, count uint64) ([]*models.Restaurant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRecommendationsByOrder", userID, count)
+	ret0, _ := ret[0].([]*models.Restaurant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRecommendationsByOrder indicates an expected call of GetRecommendationsByOrder
+func (mr *MockRepositoryMockRecorder) GetRecommendationsByOrder(userID, count interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommendationsByOrder", reflect.TypeOf((*MockRepository)(nil).GetRecommendationsByOrder), userID, count)
 }
 
 // GetByID mocks base method
@@ -65,9 +80,9 @@ func (mr *MockRepositoryMockRecorder) GetByID(id interface{}) *gomock.Call {
 }
 
 // GetAllInServiceRadius mocks base method
-func (m *MockRepository) GetAllInServiceRadius(pos *models.GeoPos, count, page uint64) ([]*models.Restaurant, uint64, error) {
+func (m *MockRepository) GetAllInServiceRadius(pos *models.GeoPos, count, page, tagID uint64) ([]*models.Restaurant, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllInServiceRadius", pos, count, page)
+	ret := m.ctrl.Call(m, "GetAllInServiceRadius", pos, count, page, tagID)
 	ret0, _ := ret[0].([]*models.Restaurant)
 	ret1, _ := ret[1].(uint64)
 	ret2, _ := ret[2].(error)
@@ -75,9 +90,24 @@ func (m *MockRepository) GetAllInServiceRadius(pos *models.GeoPos, count, page u
 }
 
 // GetAllInServiceRadius indicates an expected call of GetAllInServiceRadius
-func (mr *MockRepositoryMockRecorder) GetAllInServiceRadius(pos, count, page interface{}) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetAllInServiceRadius(pos, count, page, tagID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllInServiceRadius", reflect.TypeOf((*MockRepository)(nil).GetAllInServiceRadius), pos, count, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllInServiceRadius", reflect.TypeOf((*MockRepository)(nil).GetAllInServiceRadius), pos, count, page, tagID)
+}
+
+// GetRecommendationsInRadius mocks base method
+func (m *MockRepository) GetRecommendationsInRadius(pos *models.GeoPos, userID, count uint64) ([]*models.Restaurant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRecommendationsInRadius", pos, userID, count)
+	ret0, _ := ret[0].([]*models.Restaurant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRecommendationsInRadius indicates an expected call of GetRecommendationsInRadius
+func (mr *MockRepositoryMockRecorder) GetRecommendationsInRadius(pos, userID, count interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommendationsInRadius", reflect.TypeOf((*MockRepository)(nil).GetRecommendationsInRadius), pos, userID, count)
 }
 
 // InsertInto mocks base method

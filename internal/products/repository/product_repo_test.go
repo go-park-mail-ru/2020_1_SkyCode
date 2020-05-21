@@ -17,7 +17,7 @@ func TestProductRepository_GetProductsByRestID(t *testing.T) {
 	repo := NewProductRepository(db)
 
 	rows := sqlmock.
-		NewRows([]string{"id", "name", "price", "image"})
+		NewRows([]string{"id", "name", "price", "image", "tag"})
 	expect := []*models.Product{
 		{ID: 1, Name: "test", Price: 2.50, Image: "./default_img.jpg"},
 	}
@@ -25,21 +25,15 @@ func TestProductRepository_GetProductsByRestID(t *testing.T) {
 	var restId = uint64(1)
 
 	for _, item := range expect {
-		rows = rows.AddRow(item.ID, item.Name, item.Price, item.Image)
+		rows = rows.AddRow(item.ID, item.Name, item.Price, item.Image, item.Tag)
 	}
 
-	rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(1)
-
 	mock.
-		ExpectQuery("SELECT id, name, price, image FROM products WHERE").
-		WithArgs(restId, uint64(1), uint64(0)).
+		ExpectQuery("SELECT id, name, price, image").
+		WithArgs(restId).
 		WillReturnRows(rows)
 
-	mock.ExpectQuery("SELECT COUNT").
-		WithArgs(uint64(1)).
-		WillReturnRows(rowsCount)
-
-	prodList, total, err := repo.GetProductsByRestID(restId, uint64(1), uint64(1))
+	prodList, err := repo.GetProductsByRestID(restId)
 	if err != nil {
 		t.Errorf("Unexpected err: %s", err)
 		return
@@ -49,7 +43,6 @@ func TestProductRepository_GetProductsByRestID(t *testing.T) {
 		return
 	}
 	require.EqualValues(t, expect, prodList)
-	require.EqualValues(t, uint64(1), total)
 }
 
 func TestProductRepository_GetProductByID(t *testing.T) {
@@ -62,15 +55,15 @@ func TestProductRepository_GetProductByID(t *testing.T) {
 	repo := NewProductRepository(db)
 
 	rows := sqlmock.
-		NewRows([]string{"id", "name", "price", "image", "rest_id"})
+		NewRows([]string{"id", "name", "price", "image", "rest_id", "tag"})
 	expect := &models.Product{ID: 1, Name: "test", Price: 2.50, Image: "./default_img.jpg", RestId: 1}
 
 	var prodID = uint64(1)
 
-	rows = rows.AddRow(expect.ID, expect.Name, expect.Price, expect.Image, expect.RestId)
+	rows = rows.AddRow(expect.ID, expect.Name, expect.Price, expect.Image, expect.RestId, expect.Tag)
 
 	mock.
-		ExpectQuery("SELECT id, name, price, image, rest_id FROM products WHERE").
+		ExpectQuery("SELECT id, name, price, image, rest_id").
 		WithArgs(prodID).
 		WillReturnRows(rows)
 
@@ -105,7 +98,7 @@ func TestProductRepository_InsertInto(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
 	mock.ExpectQuery("INSERT INTO products").
-		WithArgs(testProd.Name, testProd.Price, testProd.Image, testProd.RestId).
+		WithArgs(testProd.Name, testProd.Price, testProd.Image, testProd.RestId, testProd.Tag).
 		WillReturnRows(rows)
 
 	err = repo.InsertInto(testProd)
@@ -137,7 +130,7 @@ func TestProductRepository_Update(t *testing.T) {
 	}
 
 	mock.ExpectExec("UPDATE products SET").
-		WithArgs(testProd.ID, testProd.Name, testProd.Price).
+		WithArgs(testProd.ID, testProd.Name, testProd.Price, testProd.Tag).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = repo.Update(testProd)

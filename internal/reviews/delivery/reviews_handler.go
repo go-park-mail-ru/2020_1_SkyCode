@@ -36,7 +36,7 @@ func NewReviewsHandler(private *gin.RouterGroup, public *gin.RouterGroup, rUC re
 }
 
 type reviewUpdateRequest struct {
-	Text string  `json:"text, omitempty" binding:"required"`
+	Text string  `json:"text,omitempty" binding:"required"`
 	Rate float64 `json:"rate" binding:"required" validate:"min=0,max=5"`
 }
 
@@ -52,10 +52,10 @@ func (rh *ReviewsHandler) GetUserReviews() gin.HandlerFunc {
 			return
 		}
 
-		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
-		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		count, cerr := strconv.ParseUint(c.Query("count"), 10, 64)
+		page, perr := strconv.ParseUint(c.Query("page"), 10, 64)
 
-		if err != nil {
+		if cerr != nil || perr != nil {
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadQueryParams.Error(),
 			})
@@ -201,7 +201,7 @@ func (rh *ReviewsHandler) UpdateReview() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, tools.Message{"Updated"})
+		c.JSON(http.StatusOK, tools.Message{Message: "Updated"})
 	}
 }
 
@@ -250,6 +250,6 @@ func (rh *ReviewsHandler) DeleteReview() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusOK, tools.Message{"Deleted"})
+		c.JSON(http.StatusOK, tools.Message{Message: "Deleted"})
 	}
 }

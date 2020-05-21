@@ -250,12 +250,14 @@ func TestProductHandler_GetProducts(t *testing.T) {
 			Name:   "test1",
 			Price:  2.50,
 			RestId: 1,
+			Tag:    0,
 		},
 		{
 			ID:     2,
 			Name:   "test2",
 			Price:  2.50,
 			RestId: 1,
+			Tag:    0,
 		},
 	}
 
@@ -265,16 +267,13 @@ func TestProductHandler_GetProducts(t *testing.T) {
 	sessRes := &models.Session{ID: 1, UserId: userID}
 	userRes := &models.User{ID: sessRes.UserId, Role: "User"}
 
-	total := uint64(2)
-
 	expectRes := &tools.Body{
 		"products": resProd,
-		"total":    total,
 	}
 
 	mockSessUC.EXPECT().GetSession("1234").Return(sessRes, nil)
 	mockUserUC.EXPECT().GetUserById(userID).Return(userRes, nil)
-	mockProdUC.EXPECT().GetProductsByRestaurantID(restID, uint64(2), uint64(1)).Return(resProd, total, nil)
+	mockProdUC.EXPECT().GetProductsByRestaurantID(restID).Return(resProd, nil)
 
 	g := gin.New()
 	gin.SetMode(gin.TestMode)
@@ -414,8 +413,8 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 	prodID := uint64(1)
 
 	type productRequest struct {
-		Name  string  `json:"name, omitempty" binding:"required" validate:"min=2"`
-		Price float32 `json:"price, omitempty" binding:"required"`
+		Name  string  `json:"name,omitempty" binding:"required" validate:"min=2"`
+		Price float32 `json:"price,omitempty" binding:"required"`
 	}
 
 	reqProd := &models.Product{

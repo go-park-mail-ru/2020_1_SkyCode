@@ -3,22 +3,24 @@ package usecase
 import (
 	"context"
 	"github.com/2020_1_Skycode/internal/models"
-	"github.com/2020_1_Skycode/tools/protobuf/orderswork"
+	"github.com/2020_1_Skycode/internal/orders/delivery/protobuf"
+	"github.com/2020_1_Skycode/internal/tools"
+	"github.com/golang/protobuf/ptypes"
 	"google.golang.org/grpc"
 )
 
 type ProtoUseCase struct {
-	orderManager orderswork.OrderWorkerClient
+	orderManager protobuf_order.OrderWorkerClient
 }
 
 func NewOrderProtoUseCase(conn *grpc.ClientConn) *ProtoUseCase {
 	return &ProtoUseCase{
-		orderManager: orderswork.NewOrderWorkerClient(conn),
+		orderManager: protobuf_order.NewOrderWorkerClient(conn),
 	}
 }
 
 func (oU *ProtoUseCase) CheckoutOrder(order *models.Order, ordProducts []*models.OrderProduct) error {
-	ord := &orderswork.Order{
+	ord := &protobuf_order.Order{
 		UserID:    order.UserID,
 		RestID:    order.RestID,
 		RestName:  order.RestName,
@@ -29,17 +31,17 @@ func (oU *ProtoUseCase) CheckoutOrder(order *models.Order, ordProducts []*models
 		Price:     order.Price,
 	}
 
-	prods := []*orderswork.OrderProduct{}
+	prods := []*protobuf_order.OrderProduct{}
 
 	for _, val := range ordProducts {
-		prods = append(prods, &orderswork.OrderProduct{
+		prods = append(prods, &protobuf_order.OrderProduct{
 			ID:        val.ID,
 			ProductID: val.ProductID,
 			Count:     val.Count,
 		})
 	}
 
-	if _, err := oU.orderManager.CheckOutOrder(context.Background(), &orderswork.Checkout{
+	if _, err := oU.orderManager.CheckOutOrder(context.Background(), &protobuf_order.Checkout{
 		Order:    ord,
 		Products: prods,
 	}); err != nil {
@@ -49,8 +51,43 @@ func (oU *ProtoUseCase) CheckoutOrder(order *models.Order, ordProducts []*models
 	return nil
 }
 
+func (oU *ProtoUseCase) ChangeOrderStatus(orderID uint64, status string) (*models.Notification, error) {
+	answ, err := oU.orderManager.ChangeOrderStatus(context.Background(), &protobuf_order.ChangeStatus{
+		OrderID: orderID,
+		Status:  status,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if answ.Code.ID != tools.OK {
+		if answ.Code.ID == tools.DoesntExist {
+			return nil, tools.OrderNotFound
+		}
+		if answ.Code.ID == tools.SameStatus {
+			return nil, tools.NewStatusIsTheSame
+		}
+	}
+
+	t, err := ptypes.Timestamp(answ.Note.DateTime)
+	if err != nil {
+		return nil, err
+	}
+
+	note := &models.Notification{
+		ID:           answ.Note.ID,
+		UserID:       answ.Note.UserID,
+		OrderID:      answ.Note.OrderID,
+		UnreadStatus: answ.Note.UnreadStatus,
+		Status:       answ.Note.Status,
+		DateTime:     t,
+	}
+
+	return note, nil
+}
+
 func (oU *ProtoUseCase) GetAllUserOrders(userID uint64, count uint64, page uint64) ([]*models.Order, uint64, error) {
-	res, err := oU.orderManager.GetAllUserOrders(context.Background(), &orderswork.UserOrders{
+	res, err := oU.orderManager.GetAllUserOrders(context.Background(), &protobuf_order.UserOrders{
 		UserID: userID,
 		Count:  count,
 		Page:   page,
@@ -95,7 +132,7 @@ func (oU *ProtoUseCase) GetAllUserOrders(userID uint64, count uint64, page uint6
 }
 
 func (oU *ProtoUseCase) GetOrderByID(orderID uint64, userID uint64) (*models.Order, error) {
-	order, err := oU.orderManager.GetOrderByID(context.Background(), &orderswork.GetByID{
+	order, err := oU.orderManager.GetOrderByID(context.Background(), &protobuf_order.GetByID{
 		OrderID: orderID,
 		UserID:  userID,
 	})
@@ -136,7 +173,7 @@ func (oU *ProtoUseCase) GetOrderByID(orderID uint64, userID uint64) (*models.Ord
 }
 
 func (oU *ProtoUseCase) DeleteOrder(orderID uint64, userID uint64) error {
-	if _, err := oU.orderManager.DeleteOrder(context.Background(), &orderswork.DelOrder{
+	if _, err := oU.orderManager.DeleteOrder(context.Background(), &protobuf_order.DelOrder{
 		OrderID: orderID,
 		UserID:  userID,
 	}); err != nil {

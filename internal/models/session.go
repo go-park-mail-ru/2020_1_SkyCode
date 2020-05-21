@@ -10,7 +10,7 @@ type Session struct {
 	ID uint64 `json:"id"`
 	UserId uint64 `json:"userId"`
 	Token string `json:"token"`
-	Expiration time.Time `json:"expiration, omitempty"`
+	Expiration time.Time `json:"expiration,omitempty"`
 }
 
 func GenerateSession(userId uint64) (*Session, *http.Cookie) {

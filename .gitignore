@@ -190,6 +190,8 @@ ehthumbs_vista.db
 # Dump file
 *.stackdump
 
+.env
+
 # Folder config file
 [Dd]esktop.ini
 
@@ -207,3 +209,5 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/go,vim,linux,macos,windows,jetbrains
+
+*.log

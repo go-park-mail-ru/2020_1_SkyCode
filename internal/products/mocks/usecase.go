@@ -63,19 +63,18 @@ func (mr *MockUseCaseMockRecorder) GetProductByID(id interface{}) *gomock.Call {
 }
 
 // GetProductsByRestaurantID mocks base method
-func (m *MockUseCase) GetProductsByRestaurantID(id, count, page uint64) ([]*models.Product, uint64, error) {
+func (m *MockUseCase) GetProductsByRestaurantID(id uint64) ([]*models.Product, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProductsByRestaurantID", id, count, page)
+	ret := m.ctrl.Call(m, "GetProductsByRestaurantID", id)
 	ret0, _ := ret[0].([]*models.Product)
-	ret1, _ := ret[1].(uint64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetProductsByRestaurantID indicates an expected call of GetProductsByRestaurantID
-func (mr *MockUseCaseMockRecorder) GetProductsByRestaurantID(id, count, page interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) GetProductsByRestaurantID(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsByRestaurantID", reflect.TypeOf((*MockUseCase)(nil).GetProductsByRestaurantID), id, count, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsByRestaurantID", reflect.TypeOf((*MockUseCase)(nil).GetProductsByRestaurantID), id)
 }
 
 // UpdateProduct mocks base method

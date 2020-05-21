@@ -26,6 +26,7 @@ message ProtoProduct {
   float Price = 3;
   string ImagePath = 4;
   uint64 RestID = 5;
+  uint64 Tag = 6;
 }
 
 message ProtoPoint {

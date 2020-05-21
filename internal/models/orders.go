@@ -1,8 +1,8 @@
 package models
 
 type OrderProduct struct {
-	ID        uint64 `json:"id, omitempty"`
-	OrderID   uint64 `json:"orderId, omitempty"`
+	ID        uint64 `json:"id,omitempty"`
+	OrderID   uint64 `json:"orderId,omitempty"`
 	ProductID uint64 `json:"productId" binding:"required"`
 	Count     uint32 `json:"count" binding:"required"`
 }

@@ -3,11 +3,11 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	_notificationsRepo "github.com/2020_1_Skycode/internal/notifications/repository"
 	protobuf_order "github.com/2020_1_Skycode/internal/orders/delivery/protobuf"
 	_orderRepo "github.com/2020_1_Skycode/internal/orders/repository"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	"github.com/2020_1_Skycode/internal/tools"
-	"github.com/2020_1_Skycode/tools/protobuf/orderswork"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"log"
@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	config, err := tools.LoadConf("./configs/config.json")
+	config, err := tools.LoadConf()
 
 	if err != nil {
 		log.Fatal(err)
@@ -44,8 +44,9 @@ func main() {
 
 	restRepo := _restRepo.NewRestaurantRepository(dbConn)
 	orderRepo := _orderRepo.NewOrdersRepository(dbConn, restRepo)
+	notificationsRepo := _notificationsRepo.NewNotificationsRepository(dbConn)
 
-	orderManager := protobuf_order.NewOrderProtoManager(orderRepo)
+	orderManager := protobuf_order.NewOrderProtoManager(orderRepo, notificationsRepo)
 
 	port := ":5003"
 
@@ -56,8 +57,10 @@ func main() {
 
 	server := grpc.NewServer()
 
-	orderswork.RegisterOrderWorkerServer(server, orderManager)
+	protobuf_order.RegisterOrderWorkerServer(server, orderManager)
 
 	logrus.Info("Starting server on port", port)
-	server.Serve(lis)
+	if err := server.Serve(lis); err != nil {
+		logrus.Error(err)
+	}
 }

@@ -4,22 +4,21 @@ import (
 	"database/sql"
 	"fmt"
 	_geodataRepository "github.com/2020_1_Skycode/internal/geodata/repository"
+	_prodTagsRepo "github.com/2020_1_Skycode/internal/product_tags/repository"
 	_productRepo "github.com/2020_1_Skycode/internal/products/repository"
 	_restPointsRepository "github.com/2020_1_Skycode/internal/restaurant_points/repository"
 	protobuf_admin_rest "github.com/2020_1_Skycode/internal/restaurants/delivery/protobuf"
 	_restRepo "github.com/2020_1_Skycode/internal/restaurants/repository"
 	"github.com/2020_1_Skycode/internal/tools"
-	"github.com/2020_1_Skycode/tools/protobuf/adminwork"
+	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"log"
 	"net"
-
-	_ "github.com/lib/pq"
 )
 
 func main() {
-	config, err := tools.LoadConf("./configs/config.json")
+	config, err := tools.LoadConf()
 
 	if err != nil {
 		log.Fatal(err)
@@ -50,8 +49,10 @@ func main() {
 	prodRepo := _productRepo.NewProductRepository(dbConn)
 	restPointRepo := _restPointsRepository.NewRestPosintsRepository(dbConn)
 	geoDataRepo := _geodataRepository.NewGeoDataRepository(geoCoderKey)
+	prodTagsRepo := _prodTagsRepo.NewProductTagsRepository(dbConn)
 
-	adminManager := protobuf_admin_rest.NewAdminRestaurantManager(restRepo, prodRepo, restPointRepo, geoDataRepo)
+	adminManager := protobuf_admin_rest.NewAdminRestaurantManager(restRepo, prodRepo, restPointRepo,
+		prodTagsRepo, geoDataRepo)
 
 	port := ":5002"
 
@@ -62,8 +63,10 @@ func main() {
 
 	server := grpc.NewServer()
 
-	adminwork.RegisterRestaurantAdminWorkerServer(server, adminManager)
+	protobuf_admin_rest.RegisterRestaurantAdminWorkerServer(server, adminManager)
 
 	logrus.Info("Starting server on port", port)
-	server.Serve(lis)
+	if err := server.Serve(lis); err != nil {
+		logrus.Error(err)
+	}
 }
