@@ -124,7 +124,7 @@ func (cs *SupportChat) JoinUser(conn *websocket.Conn, user *models.User) error {
 
 func (cs *SupportChat) JoinSupport(conn *websocket.Conn, user *models.User) error {
 	if cs.Support.UserID != user.ID {
-		if len(cs.Support.wsList) == 0 {
+		if len(cs.Support.wsList) != 0 {
 			return tools.NewSupportJoinError
 		}
 		cs.Support.UserID = user.ID
@@ -205,6 +205,9 @@ func (cs *ChatServer) JoinUserToChat(user *models.User, w http.ResponseWriter, r
 		Support: &chatMember{},
 	}
 	cs.supportChats[user.ID] = chat
+	if err := chat.JoinUser(conn, user); err != nil {
+		return nil, nil, err
+	}
 
 	go chat.handleMessages()
 
@@ -218,7 +221,7 @@ func (cs *ChatServer) JoinSupportToChat(chatID uint64, sup *models.User, w http.
 		return nil, nil, err
 	}
 	if chat := cs.supportChats[chatID]; chat != nil {
-		if err := chat.JoinUser(conn, sup); err != nil {
+		if err := chat.JoinSupport(conn, sup); err != nil {
 			return nil, nil, err
 		}
 		return conn, chat, nil
