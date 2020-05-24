@@ -132,6 +132,8 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 				c.JSON(http.StatusConflict, tools.Error{
 					ErrorMessage: err.Error(),
 				})
+
+				return
 			}
 
 			logrus.Error(err)
@@ -259,5 +261,7 @@ func (cH *ChatHandler) CloseChat() gin.HandlerFunc {
 
 			return
 		}
+
+		c.JSON(http.StatusOK, tools.Message{Message: "Success"})
 	}
 }
