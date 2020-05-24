@@ -31,7 +31,7 @@ func (cR *ChatsRepository) InsertChatMessage(message *models.ChatMessage) error 
 func (cR *ChatsRepository) SelectMessagesByChatID(chatID uint64) ([]*models.ChatMessage, error) {
 	var messages []*models.ChatMessage
 	rows, err := cR.db.Query("SELECT user_id, username, chat, message, created FROM chat_messages "+
-		"WHERE chat = $1, ORDER BY created desc",
+		"WHERE chat = $1 ORDER BY created desc",
 		chatID)
 
 	if err != nil {

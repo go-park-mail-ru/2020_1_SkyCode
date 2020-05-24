@@ -198,7 +198,10 @@ func (cs *ChatServer) JoinUserToChat(user *models.User, w http.ResponseWriter, r
 
 	chat := &SupportChat{
 		inputCh: make(chan *InputMessage),
-		User:    &chatMember{UserID: user.ID},
+		User: &chatMember{
+			UserID:   user.ID,
+			UserName: user.FirstName,
+		},
 		Support: &chatMember{},
 	}
 	cs.supportChats[user.ID] = chat
@@ -236,6 +239,7 @@ func (cs *ChatServer) GetSupportChats() []*models.Chat {
 		logrus.Error(ind, val)
 
 		chat := &models.Chat{
+			ChatID:        val.User.UserID,
 			UserName:      val.User.UserName,
 			UserID:        val.User.UserID,
 			UserConnected: val.User.CheckConnection(),
