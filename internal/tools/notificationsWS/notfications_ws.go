@@ -32,6 +32,7 @@ type NotificationServer struct {
 }
 
 func NewNotificationServer() *NotificationServer {
+	logrus.SetLevel(logrus.DebugLevel)
 	ns := &NotificationServer{
 		noteChats: make(map[uint64]*NotificationClient),
 		client:    make(chan *NotificationClient),
@@ -62,6 +63,7 @@ func (ns *NotificationServer) CreateClient(w http.ResponseWriter, r *http.Reques
 	ws, err := ns.upd.Upgrade(w, r, nil)
 
 	if ns.noteChats[userID] != nil {
+		logrus.Debug("Adding ws")
 		if err := ns.noteChats[userID].AddConnection(ws); err != nil {
 			return nil, err
 		}
@@ -98,6 +100,7 @@ func (ns *NotificationServer) SendNotification(note *models.Notification) {
 }
 
 func (nc *NotificationClient) handleMessage() {
+	logrus.Debug("Starting handle client")
 	ticker := time.NewTicker(pingPeriod)
 
 	defer func() {
@@ -107,12 +110,7 @@ func (nc *NotificationClient) handleMessage() {
 	for {
 		select {
 		case noteMes := <-nc.noteCh:
-			if err := nc.WSSendNotification(noteMes); err != nil {
-				if websocket.IsCloseError(err) {
-					return
-				}
-				logrus.Error(err)
-			}
+			nc.WSSendNotification(noteMes)
 		case <-ticker.C:
 			i := 0
 			for _, ws := range nc.ws {
@@ -132,14 +130,12 @@ func (nc *NotificationClient) handleMessage() {
 	}
 }
 
-func (nc *NotificationClient) WSSendNotification(note *models.Notification) error {
+func (nc *NotificationClient) WSSendNotification(note *models.Notification) {
 	for _, ws := range nc.ws {
 		if err := ws.WriteJSON(note); err != nil {
-			return err
+			logrus.Error(err)
 		}
 	}
-
-	return nil
 }
 
 func (nc *NotificationClient) AddConnection(ws *websocket.Conn) error {
