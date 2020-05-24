@@ -32,7 +32,7 @@ func NewAdminRestaurantManager(rr restaurants.Repository, pr products.Repository
 	}
 }
 
-func (am *AdminRestaurantManager) CreateRestaurant(ctx context.Context, r *ProtoRestaurant) (*ErrorCode, error) {
+func (am *AdminRestaurantManager) CreateRestaurant(ctx context.Context, r *ProtoRestaurant) (*CreateReturn, error) {
 	rest := &models.Restaurant{
 		ManagerID:   r.ManagerID,
 		Name:        r.Name,
@@ -41,10 +41,10 @@ func (am *AdminRestaurantManager) CreateRestaurant(ctx context.Context, r *Proto
 	}
 
 	if err := am.RestaurantRepo.InsertInto(rest); err != nil {
-		return &ErrorCode{ID: tools.InternalError}, err
+		return &CreateReturn{Code: &ErrorCode{ID: tools.InternalError}}, err
 	}
 
-	return &ErrorCode{ID: tools.OK}, nil
+	return &CreateReturn{Code: &ErrorCode{ID: tools.OK}, ID: &ProtoID{ID: rest.ID}}, nil
 }
 
 func (am *AdminRestaurantManager) UpdateRestaurant(ctx context.Context, r *ProtoRestaurant) (*ErrorCode, error) {

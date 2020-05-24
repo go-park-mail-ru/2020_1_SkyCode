@@ -36,12 +36,17 @@ message ProtoPoint {
   uint64 RestID = 4;
 }
 
+message CreateReturn {
+  ErrorCode code = 1;
+  ProtoID ID = 2;
+}
+
 message ErrorCode {
   uint64 ID = 1;
 }
 
 service RestaurantAdminWorker {
-  rpc CreateRestaurant(ProtoRestaurant) returns (ErrorCode);
+  rpc CreateRestaurant(ProtoRestaurant) returns (CreateReturn);
   rpc UpdateRestaurant(ProtoRestaurant) returns (ErrorCode);
   rpc UpdateRestaurantImage(ProtoImage) returns (ErrorCode);
   rpc DeleteRestaurant(ProtoID) returns (ErrorCode);

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"github.com/2020_1_Skycode/internal/models"
 	"github.com/2020_1_Skycode/internal/restaurants"
-	"github.com/sirupsen/logrus"
 )
 
 type RestaurantRepository struct {
@@ -254,7 +253,6 @@ func (rr *RestaurantRepository) InsertInto(rest *models.Restaurant) error {
 		rest.Image).Scan(&rest.ID); err != nil {
 		return err
 	}
-	logrus.Info(rest.ID)
 
 	return nil
 }
