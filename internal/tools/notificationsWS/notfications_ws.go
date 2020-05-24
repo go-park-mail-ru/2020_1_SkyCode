@@ -26,16 +26,15 @@ type StatusMessage struct {
 }
 
 type NotificationServer struct {
-	noteChats map[uint64]*NotificationClient
-	client    chan *NotificationClient
-	upd       *websocket.Upgrader
+	noteClients map[uint64]*NotificationClient
+	clientIDs   chan uint64
+	upd         *websocket.Upgrader
 }
 
 func NewNotificationServer() *NotificationServer {
-	logrus.SetLevel(logrus.DebugLevel)
 	ns := &NotificationServer{
-		noteChats: make(map[uint64]*NotificationClient),
-		client:    make(chan *NotificationClient),
+		noteClients: make(map[uint64]*NotificationClient),
+		clientIDs:   make(chan uint64),
 		upd: &websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
@@ -50,21 +49,22 @@ func NewNotificationServer() *NotificationServer {
 
 func (ns *NotificationServer) run() {
 	logrus.Debug("Server started")
-	for c := range ns.client {
-		if curClient := ns.noteChats[c.UserID]; curClient != nil {
-			delete(ns.noteChats, c.UserID)
-			close(c.noteCh)
+	for c := range ns.clientIDs {
+		if curClient := ns.noteClients[c]; curClient != nil {
+			delete(ns.noteClients, c)
+			close(curClient.noteCh)
 		}
 	}
+	logrus.Debug("Server stopped")
 }
 
 func (ns *NotificationServer) CreateClient(w http.ResponseWriter, r *http.Request,
 	userID uint64) (*websocket.Conn, error) {
 	ws, err := ns.upd.Upgrade(w, r, nil)
 
-	if ns.noteChats[userID] != nil {
+	if ns.noteClients[userID] != nil {
 		logrus.Debug("Adding ws")
-		if err := ns.noteChats[userID].AddConnection(ws); err != nil {
+		if err := ns.noteClients[userID].AddConnection(ws); err != nil {
 			return nil, err
 		}
 
@@ -86,15 +86,15 @@ func (ns *NotificationServer) CreateClient(w http.ResponseWriter, r *http.Reques
 		return nil, err
 	}
 
-	ns.noteChats[userID] = nc
+	ns.noteClients[userID] = nc
 
-	go ns.noteChats[userID].handleMessage()
+	go ns.noteClients[userID].handleMessage()
 
 	return ws, nil
 }
 
 func (ns *NotificationServer) SendNotification(note *models.Notification) {
-	if client := ns.noteChats[note.UserID]; client != nil {
+	if client := ns.noteClients[note.UserID]; client != nil {
 		client.noteCh <- note
 	}
 }
@@ -105,7 +105,7 @@ func (nc *NotificationClient) handleMessage() {
 
 	defer func() {
 		logrus.Debug("Close Client")
-		nc.server.client <- nc
+		nc.server.clientIDs <- nc.UserID
 	}()
 	for {
 		select {

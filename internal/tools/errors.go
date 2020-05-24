@@ -48,4 +48,7 @@ var (
 	NewStatusIsTheSame         = errors.New("New status is the same as current")
 	NotificationNotFound       = errors.New("Notification not found")
 	NoteConnectionExists       = errors.New("Web socket connection already exists")
+	ChatNotFound               = errors.New("Chat with this id not found")
+	NewSupportJoinError        = errors.New("Can't join new support while old didn't quit")
+	ChatInUse                  = errors.New("Chat in use. Delete Error")
 )
