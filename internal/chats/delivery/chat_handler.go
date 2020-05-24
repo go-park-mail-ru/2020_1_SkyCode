@@ -126,6 +126,7 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 				c.JSON(http.StatusNotFound, tools.Error{
 					ErrorMessage: tools.ChatNotFound.Error(),
 				})
+
 				return
 			}
 			if err == tools.NewSupportJoinError {
@@ -164,7 +165,6 @@ func (cH *ChatHandler) JoinSupport() gin.HandlerFunc {
 
 			chat.NotifyMembers(message)
 		}
-
 	}
 }
 
