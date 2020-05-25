@@ -81,6 +81,17 @@ func (rUC *RestaurantWithProtoUseCase) GetRestaurantByID(id uint64) (*models.Res
 }
 
 func (rUC *RestaurantWithProtoUseCase) CreateRestaurant(rest *models.Restaurant) error {
+	_, err := rUC.restaurantRepo.GetByName(rest.Name)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return err
+		}
+	}
+
+	if err != sql.ErrNoRows {
+		return tools.RestaurantNameExists
+	}
+
 	answ, err := rUC.adminManager.CreateRestaurant(
 		context.Background(),
 		&protobuf_admin_rest.ProtoRestaurant{

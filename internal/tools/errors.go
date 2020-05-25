@@ -51,4 +51,5 @@ var (
 	ChatNotFound               = errors.New("Chat with this id not found")
 	NewSupportJoinError        = errors.New("Can't join new support while old didn't quit")
 	ChatInUse                  = errors.New("Chat in use. Delete Error")
+	RestaurantNameExists       = errors.New("Ресторна с данным именем существует")
 )

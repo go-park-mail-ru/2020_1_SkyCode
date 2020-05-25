@@ -107,6 +107,20 @@ func (rr *RestaurantRepository) GetByID(id uint64) (*models.Restaurant, error) {
 	return restaurant, nil
 }
 
+func (rr *RestaurantRepository) GetByName(name string) (*models.Restaurant, error) {
+	restaurant := &models.Restaurant{}
+
+	err := rr.db.
+		QueryRow("SELECT id, moderId, name, description, rating, image FROM restaurants WHERE name = $1", name).
+		Scan(&restaurant.ID, &restaurant.ManagerID, &restaurant.Name, &restaurant.Description,
+			&restaurant.Rating, &restaurant.Image)
+
+	if err != nil {
+		return nil, err
+	}
+	return restaurant, nil
+}
+
 func (rr *RestaurantRepository) GetAllInServiceRadius(
 	pos *models.GeoPos, count, page, tagID uint64) ([]*models.Restaurant, uint64, error) {
 	var rows *sql.Rows

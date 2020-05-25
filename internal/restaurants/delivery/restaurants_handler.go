@@ -261,6 +261,14 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 		}
 
 		if err := rh.restUseCase.CreateRestaurant(rest); err != nil {
+			if err == tools.RestaurantNameExists {
+				c.JSON(http.StatusConflict, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),
