@@ -113,8 +113,26 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 
 			return
 		}
+		count, err := strconv.ParseUint(c.Query("count"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
 
-		products, err := ph.productUseCase.GetProductsByRestaurantID(id)
+			return
+		}
+		page, err := strconv.ParseUint(c.Query("page"), 10, 64)
+		if err != nil {
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadQueryParams.Error(),
+			})
+
+			return
+		}
+
+		products, total, err := ph.productUseCase.GetProductsByRestaurantID(id, count, page)
 		if err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusNotFound, tools.Error{
@@ -126,6 +144,7 @@ func (ph *ProductHandler) GetProducts() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{
 			"products": products,
+			"total":    total,
 		})
 	}
 }

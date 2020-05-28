@@ -59,13 +59,13 @@ func (pUC *ProductWithProtoUseCase) GetProductByID(id uint64) (*models.Product, 
 }
 
 func (pUC *ProductWithProtoUseCase) GetProductsByRestaurantID(
-	id uint64) ([]*models.Product, error) {
-	productList, err := pUC.productRepo.GetProductsByRestID(id)
+	id uint64, count uint64, page uint64) ([]*models.Product, uint64, error) {
+	productList, total, err := pUC.productRepo.GetProductsByRestID(id, count, page)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return productList, nil
+	return productList, total, nil
 }
 
 func (pUC *ProductWithProtoUseCase) UpdateProduct(product *models.Product) error {
