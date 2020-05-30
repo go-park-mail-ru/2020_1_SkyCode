@@ -1,95 +1,174 @@
 package supportChat
 
 import (
-	"errors"
-	"github.com/google/uuid"
+	"github.com/2020_1_Skycode/internal/models"
+	"github.com/2020_1_Skycode/internal/tools"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"time"
+)
+
+const (
+	pongWait   = 30 * time.Second
+	pingPeriod = (pongWait * 9) / 10
 )
 
 type chatMember struct {
-	UserID uint64
+	UserID   uint64
 	UserName string
-	ws     *websocket.Conn
+	wsList   []*websocket.Conn
 }
 
-func (cm *chatMember) CloseConn() error {
-	if cm.ws != nil {
-		err := cm.ws.Close()
+func (cm *chatMember) CheckWS() bool {
+	i := 0
+	for _, ws := range cm.wsList {
+		if err := ws.WriteMessage(websocket.PingMessage, nil); err != nil {
+			ws.Close()
+			logrus.Debug("Closing ws")
+			continue
+		}
+		cm.wsList[i] = ws
+		i++
+	}
+	cm.wsList = cm.wsList[:i]
+	if len(cm.wsList) == 0 {
+		return false
+	}
 
-		if err != nil {
+	return true
+}
+
+func (cm *chatMember) CheckConnection() bool {
+	if len(cm.wsList) == 0 {
+		return false
+	}
+
+	return true
+}
+
+func (cm *chatMember) AddConnection(ws *websocket.Conn) error {
+	if err := ws.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	ws.SetPongHandler(func(string) error {
+		if err := ws.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
 			return err
 		}
-	}
+		return nil
+	})
+
+	cm.wsList = append(cm.wsList, ws)
 
 	return nil
 }
 
 type SupportChat struct {
+	inputCh chan *InputMessage
 	User    *chatMember
 	Support *chatMember
 }
 
-func (sc *SupportChat) NotifyMembers(message interface{}) error {
+func (sc *SupportChat) NotifyMembers(message interface{}) {
 	if user := sc.User; user != nil {
-		if err := user.ws.WriteJSON(message); err != nil {
-			return err
+		for _, ws := range user.wsList {
+			if err := ws.WriteJSON(message); err != nil {
+				logrus.Error(err)
+			}
+
 		}
 	}
 
 	if support := sc.Support; support != nil {
-		if err := support.ws.WriteJSON(message); err != nil {
-			return err
+		for _, ws := range support.wsList {
+			if err := ws.WriteJSON(message); err != nil {
+				logrus.Error(err)
+			}
 		}
 	}
+}
+
+func (sc *SupportChat) handleMessages() {
+	logrus.Debug("Starting handle chat")
+	ticker := time.NewTicker(pingPeriod)
+
+	for {
+		select {
+		case <-ticker.C:
+			sc.User.CheckWS()
+			sc.Support.CheckWS()
+		}
+	}
+}
+
+func (cs *SupportChat) JoinUser(conn *websocket.Conn, user *models.User) error {
+	if cs.User.UserID != user.ID {
+		return tools.PermissionError
+	}
+
+	if err := cs.User.AddConnection(conn); err != nil {
+		return err
+	}
+
+	cs.NotifyMembers(&JoinStatus{
+		ChatID:   cs.User.UserID,
+		UserID:   user.ID,
+		UserName: user.FirstName,
+		Joined:   true,
+	})
 
 	return nil
 }
 
-func (sc *SupportChat) Dead() bool {
-	if sc.Support == nil && sc.User == nil {
-		return true
+func (cs *SupportChat) JoinSupport(conn *websocket.Conn, user *models.User) error {
+	if cs.Support.UserID != user.ID {
+		if len(cs.Support.wsList) != 0 {
+			return tools.NewSupportJoinError
+		}
+		cs.Support.UserID = user.ID
+		cs.Support.UserName = user.FirstName
 	}
 
-	return false
+	if err := cs.Support.AddConnection(conn); err != nil {
+		return err
+	}
+
+	cs.NotifyMembers(&JoinStatus{
+		ChatID:   cs.User.UserID,
+		UserID:   user.ID,
+		UserName: user.FirstName,
+		Joined:   true,
+	})
+
+	return nil
 }
 
 type InputMessage struct {
-	ChatID   string `json:"chat_id"`
-	UserID uint64 `json:"user_id"`
+	ChatID   uint64 `json:"chat_id"`
+	UserID   uint64 `json:"user_id"`
 	UserName string `json:"user_name"`
 	Message  string `json:"message"`
 }
 
 type JoinStatus struct {
-	ChatID   string `json:"chat_id,omitempty"`
-	UserID uint64 `json:"user_id"`
+	ChatID   uint64 `json:"chat_id"`
+	UserID   uint64 `json:"user_id"`
 	UserName string `json:"user_name"`
 	Joined   bool   `json:"joined"`
 }
 
-type LeaveStatus struct {
-	ChatID   string `json:"chat_id"`
-	UserID uint64 `json:"user_id"`
-	UserName string `json:"user_name"`
-	Leaved   bool   `json:"leaved"`
-}
-
 type ChatServer struct {
-	supportChats map[string]*SupportChat
-	inputCh      chan InputMessage
-	joinCh       chan JoinStatus
-	leaveCh      chan LeaveStatus
+	supportChats map[uint64]*SupportChat
+	chatControl  chan uint64
 	upd          *websocket.Upgrader
 }
 
 func NewChatServer() *ChatServer {
 	cS := &ChatServer{
-		supportChats: make(map[string]*SupportChat),
-		inputCh:      make(chan InputMessage),
-		joinCh:       make(chan JoinStatus),
-		leaveCh:      make(chan LeaveStatus),
+		supportChats: make(map[uint64]*SupportChat),
+		chatControl:  make(chan uint64),
 		upd: &websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
@@ -97,203 +176,96 @@ func NewChatServer() *ChatServer {
 		},
 	}
 
-	go cS.handleMessages()
-
 	return cS
 }
 
-func (cs *ChatServer) GetChat(chatID string) *SupportChat {
+func (cs *ChatServer) GetChat(chatID uint64) *SupportChat {
 	return cs.supportChats[chatID]
 }
 
-func (cs *ChatServer) WriteInputCh(message InputMessage) {
-	cs.inputCh <- message
-}
-
-func (cs *ChatServer) WriteJoinCh(message JoinStatus) {
-	cs.joinCh <- message
-}
-
-func (cs *ChatServer) WriteLeaveCh(message LeaveStatus) {
-	cs.leaveCh <- message
-}
-
-func (cs *ChatServer) handleMessages() {
-	for {
-		select {
-		case msgIN := <-cs.inputCh:
-			logrus.Info(msgIN)
-			if chat := cs.supportChats[msgIN.ChatID]; chat != nil {
-				if err := cs.supportChats[msgIN.ChatID].NotifyMembers(msgIN); err != nil {
-					logrus.Error(err)
-					break
-				}
-			}
-
-		case joinIN := <-cs.joinCh:
-			logrus.Info(joinIN)
-			if chat := cs.supportChats[joinIN.ChatID]; chat != nil {
-				if err := cs.supportChats[joinIN.ChatID].NotifyMembers(joinIN); err != nil {
-					logrus.Error(err)
-					break
-				}
-			}
-
-
-		case leaveIN := <-cs.leaveCh:
-			logrus.Info(leaveIN)
-			if chat := cs.supportChats[leaveIN.ChatID]; chat != nil {
-				if err := cs.supportChats[leaveIN.ChatID].NotifyMembers(leaveIN); err != nil {
-					logrus.Error(err)
-					break
-				}
-			}
-		}
-	}
-}
-
-func (cs *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) (*websocket.Conn, *JoinStatus, error) {
-	ws, err := cs.upd.Upgrade(w, r, nil)
-
+func (cs *ChatServer) JoinUserToChat(user *models.User, w http.ResponseWriter, r *http.Request) (
+	*websocket.Conn, *SupportChat, error) {
+	conn, err := cs.upd.Upgrade(w, r, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-
-	joinMessage := &JoinStatus{}
-
-	if err := ws.ReadJSON(&joinMessage); err != nil {
-		return ws, nil, err
-	}
-
-	if joinMessage.ChatID != "" {
-		if cs.supportChats[joinMessage.ChatID] != nil {
-			return ws, joinMessage, nil
+	if chat := cs.supportChats[user.ID]; chat != nil {
+		if err := chat.JoinUser(conn, user); err != nil {
+			return nil, nil, err
 		}
+		return conn, chat, nil
 	}
 
-	chatID := uuid.New().String()
-	cs.supportChats[chatID] = &SupportChat{}
-
-	joinMessage.ChatID = chatID
-	return ws, joinMessage, nil
-}
-
-func (cs *ChatServer) SearchChat(w http.ResponseWriter, r *http.Request, chatID string) (*websocket.Conn, *JoinStatus, error) {
-	ws, err := cs.upd.Upgrade(w, r, nil)
-
-	if err != nil {
+	chat := &SupportChat{
+		inputCh: make(chan *InputMessage),
+		User: &chatMember{
+			UserID:   user.ID,
+			UserName: user.FirstName,
+		},
+		Support: &chatMember{},
+	}
+	cs.supportChats[user.ID] = chat
+	if err := chat.JoinUser(conn, user); err != nil {
 		return nil, nil, err
 	}
 
-	joinMessage := &JoinStatus{}
+	go chat.handleMessages()
 
-	if err := ws.ReadJSON(&joinMessage); err != nil {
-		return ws, nil, err
-	}
-
-	if chatID == "" {
-		return ws, nil, errors.New("chat id not presented")
-	}
-
-	if cs.supportChats[chatID] == nil {
-		return ws, joinMessage, errors.New("chat not found")
-	}
-
-	joinMessage.ChatID = chatID
-
-	return ws, joinMessage, nil
+	return conn, chat, nil
 }
 
-func (cs *ChatServer) JoinUser(conn *websocket.Conn, jM *JoinStatus) error {
-	var chat *SupportChat
-
-	if chat = cs.supportChats[jM.ChatID]; chat == nil {
-		return errors.New("chat not found")
+func (cs *ChatServer) JoinSupportToChat(chatID uint64, sup *models.User, w http.ResponseWriter,
+	r *http.Request) (*websocket.Conn, *SupportChat, error) {
+	conn, err := cs.upd.Upgrade(w, r, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	if chat := cs.supportChats[chatID]; chat != nil {
+		if err := chat.JoinSupport(conn, sup); err != nil {
+			return nil, nil, err
+		}
+		return conn, chat, nil
 	}
 
-	cs.supportChats[jM.ChatID].User = &chatMember{
-		UserID: jM.UserID,
-		UserName: jM.UserName,
-		ws:       conn,
-	}
-
-	if err := cs.supportChats[jM.ChatID].NotifyMembers(&JoinStatus{
-		ChatID:   jM.ChatID,
-		UserID: jM.UserID,
-		UserName: jM.UserName,
-		Joined:   true,
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	return nil, nil, tools.ChatNotFound
 }
 
-func (cs *ChatServer) LeaveUser(chatID string) error {
-	var chat *SupportChat
+func (cs *ChatServer) GetSupportChats() []*models.Chat {
+	chats := []*models.Chat{}
 
-	if chat = cs.supportChats[chatID]; chat == nil {
-		return errors.New("chat not found")
+	logrus.Debug(cs.supportChats)
+	if len(cs.supportChats) == 0 {
+		return chats
 	}
 
-	if err := chat.User.CloseConn(); err != nil {
-		return err
+	for ind, val := range cs.supportChats {
+		logrus.Error(ind, val)
+
+		chat := &models.Chat{
+			ChatID:        val.User.UserID,
+			UserName:      val.User.UserName,
+			UserID:        val.User.UserID,
+			UserConnected: val.User.CheckConnection(),
+			SupConnected:  val.Support.CheckConnection(),
+		}
+
+		chats = append(chats, chat)
 	}
 
-	chat.User = nil
+	return chats
+}
 
-	if chat.Dead() {
+func (cs *ChatServer) DeleteChat(chatID uint64) error {
+	if chat := cs.supportChats[chatID]; chat != nil {
+		if chat.Support.CheckConnection() || chat.User.CheckConnection() {
+			return tools.ChatInUse
+		}
+
+		close(chat.inputCh)
 		delete(cs.supportChats, chatID)
+
+		return nil
 	}
 
-	return nil
-}
-
-func (cs *ChatServer) JoinSupport(conn *websocket.Conn, jM *JoinStatus) error {
-	var chat *SupportChat
-
-	if chat = cs.supportChats[jM.ChatID]; chat == nil {
-		return errors.New("chat not found")
-	}
-
-	cs.supportChats[jM.ChatID].Support = &chatMember{
-		UserID: jM.UserID,
-		UserName: jM.UserName,
-		ws:       conn,
-	}
-
-	if err := cs.supportChats[jM.ChatID].NotifyMembers(&JoinStatus{
-		ChatID:   jM.ChatID,
-		UserID: jM.UserID,
-		UserName: jM.UserName,
-		Joined:   true,
-	}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (cs *ChatServer) LeaveSupport(chatID string) error {
-	var chat *SupportChat
-
-	if chat = cs.supportChats[chatID]; chat == nil {
-		return errors.New("chat not found")
-	}
-
-	if err := chat.Support.CloseConn(); err != nil {
-		return err
-	}
-
-	chat.Support = nil
-
-	if chat.Dead() {
-		delete(cs.supportChats, chatID)
-	}
-
-	return nil
-}
-
-func (cs *ChatServer) GetSupportChats() map[string]*SupportChat {
-	return cs.supportChats
+	return tools.ChatNotFound
 }

@@ -41,7 +41,8 @@ create table restaurants
     description text        not null,
     rating      real        not null default 0,
     image       varchar(50) not null,
-    foreign key (moderId) references users (id) on delete cascade
+    foreign key (moderId) references users (id) on delete cascade,
+    constraint uq_rest_name unique (name)
 );
 
 create table rest_tags
@@ -153,7 +154,7 @@ create table chat_messages
 (
     user_id  int references users (id) on delete cascade,
     username varchar,
-    chat     varchar not null,
+    chat     int not null,
     message  text    not null,
     created  timestamptz default current_timestamp
 );

@@ -17,13 +17,13 @@ func NewProductRepository(db *sql.DB) products.Repository {
 }
 
 func (pr *ProductRepository) GetProductsByRestID(
-	restID uint64) ([]*models.Product, error) {
+	restID uint64, count uint64, page uint64) ([]*models.Product, uint64, error) {
 	productList := []*models.Product{}
 
 	rows, err := pr.db.Query("SELECT id, name, price, image, coalesce(tag, 0) "+
-		"FROM products WHERE rest_id = $1", restID)
+		"FROM products WHERE rest_id = $1 LIMIT $2 OFFSET $3", restID, count, count*(page-1))
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
@@ -31,12 +31,18 @@ func (pr *ProductRepository) GetProductsByRestID(
 		product := &models.Product{}
 		err = rows.Scan(&product.ID, &product.Name, &product.Price, &product.Image, &product.Tag)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		productList = append(productList, product)
 	}
 
-	return productList, nil
+	var total uint64
+	if err := pr.db.QueryRow("SELECT count(*) "+
+		"FROM products WHERE rest_id = $1", restID).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+
+	return productList, total, nil
 }
 
 func (pr *ProductRepository) GetProductByID(prodID uint64) (*models.Product, error) {

@@ -64,7 +64,7 @@ func (oR *OrdersRepository) GetAllByUserID(userID uint64, count uint64, page uin
 	var ordersList []*models.Order
 
 	rows, err := oR.db.Query("select id, userId, restId, address, price, phone, comment, personnum, "+
-		"datetime, status from orders where userId = $1"+
+		"datetime, status from orders where userId = $1 order by datetime desc"+
 		" LIMIT $2 OFFSET $3",
 		userID, count, (page-1)*count)
 	if err != nil {

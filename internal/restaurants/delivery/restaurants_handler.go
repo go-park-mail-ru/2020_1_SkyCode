@@ -62,8 +62,10 @@ func NewRestaurantHandler(private *gin.RouterGroup, public *gin.RouterGroup,
 }
 
 type restaurantRequest struct {
-	Name        string `json:"name,omitempty" binding:"required" validate:"min=3"`
-	Description string `json:"description,omitempty" binding:"required" validate:"min=10"`
+	Name        string  `json:"name,omitempty" binding:"required" validate:"min=3"`
+	Description string  `json:"description,omitempty" binding:"required" validate:"min=10"`
+	Address     string  `json:"address" binding:"required"`
+	Radius      float64 `json:"radius" binding:"required"`
 }
 
 type reviewRequest struct {
@@ -259,6 +261,30 @@ func (rh *RestaurantHandler) CreateRestaurant() gin.HandlerFunc {
 		}
 
 		if err := rh.restUseCase.CreateRestaurant(rest); err != nil {
+			if err == tools.RestaurantNameExists {
+				c.JSON(http.StatusConflict, tools.Error{
+					ErrorMessage: err.Error(),
+				})
+
+				return
+			}
+
+			logrus.Info(err)
+			c.JSON(http.StatusBadRequest, tools.Error{
+				ErrorMessage: tools.BadRequest.Error(),
+			})
+
+			return
+		}
+
+		p := &models.RestaurantPoint{
+			Address:       req.Address,
+			MapPoint:      nil,
+			ServiceRadius: req.Radius,
+			RestID:        rest.ID,
+		}
+
+		if err := rh.restUseCase.AddPoint(p); err != nil {
 			logrus.Info(err)
 			c.JSON(http.StatusBadRequest, tools.Error{
 				ErrorMessage: tools.BadRequest.Error(),

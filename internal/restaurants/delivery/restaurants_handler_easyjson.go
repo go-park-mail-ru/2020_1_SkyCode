@@ -62,14 +62,20 @@ func easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery(out 
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Text != "" {
 		const prefix string = ",\"text\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Text))
 	}
 	{
 		const prefix string = ",\"rate\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		if in.Rate == nil {
 			out.RawString("null")
 		} else {
@@ -125,6 +131,10 @@ func easyjson5eeb761bDecodeGithubCom20201SkycodeInternalRestaurantsDelivery1(in 
 			out.Name = string(in.String())
 		case "description":
 			out.Description = string(in.String())
+		case "address":
+			out.Address = string(in.String())
+		case "radius":
+			out.Radius = float64(in.Float64())
 		default:
 			in.SkipRecursive()
 		}
@@ -139,15 +149,36 @@ func easyjson5eeb761bEncodeGithubCom20201SkycodeInternalRestaurantsDelivery1(out
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Name != "" {
 		const prefix string = ",\"name\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	{
+	if in.Description != "" {
 		const prefix string = ",\"description\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Description))
+	}
+	{
+		const prefix string = ",\"address\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Address))
+	}
+	{
+		const prefix string = ",\"radius\":"
+		out.RawString(prefix)
+		out.Float64(float64(in.Radius))
 	}
 	out.RawByte('}')
 }
